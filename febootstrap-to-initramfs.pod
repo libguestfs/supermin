@@ -25,7 +25,9 @@ page).  You do I<not> need to run this command as root.
 Normal initramfs images start by executing the program or script
 called C</init>.  febootstrap does not create this script, so you may
 wish to, particularly for very minimal bootstraps that don't have the
-normal SysVinit/upstart machinery.
+normal SysVinit/upstart machinery.  It's also required if the kernel
+cannot find a "real" root filesystem (the root filesystem that we
+built and placed in an initramfs doesn't count).
 
 Linux will try to run the following commands in turn, unless you
 override it using the C<init=I<cmd>> kernel option:
