@@ -17,7 +17,7 @@
 #
 # Written by Richard W.M. Jones <rjones@redhat.com>
 
-bin_SCRIPTS = febootstrap
+bin_SCRIPTS = febootstrap febootstrap-to-initramfs
 
 febootstrap: febootstrap.sh
 	rm -f $@
@@ -25,7 +25,13 @@ febootstrap: febootstrap.sh
 	chmod 0555 $@-t
 	mv $@-t $@
 
-man_MANS = febootstrap.8
+febootstrap-to-initramfs: febootstrap-to-initramfs.sh
+	rm -f $@
+	cp $< $@-t
+	chmod 0555 $@-t
+	mv $@-t $@
+
+man_MANS = febootstrap.8 febootstrap-to-initramfs.8 febootstrap-fix-root.8
 
 if HAVE_PERLDOC
 febootstrap.8: febootstrap.pod
@@ -37,6 +43,29 @@ febootstrap.8: febootstrap.pod
 
 febootstrap.txt: febootstrap.pod
 	pod2text $< > $@
+
+febootstrap-to-initramfs.8: febootstrap-to-initramfs.pod
+	pod2man \
+	  --section 8 \
+	  -c "Virtualization Support" \
+	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
+	  $< > $@
+
+febootstrap-to-initramfs.txt: febootstrap-to-initramfs.pod
+	pod2text $< > $@
+
+febootstrap-fix-root.8: febootstrap-fix-root.pod
+	pod2man \
+	  --section 8 \
+	  -c "Virtualization Support" \
+	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
+	  $< > $@
+
+febootstrap-fix-root.txt: febootstrap-fix-root.pod
+	pod2text $< > $@
 endif
 
-EXTRA_DIST = febootstrap.8 febootstrap.txt
+EXTRA_DIST = \
+	febootstrap.8 febootstrap.txt \
+	febootstrap-to-initramfs.8 febootstrap-to-initramfs.txt \
+	febootstrap-fix-root.8 febootstrap-fix-root.txt

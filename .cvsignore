@@ -1,3 +1,5 @@
+febootstrap*.8
+febootstrap*.txt
 Makefile.in
 Makefile
 aclocal.m4
@@ -8,6 +10,6 @@ config.log
 config.status
 configure
 febootstrap
-febootstrap.8
-febootstrap.txt
+febootstrap-fix-root
+febootstrap-to-initramfs
 stamp-h1

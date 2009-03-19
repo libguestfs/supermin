@@ -21,8 +21,8 @@ I<TARGET>.  Optionally I<MIRROR> can point to a local mirror
 (otherwise the public Fedora mirrors are used).  I<REPO> names are
 C<fedora-I<VERSION>> (eg. C<fedora-10>) or C<rawhide>.
 
-febootstrap does not need to be run as root.  If for some reason you
-do run it as root, then it works slightly differently and may have
+febootstrap does I<not> need to be run as root.  If for some reason
+you do run it as root, then it works slightly differently and may have
 side effects such as stopping or starting system daemons.
 
 For more advanced needs, take a look at L<mock(1)> and
@@ -84,8 +84,8 @@ command with the faked file permissions.
 
 =item *
 
-Generate an initrd (cpio) file containing the correct permissions
-using the tool C<febootstrap-to-initrd>.
+Generate an initramfs (compressed cpio) file containing the correct
+permissions using the tool C<febootstrap-to-initramfs>.
 
 =item *
 
@@ -136,7 +136,7 @@ L<http://et.redhat.com/~rjones/febootstrap>
 
 =head1 SEE ALSO
 
-L<febootstrap-to-initrd(8)>,
+L<febootstrap-to-initramfs(8)>,
 L<febootstrap-fix-root(8)>,
 L<fakeroot(1)>,
 L<fakechroot(1)>,
