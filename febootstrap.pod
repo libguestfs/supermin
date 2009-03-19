@@ -1,0 +1,153 @@
+=head1 NAME
+
+febootstrap - Bootstrap a basic Fedora system (like Debian debootstrap)
+
+=head1 SYNOPSIS
+
+ febootstrap [--options] REPO TARGET [MIRROR]
+
+=head1 EXAMPLES
+
+ febootstrap fedora-10 /tmp/f10
+ febootstrap rawhide /tmp/rawhide
+ febootstrap rawhide /tmp/rawhide http://mymirror/rawhide/x86_64/os
+ febootstrap --groupinstall="Mail Server" rawhide /tmp/rawhide
+
+=head1 DESCRIPTION
+
+febootstrap creates a Fedora root filesystem, based on the Fedora
+version specified by I<REPO> under the directory specified by
+I<TARGET>.  Optionally I<MIRROR> can point to a local mirror
+(otherwise the public Fedora mirrors are used).  I<REPO> names are
+C<fedora-I<VERSION>> (eg. C<fedora-10>) or C<rawhide>.
+
+febootstrap does not need to be run as root.  If for some reason you
+do run it as root, then it works slightly differently and may have
+side effects such as stopping or starting system daemons.
+
+For more advanced needs, take a look at L<mock(1)> and
+C<livecd-creator>.
+
+The normal output is a root directory located at I<TARGET> and
+a fakeroot logfile at C<I<TARGET>/fakeroot.log>.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--install="list of packages separated by commas">
+
+=item B<--groupinstall="list of groups separated by commas">
+
+Specify the list of packages or groups to install.  These are passed
+directly to C<yum install> or C<yum groupinstall> commands, and thus
+any dependencies are also resolved by yum.  You can also use shell
+globs and filenames here, as with ordinary yum.
+
+If no packages or groups are given, then we install the C<Core> group
+which is the smallest working Fedora installation.  Use C<yum
+groupinfo Core> to list the packages currently in the C<Core> group.
+
+=back
+
+=head1 FAKEROOT LOGFILE
+
+When febootstrap is run as non-root (the normal case) we use fakeroot
+so that yum thinks it is running as root.  Fakeroot keeps track of
+"real" file permissions in a log file which is saved into the target
+directory as C<I<TARGET>/fakeroot.log>.
+
+You can use the fakeroot logfile in a number of ways:
+
+=over 4
+
+=item *
+
+Run C<fakeroot -i fakeroot.log I<command>> in order to run a
+command with the faked file permissions.
+
+=item *
+
+Generate an initrd (cpio) file containing the correct permissions
+using the tool C<febootstrap-to-initrd>.
+
+=item *
+
+Apply the permissions to the target directory using the tool
+C<febootstrap-fix-root> (requires root).
+
+=back
+
+=head1 COMPARISON TO debootstrap
+
+febootstrap cannot do cross-architecture installs (C<debootstrap
+--foreign>).  The reason is that C<%pre> and C<%post> scripts cannot
+run.  It may be possible to defer running of scriptlets (which is
+basically how debootstrap works), and patches to do this are welcomed.
+
+febootstrap cannot do 32-on-64 bit installs.  The reason is that
+fakeroot and fakechroot do not load the correct preload library.  This
+is really a bug in fakeroot/fakechroot, which we think would be easy
+to fix.  (debootstrap deals with this case the same as for
+C<--foreign> installs - see previous point).
+
+=head1 OTHER RESTRICTIONS AND BUGS
+
+Some C<%post> scripts do not run correctly.  The most common case is
+C</sbin/ldconfig>.  Since this binary is statically linked, fakeroot
+and fakechroot's LD_PRELOAD hack does not work, so effectively
+ldconfig tries to update the system cache.  You will see the following
+error:
+
+ /sbin/ldconfig: Can't create temporary cache file /etc/ld.so.cache~: Permission denied
+
+This error is mostly harmless.  Just run C</sbin/ldconfig> the first
+time you boot into the newly created Fedora system.
+
+Another error you will see is with C</usr/sbin/glibc_post_upgrade>
+which is caused for the same reason - this binary is statically
+linked.  We have examined what this binary does, and it is not really
+necessary for installs.  If it makes you happier, you can run it the
+first time you boot the new system.
+
+=head1 HOME PAGE
+
+L<http://et.redhat.com/~rjones/febootstrap>
+
+=head1 SEE ALSO
+
+L<febootstrap-to-initrd(8)>,
+L<febootstrap-fix-root(8)>,
+L<fakeroot(1)>,
+L<fakechroot(1)>,
+L<yum(8)>,
+L<rpm(8)>.
+
+=head1 ALTERNATIVES
+
+L<mock(1)>,
+L<http://fedoraproject.org/wiki/FedoraLiveCD/LiveCDHowTo>,
+L<debootstrap(8)>.
+
+=head1 AUTHORS
+
+Richard W.M. Jones <rjones @ redhat . com>
+
+=head1 COPYRIGHT
+
+(C) Copyright 2009 Red Hat Inc.,
+L<http://et.redhat.com/~rjones/febootstrap>.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.

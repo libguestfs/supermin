@@ -1,0 +1,46 @@
+febootstrap - Bootstrap a basic Fedora system
+by Richard W.M. Jones (rjones@redhat.com)
+----------------------------------------------------------------------
+
+febootstrap is a Fedora equivalent to Debian's debootstrap.  You can
+use it to create a basic Fedora filesystem.
+
+There are currently some restrictions compared to debootstrap.
+
+For instructions, restrictions, examples etc. please read the manpage
+febootstrap(8).
+
+Requirements
+------------
+
+  fakeroot
+    - Tested with version 1.11.
+
+  fakechroot > 2.8 or 2.8 + patch
+    - NB. KNOWN NOT TO WORK WITH 2.8.  You MUST apply the patch
+      'fakechroot-2.8-relchroot.patch' to the fakechroot sources
+      and recompile.  Hopefully this patch will be included in
+      future versions of fakechroot.
+
+  yum
+    - Tested with version 3.2.
+    - Needs network access to a Fedora repository, or a local
+      Fedora mirror.
+
+  perldoc
+    - This is just used to generate the manpage.
+
+  bash
+
+Building and installing
+-----------------------
+
+  ./configure
+  make
+  sudo make install
+
+Feedback and bugs
+-----------------
+
+Send feedback to rjones@redhat.com.  You can file bugs in
+http://bugzilla.redhat.com/
