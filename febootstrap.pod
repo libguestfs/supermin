@@ -35,20 +35,36 @@ a fakeroot logfile at C<I<TARGET>/fakeroot.log>.
 
 =over 4
 
-=item B<--install="list of packages separated by commas">
+=item B<-i package>
 
-=item B<--groupinstall="list of groups separated by commas">
+=item B<--install=package>
 
-Specify the list of packages or groups to install.  These are passed
-directly to C<yum install> or C<yum groupinstall> commands, and thus
-any dependencies are also resolved by yum.  You can also use shell
-globs and filenames here, as with ordinary yum.
+=item B<-g "group">
+
+=item B<--groupinstall="group">
+
+Specify the package or group to install.  To list multiple packages or
+groups, you must give multiple C<-i> or C<-g> options.  Group names
+can contain spaces, so use quotes where necessary.
+
+These are passed directly to C<yum install> or C<yum groupinstall>
+commands, and thus any dependencies are also resolved by yum.  You can
+also use shell globs and filenames here, as with ordinary yum.
 
 If no packages or groups are given, then we install the C<Core> group
 which is the smallest working Fedora installation.  Use C<yum
 groupinfo Core> to list the packages currently in the C<Core> group.
 
 =back
+
+=head1 REPOSITORIES
+
+You can list available repositories by visiting this URL:
+
+L<http://mirrors.fedoraproject.org/mirrorlist?repo=help&arch=i386>
+
+(If necessary replace C<i386> with your architecture, but it seems
+unlikely that this list will change based on architecture).
 
 =head1 FAKEROOT LOGFILE
 
@@ -109,6 +125,10 @@ which is caused for the same reason - this binary is statically
 linked.  We have examined what this binary does, and it is not really
 necessary for installs.  If it makes you happier, you can run it the
 first time you boot the new system.
+
+febootstrap recreates the repository anew each time, and this causes
+yum to download all the RPMs every time.  This is very wasteful, and
+we should provide a way to cache the repository.
 
 =head1 HOME PAGE
 

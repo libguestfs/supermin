@@ -22,7 +22,7 @@ bin_SCRIPTS = febootstrap
 febootstrap: febootstrap.sh
 	rm -f $@
 	cp $< $@-t
-	chmod 0755 $@-t
+	chmod 0555 $@-t
 	mv $@-t $@
 
 man_MANS = febootstrap.8
