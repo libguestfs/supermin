@@ -102,25 +102,65 @@ fi
 rm -rf "$target"
 mkdir "$target"
 
+# Target must be an absolute path.
+target=$(cd "$target"; pwd)
+
 # This is necessary to keep yum happy.  It's not clear why yum can't
 # just create this file itself.
 mkdir -p "$target"/var/cache/yum/febootstrap/packages
 
-yumargs="-y --disablerepo=* --enablerepo=febootstrap --noplugins --nogpgcheck"
+# Make the device nodes inside the fake chroot.
+# (Copied from mock/backend.py)  Why isn't there a base package which
+# creates these?
+make_device_nodes ()
+{
+    mkdir "$target"/dev
+    (
+	cd "$target"/dev
+	mkdir pts
+	mkdir shm
+	mknod null c 1 3;    chmod 0666 null
+	mknod full c 1 7;    chmod 0666 full
+	mknod zero c 1 5;    chmod 0666 zero
+	mknod random c 1 8;  chmod 0666 random
+	mknod urandom c 1 9; chmod 0444 urandom
+	mknod tty c 5 0;     chmod 0666 tty
+	mknod console c 5 1; chmod 0600 console
+	mknod ptmx c 5 2;    chmod 0666 ptmx
+	ln -sf /proc/self/fd/0 stdin
+	ln -sf /proc/self/fd/1 stdout
+	ln -sf /proc/self/fd/2 stderr
+    )
+}
+export -f make_device_nodes
+export target
 
-# If we are root, then we don't need to run fakeroot and fakechroot.
-if [ $(id -u) -eq 0 ]; then
-    yum \
-        -c "$tmpdir"/febootstrap.repo \
-	$yumargs \
-	--installroot="$target" \
-	install "${packages[@]}"
-else
+if [ $(id -u) -ne 0 ]; then
     fakeroot -s "$target"/fakeroot.log \
-    fakechroot -s \
+    make_device_nodes
+else
+    make_device_nodes
+fi
+
+# Run yum.
+run_yum ()
+{
     yum \
-	-c "$tmpdir"/febootstrap.repo \
-	$yumargs \
+	-y -c "$tmpdir"/febootstrap.repo \
+	--disablerepo=* --enablerepo=febootstrap \
+	--noplugins --nogpgcheck \
 	--installroot="$target" \
-	install "${packages[@]}"
+	install "$@"
+}
+export -f run_yum
+export tmpdir
+
+if [ $(id -u) -ne 0 ]; then
+    # Bash doesn't support exporting array variables, hence this
+    # tortuous workaround.
+    fakeroot -i "$target"/fakeroot.log -s "$target"/fakeroot.log \
+    fakechroot -s \
+    bash -c 'run_yum "$@"' run_yum "${packages[@]}"
+else
+    run_yum "${packages[@]}"
 fi
