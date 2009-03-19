@@ -16,3 +16,27 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #
 # Written by Richard W.M. Jones <rjones@redhat.com>
+
+bin_SCRIPTS = febootstrap
+
+febootstrap: febootstrap.sh
+	rm -f $@
+	cp $< $@-t
+	chmod 0755 $@-t
+	mv $@-t $@
+
+man_MANS = febootstrap.8
+
+if HAVE_PERLDOC
+febootstrap.8: febootstrap.pod
+	pod2man \
+	  --section 8 \
+	  -c "Virtualization Support" \
+	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
+	  $< > $@
+
+febootstrap.txt: febootstrap.pod
+	pod2text $< > $@
+endif
+
+EXTRA_DIST = febootstrap.8 febootstrap.txt

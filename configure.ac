@@ -27,7 +27,7 @@ AC_CHECK_PROG(PERLDOC,[perldoc],[perldoc],[no])
 if test "x$PERLDOC" = "xno" ; then
   AC_MSG_WARN([perldoc not found - install perl to make man pages])
 fi
-AM_CONDITIONAL(PERLDOC,[test "$perldoc" != "no"])
+AM_CONDITIONAL(HAVE_PERLDOC,[test "$perldoc" != "no"])
 
 AC_CHECK_PROG(FAKEROOT,[fakeroot],[fakeroot],[no])
 if test "x$FAKEROOT" = "xno" ; then

@@ -1,2 +1,13 @@
+Makefile.in
+Makefile
+aclocal.m4
+autom4te.cache
+config.h.in
+config.h
+config.log
+config.status
+configure
 febootstrap
 febootstrap.8
+febootstrap.txt
+stamp-h1
