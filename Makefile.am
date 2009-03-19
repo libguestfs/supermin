@@ -17,6 +17,8 @@
 #
 # Written by Richard W.M. Jones <rjones@redhat.com>
 
+SUBDIRS = examples
+
 bin_SCRIPTS = febootstrap febootstrap-to-initramfs
 
 febootstrap: febootstrap.sh
@@ -66,6 +68,10 @@ febootstrap-fix-root.txt: febootstrap-fix-root.pod
 endif
 
 EXTRA_DIST = \
-	febootstrap.8 febootstrap.txt \
+	fakechroot-2.8-relchroot.patch \
+	febootstrap.8 febootstrap.txt febootstrap.pod \
 	febootstrap-to-initramfs.8 febootstrap-to-initramfs.txt \
-	febootstrap-fix-root.8 febootstrap-fix-root.txt
+	  febootstrap-to-initramfs.pod \
+	febootstrap-fix-root.8 febootstrap-fix-root.txt \
+	  febootstrap-fix-root.pod \
+	febootstrap.sh febootstrap-to-initramfs.sh

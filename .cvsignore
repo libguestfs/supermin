@@ -1,5 +1,6 @@
 febootstrap*.8
 febootstrap*.txt
+febootstrap-*.tar.gz
 Makefile.in
 Makefile
 aclocal.m4

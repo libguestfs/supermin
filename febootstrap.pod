@@ -11,7 +11,7 @@ febootstrap - Bootstrap a basic Fedora system (like Debian debootstrap)
  febootstrap fedora-10 /tmp/f10
  febootstrap rawhide /tmp/rawhide
  febootstrap rawhide /tmp/rawhide http://mymirror/rawhide/x86_64/os
- febootstrap --groupinstall="Mail Server" rawhide /tmp/rawhide
+ febootstrap --groupinstall="Mail Server" fedora-10 /tmp/mailserver
 
 =head1 DESCRIPTION
 

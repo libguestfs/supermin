@@ -1,3 +1,5 @@
+Makefile.in
+Makefile
 minimal
 minimal-initrd.img
 vmlinuz
