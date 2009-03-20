@@ -84,8 +84,10 @@ endif
 EXTRA_DIST = \
 	fakechroot-2.8-relchroot.patch \
 	febootstrap.8 febootstrap.txt febootstrap.pod \
+	  febootstrap.sh \
 	febootstrap-minimize.8 febootstrap-minimize.txt \
 	  febootstrap-minimize.pod \
+	  febootstrap-minimize.sh \
 	febootstrap-to-initramfs.8 febootstrap-to-initramfs.txt \
 	  febootstrap-to-initramfs.pod \
-	febootstrap.sh febootstrap-to-initramfs.sh
+	  febootstrap-to-initramfs.sh
