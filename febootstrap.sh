@@ -114,16 +114,26 @@ target=$(cd "$target"; pwd)
 # just create this file itself.
 mkdir -p "$target"/var/cache/yum/febootstrap/packages
 
+# NB: REQUIRED for useradd/groupadd to run properly.
+#
+# However this causes 'filesystem' RPM install to give the
+# following error.  Not sure how serious the error is:
+# error: unpacking of archive failed on file /proc: cpio: utime
+export FAKECHROOT_EXCLUDE_PATH=/proc
+
 # Make the device nodes inside the fake chroot.
 # (Copied from mock/backend.py)  Why isn't there a base package which
 # creates these?
 make_device_nodes ()
 {
+    mkdir "$target"/proc
+    mkdir "$target"/sys
     mkdir "$target"/dev
     (
 	cd "$target"/dev
 	mkdir pts
 	mkdir shm
+	mkdir mapper
 	mknod null c 1 3;    chmod 0666 null
 	mknod full c 1 7;    chmod 0666 full
 	mknod zero c 1 5;    chmod 0666 zero
