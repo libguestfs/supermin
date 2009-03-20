@@ -32,6 +32,11 @@ Requirements
 
   bash
 
+  MAKEDEV
+
+  qemu
+    - If you want to test-run your systems.
+
 Building and installing
 -----------------------
 
