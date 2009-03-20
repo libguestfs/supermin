@@ -57,13 +57,7 @@ Keep or drop locale support.
 
 =item B<--drop-docs>
 
-Keep or drop documentation and man pages.
-
-=item B<--keep-yum-cache>
-
-=item B<--drop-yum-cache>
-
-Keep or drop the yum cache.
+Keep or drop documentation, man pages and info files.
 
 =item B<--keep-cracklib>
 
@@ -82,6 +76,46 @@ Keep or drop C</usr/share/i18n>.
 =item B<--drop-zoneinfo>
 
 Keep or drop all timezones (except UTC which is never deleted).
+
+=item B<--keep-rpmdb>
+
+=item B<--drop-rpmdb>
+
+Keep or drop the RPM package database.  Obviously RPM will be
+completely non-functional if you drop this.
+
+=item B<--keep-yum-cache>
+
+=item B<--drop-yum-cache>
+
+Keep or drop the yum cache.  Note that L<febootstrap(8)> has already
+deleted this directory unless you ran it with the C<--no-clean>
+option.
+
+=item B<--keep-services>
+
+=item B<--drop-services>
+
+Keep or drop the C</etc/services> file.  If dropped, this file is
+replaced with a very minimal one which just lists the most common
+services.  For less common services you will have to refer to them by
+port number instead of name.
+
+=item B<--keep-sln>
+
+=item B<--drop-sln>
+
+Keep or drop C</sbin/sln> (statically linked C<ln>).  This is not
+really required in minimal appliances.
+
+=item B<--keep-ldconfig>
+
+=item B<--drop-ldconfig>
+
+Keep or drop C</sbin/ldconfig>, C</etc/ld.so.cache> and
+C</var/cache/ldconfig> (the dynamic linking cache).  This is not
+needed.  Dynamic linking during program execution will be marginally
+slower.
 
 =back
 
