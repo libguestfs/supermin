@@ -25,8 +25,8 @@ febootstrap does I<not> need to be run as root.  If for some reason
 you do run it as root, then it works slightly differently and may have
 side effects such as stopping or starting system daemons.
 
-For more advanced needs, take a look at L<mock(1)> and
-C<livecd-creator>.
+For more advanced needs, take a look at L<mock(1)>, C<livecd-creator>
+and I<thincrust.net>'s C<appliance-creator>.
 
 The normal output is a root directory located at I<TARGET> and
 a fakeroot logfile at C<I<TARGET>/fakeroot.log>.
@@ -155,7 +155,9 @@ L<rpm(8)>.
 
 L<mock(1)>,
 L<http://fedoraproject.org/wiki/FedoraLiveCD/LiveCDHowTo>,
-L<debootstrap(8)>.
+L<http://thincrust.net/>,
+L<debootstrap(8)>,
+C<ubuntu-vm-builder>.
 
 =head1 AUTHORS
 
