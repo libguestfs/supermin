@@ -12,6 +12,16 @@
 # few command line utilities.  One of the joys of Fedora is that even
 # this minimal install is still 200 MB ...
 
+if [ $(id -u) -eq 0 ]; then
+    echo "Don't run this script as root.  Read instructions in script first."
+    exit 1
+fi
+
+if [ ! -e vmlinuz ]; then
+    echo "Read instructions in script first."
+    exit 1
+fi
+
 ../febootstrap -i bash -i coreutils fedora-10 ./minimal $1
 
 # ... but let's minimize it aggressively.
