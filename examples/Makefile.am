@@ -18,4 +18,6 @@
 # Written by Richard W.M. Jones <rjones@redhat.com>
 
 EXTRA_DIST = \
-	README minimal-filesystem.sh
+	README \
+	minimal-filesystem.sh \
+	guestfs-test.sh
