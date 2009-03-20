@@ -19,9 +19,18 @@
 
 SUBDIRS = examples
 
-bin_SCRIPTS = febootstrap febootstrap-to-initramfs
+bin_SCRIPTS = \
+	febootstrap \
+	febootstrap-minimize \
+	febootstrap-to-initramfs
 
 febootstrap: febootstrap.sh
+	rm -f $@
+	cp $< $@-t
+	chmod 0555 $@-t
+	mv $@-t $@
+
+febootstrap-minimize: febootstrap-minimize.sh
 	rm -f $@
 	cp $< $@-t
 	chmod 0555 $@-t
@@ -33,9 +42,13 @@ febootstrap-to-initramfs: febootstrap-to-initramfs.sh
 	chmod 0555 $@-t
 	mv $@-t $@
 
-man_MANS = febootstrap.8 febootstrap-to-initramfs.8 febootstrap-fix-root.8
+man_MANS = \
+	febootstrap.8 \
+	febootstrap-minimize.8 \
+	febootstrap-to-initramfs.8
 
 if HAVE_PERLDOC
+
 febootstrap.8: febootstrap.pod
 	pod2man \
 	  --section 8 \
@@ -44,6 +57,16 @@ febootstrap.8: febootstrap.pod
 	  $< > $@
 
 febootstrap.txt: febootstrap.pod
+	pod2text $< > $@
+
+febootstrap-minimize.8: febootstrap-minimize.pod
+	pod2man \
+	  --section 8 \
+	  -c "Virtualization Support" \
+	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
+	  $< > $@
+
+febootstrap-minimize.txt: febootstrap-minimize.pod
 	pod2text $< > $@
 
 febootstrap-to-initramfs.8: febootstrap-to-initramfs.pod
@@ -56,22 +79,13 @@ febootstrap-to-initramfs.8: febootstrap-to-initramfs.pod
 febootstrap-to-initramfs.txt: febootstrap-to-initramfs.pod
 	pod2text $< > $@
 
-febootstrap-fix-root.8: febootstrap-fix-root.pod
-	pod2man \
-	  --section 8 \
-	  -c "Virtualization Support" \
-	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
-	  $< > $@
-
-febootstrap-fix-root.txt: febootstrap-fix-root.pod
-	pod2text $< > $@
 endif
 
 EXTRA_DIST = \
 	fakechroot-2.8-relchroot.patch \
 	febootstrap.8 febootstrap.txt febootstrap.pod \
+	febootstrap-minimize.8 febootstrap-minimize.txt \
+	  febootstrap-minimize.pod \
 	febootstrap-to-initramfs.8 febootstrap-to-initramfs.txt \
 	  febootstrap-to-initramfs.pod \
-	febootstrap-fix-root.8 febootstrap-fix-root.txt \
-	  febootstrap-fix-root.pod \
 	febootstrap.sh febootstrap-to-initramfs.sh

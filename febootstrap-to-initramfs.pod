@@ -65,7 +65,6 @@ this in mind when creating very large filesystems.
 
 =head1 SEE ALSO
 
-L<febootstrap-fix-root(8)>,
 L<febootstrap(8)>,
 L<cpio(1)>.
 

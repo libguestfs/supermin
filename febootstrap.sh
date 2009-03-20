@@ -20,7 +20,7 @@
 
 TEMP=`getopt \
         -o g:i: \
-        --long groupinstall:,group-install:,help,install: \
+        --long groupinstall:,group-install:,help,install:,noclean,no-clean \
         -n febootstrap -- "$@"`
 if [ $? != 0 ]; then
     echo "febootstrap: problem parsing the command line arguments"
@@ -31,6 +31,8 @@ eval set -- "$TEMP"
 declare -a packages
 packages[0]="@Core"
 i=0
+
+clean=yes
 
 usage ()
 {
@@ -46,6 +48,9 @@ while true; do
 	--groupinstall|--group-install)
 	    packages[i++]="@$2"
 	    shift 2;;
+	--noclean|--no-clean)
+	    clean=no
+	    shift;;
 	--help)
 	    usage
 	    exit 0;;
@@ -163,4 +168,9 @@ if [ $(id -u) -ne 0 ]; then
     bash -c 'run_yum "$@"' run_yum "${packages[@]}"
 else
     run_yum "${packages[@]}"
+fi
+
+# Clean up the yum repository.
+if [ "$clean" = "yes" ]; then
+    rm -rf "$target"/var/cache/yum/febootstrap
 fi

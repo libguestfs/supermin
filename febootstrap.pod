@@ -55,6 +55,14 @@ If no packages or groups are given, then we install the C<Core> group
 which is the smallest working Fedora installation.  Use C<yum
 groupinfo Core> to list the packages currently in the C<Core> group.
 
+=item B<--no-clean>
+
+Normally febootstrap will clean up the yum repository
+(C</var/cache/yum> inside the image).  This contains the downloaded
+RPMs and metadata.  However if you give the C<--no-clean> option, then
+the yum repository is left.  This is useful if you want to run further
+yum commands inside the filesystem by hand.
+
 =back
 
 =head1 REPOSITORIES
@@ -89,8 +97,8 @@ permissions using the tool C<febootstrap-to-initramfs>.
 
 =item *
 
-Apply the permissions to the target directory using the tool
-C<febootstrap-fix-root> (requires root).
+Apply the permissions to the target directory using the forthcoming
+tool C<febootstrap-fix-root> (requires root).
 
 =back
 
@@ -137,7 +145,7 @@ L<http://et.redhat.com/~rjones/febootstrap>
 =head1 SEE ALSO
 
 L<febootstrap-to-initramfs(8)>,
-L<febootstrap-fix-root(8)>,
+L<febootstrap-minimize(8)>,
 L<fakeroot(1)>,
 L<fakechroot(1)>,
 L<yum(8)>,

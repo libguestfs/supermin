@@ -12,7 +12,13 @@
 # few command line utilities.  One of the joys of Fedora is that even
 # this minimal install is still 200 MB ...
 
-../febootstrap -i bash -i coreutils fedora-10 ./minimal
+../febootstrap -i bash -i coreutils fedora-10 ./minimal $1
+
+# ... but let's minimize it aggressively.
+
+echo -n "Before minimization: "; du -sh minimal
+../febootstrap-minimize --all ./minimal
+echo -n "After minimization:  "; du -sh minimal
 
 # Create the /init which is just a simple script to give users an
 # interactive shell.
@@ -39,6 +45,6 @@ dd if=/dev/zero of=zero bs=2048 count=1
 # Now run qemu to boot this minimal system.
 
 qemu-system-$(arch) \
-  -m 1024 \
+  -m 128 \
   -kernel vmlinuz -initrd minimal-initrd.img \
   -hda zero -boot c
