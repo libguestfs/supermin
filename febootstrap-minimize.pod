@@ -119,6 +119,29 @@ slower.
 
 =back
 
+=head1 TODO
+
+=over 4
+
+=item *
+
+Deduplicate files with the same content (by hardlinking them).
+See the program L<hardlink(1)>.
+
+=item *
+
+Remove unused binaries.
+
+=item *
+
+Remove unused libraries.
+
+=item *
+
+Pack executables using UPX.
+
+=back
+
 =head1 SEE ALSO
 
 L<febootstrap(8)>.
