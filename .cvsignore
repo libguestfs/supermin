@@ -10,6 +10,7 @@ config.h
 config.log
 config.status
 configure
+febootstrap.spec
 febootstrap
 febootstrap-minimize
 febootstrap-to-initramfs

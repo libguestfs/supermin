@@ -17,7 +17,7 @@ dnl Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 dnl
 dnl Written by Richard W.M. Jones <rjones@redhat.com>
 
-AC_INIT(febootstrap,1.0)
+AC_INIT(febootstrap,1.1)
 AM_INIT_AUTOMAKE
 
 AC_CHECK_PROG(PERLDOC,[perldoc],[perldoc],[no])
@@ -42,5 +42,5 @@ if test "x$YUM" = "xno" ; then
 fi
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile examples/Makefile])
+AC_CONFIG_FILES([Makefile examples/Makefile febootstrap.spec])
 AC_OUTPUT

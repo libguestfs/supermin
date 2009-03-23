@@ -1,0 +1,71 @@
+# @configure_input@
+
+Summary:     Bootstrap a new Fedora system (like debootstrap)
+Name:        febootstrap
+Version:     @VERSION@
+Release:     1%{?dist}
+License:     GPLv2+
+Group:       Development/Tools
+URL:         http://et.redhat.com/~rjones/febootstrap/
+Source0:     http://et.redhat.com/~rjones/febootstrap/files/%{name}-%{version}.tar.gz
+BuildRoot:   %{_tmppath}/%{name}-%{version}-%{release}-root
+
+BuildRequires: /usr/bin/pod2man
+
+Requires:    fakeroot >= 1.11
+Requires:    fakechroot >= 2.8-15.fc10.rwmj3
+Requires:    yum >= 3.2
+Requires:    MAKEDEV
+Requires:    util-linux-ng
+Requires:    cpio
+
+# These are suggestions.  However making them hard requirements
+# pulls in far too much stuff.
+#Requires:    qemu
+#Requires:    filelight
+
+
+%description
+febootstrap is a Fedora equivalent to Debian's debootstrap.  You can
+use it to create a basic Fedora filesystem, and build initramfs
+(initrd.img) or filesystem images.
+
+febootstrap also includes a separate tool to minimize filesystems by
+removing unneeded locales, documentation etc.
+
+The main difference from other appliance building tools is that this
+one doesn't need to be run as root.
+
+
+%prep
+%setup -q
+
+
+%build
+%configure
+make
+
+
+%install
+rm -rf $RPM_BUILD_ROOT
+make DESTDIR=$RPM_BUILD_ROOT install
+
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+
+%files
+%defattr(-,root,root,-)
+%doc COPYING README examples
+%{_bindir}/febootstrap
+%{_bindir}/febootstrap-to-initramfs
+%{_bindir}/febootstrap-minimize
+%{_mandir}/man8/febootstrap.8*
+%{_mandir}/man8/febootstrap-to-initramfs.8*
+%{_mandir}/man8/febootstrap-minimize.8*
+
+
+%changelog
+* Mon Mar 23 2009 Richard Jones <rjones@redhat.com> - 1.1-1
+- Initial build.
