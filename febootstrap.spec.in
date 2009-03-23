@@ -9,6 +9,7 @@ Group:       Development/Tools
 URL:         http://et.redhat.com/~rjones/febootstrap/
 Source0:     http://et.redhat.com/~rjones/febootstrap/files/%{name}-%{version}.tar.gz
 BuildRoot:   %{_tmppath}/%{name}-%{version}-%{release}-root
+BuildArch:   noarch
 
 BuildRequires: /usr/bin/pod2man
 
@@ -49,6 +50,12 @@ make
 %install
 rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT install
+
+# Clean up the examples/ directory which will get installed in %doc.
+# In this case I don't want the scripts to be executable because
+# people should read them carefully before running them.
+rm examples/Makefile*
+chmod -x examples/*.sh
 
 
 %clean
