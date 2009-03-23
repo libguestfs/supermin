@@ -52,8 +52,9 @@ commands, and thus any dependencies are also resolved by yum.  You can
 also use shell globs and filenames here, as with ordinary yum.
 
 If no packages or groups are given, then we install the C<Core> group
-which is the smallest working Fedora installation.  Use C<yum
-groupinfo Core> to list the packages currently in the C<Core> group.
+which is a small working Fedora installation (but by no means
+minimal).  Use C<yum groupinfo Core> to list the packages currently in
+the C<Core> group.
 
 =item B<--no-clean>
 
@@ -87,8 +88,14 @@ You can use the fakeroot logfile in a number of ways:
 
 =item *
 
-Run C<fakeroot -i fakeroot.log I<command>> in order to run a
-command with the faked file permissions.
+Run
+
+ fakeroot -i fakeroot.log command
+
+in order to run a command with the faked file permissions.  If the
+command will make updates, then do:
+
+ fakeroot -i fakeroot.log -s fakeroot.log command
 
 =item *
 
