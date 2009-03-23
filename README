@@ -34,6 +34,9 @@ Requirements
 
   MAKEDEV
 
+  upx
+    - Ultimate Packer for eXecutables, for minimizing binaries
+
   qemu
     - If you want to test-run your systems.
 

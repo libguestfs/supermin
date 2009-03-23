@@ -27,7 +27,7 @@ fi
 # ... but let's minimize it aggressively.
 
 echo -n "Before minimization: "; du -sh minimal
-../febootstrap-minimize --all ./minimal
+../febootstrap-minimize --all --pack-executables ./minimal
 echo -n "After minimization:  "; du -sh minimal
 
 # Create the /init which is just a simple script to give users an

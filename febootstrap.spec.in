@@ -19,6 +19,7 @@ Requires:    yum >= 3.2
 Requires:    MAKEDEV
 Requires:    util-linux-ng
 Requires:    cpio
+Requires:    upx
 
 # These are suggestions.  However making them hard requirements
 # pulls in far too much stuff.

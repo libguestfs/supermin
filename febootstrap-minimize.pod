@@ -117,6 +117,16 @@ C</var/cache/ldconfig> (the dynamic linking cache).  This is not
 needed.  Dynamic linking during program execution will be marginally
 slower.
 
+=item B<--no-pack-executables>
+
+=item B<--pack-executables>
+
+Pack executables and shell scripts using L<upx(1)>.
+
+This is not done by default because although it can reduce the image
+size, it increases the amount of memory used since those executables
+cannot be shared.
+
 =back
 
 =head1 TODO
@@ -135,10 +145,6 @@ Remove unused binaries.
 =item *
 
 Remove unused libraries.
-
-=item *
-
-Pack executables using UPX.
 
 =back
 

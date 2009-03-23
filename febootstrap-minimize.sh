@@ -20,7 +20,7 @@
 
 TEMP=`getopt \
         -o '' \
-        --long help,all,none,keep-locales,drop-locales,keep-docs,drop-docs,keep-cracklib,drop-cracklib,keep-i18n,drop-i18n,keep-zoneinfo,drop-zoneinfo,keep-rpmdb,drop-rpmdb,keep-yum-cache,drop-yum-cache,keep-services,drop-services,keep-sln,drop-sln,keep-ldconfig,drop-ldconfig \
+        --long help,all,none,keep-locales,drop-locales,keep-docs,drop-docs,keep-cracklib,drop-cracklib,keep-i18n,drop-i18n,keep-zoneinfo,drop-zoneinfo,keep-rpmdb,drop-rpmdb,keep-yum-cache,drop-yum-cache,keep-services,drop-services,keep-sln,drop-sln,keep-ldconfig,drop-ldconfig,no-pack-executables,pack-executables \
         -n febootstrap-minimize -- "$@"`
 if [ $? != 0 ]; then
     echo "febootstrap-minimize: problem parsing the command line arguments"
@@ -57,6 +57,7 @@ keep_yum_cache=yes
 }
 
 set_all
+pack_executables=no
 
 usage ()
 {
@@ -132,6 +133,12 @@ while true; do
 	--drop-ldconfig)
 	    keep_ldconfig=no
 	    shift;;
+	--no-pack-executables)
+	    pack_executables=no
+	    shift;;
+	--pack-executables)
+	    pack_executables=yes
+	    shift;;
 	--help)
 	    usage
 	    exit 0;;
@@ -151,14 +158,21 @@ fi
 
 target="$1"
 
-#----------------------------------------------------------------------
-
 if [ ! -d "$target" ]; then
     echo "febootstrap-minimize: $target: target directory not found"
     exit 1
 fi
 
-#du -sh "$target"
+# Create a temporary directory, make sure it gets cleaned up at the end.
+tmpdir=$(mktemp -d)
+remove_tmpdir ()
+{
+  status=$?
+  rm -rf "$tmpdir" && exit $status
+}
+trap remove_tmpdir EXIT
+
+#----------------------------------------------------------------------
 
 if [ "$keep_locales" != "yes" ]; then
     rm -f "$target"/usr/lib/locale/*
@@ -199,7 +213,8 @@ if [ "$keep_yum_cache" != "yes" ]; then
 fi
 
 if [ "$keep_services" != "yes" ]; then
-    rm -f "$target"/etc/services
+    # NB: Overwrite the same file so that we have the same inode,
+    # since fakeroot tracks files by inode number.
     cat > "$target"/etc/services <<'__EOF__'
 tcpmux 1/tcp
 tcpmux 1/udp
@@ -259,4 +274,19 @@ if [ "$keep_ldconfig" != "yes" ]; then
     rm -f "$target"/sbin/ldconfig
     rm -f "$target"/etc/ld.so.cache
     rm -rf "$target"/var/cache/ldconfig/*
+fi
+
+if [ "$pack_executables" = "yes" ]; then
+    # NB. Be careful to keep the same inode number, since fakeroot
+    # tracks files by inode number.
+    for path in $(find "$target" -type f -perm /111 |
+	          xargs file |
+		  grep executable |
+		  awk -F: '{print $1}'); do
+	base=$(basename $path)
+	cp $path $tmpdir
+	(cd $tmpdir && upx -q -q --best $base)
+	cat $tmpdir/$base > $path
+	rm $tmpdir/$base
+    done
 fi
