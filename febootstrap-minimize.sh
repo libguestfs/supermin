@@ -283,10 +283,10 @@ if [ "$pack_executables" = "yes" ]; then
 	          xargs file |
 		  grep executable |
 		  awk -F: '{print $1}'); do
-	base=$(basename $path)
-	cp $path $tmpdir
-	(cd $tmpdir && upx -q -q --best $base)
-	cat $tmpdir/$base > $path
-	rm $tmpdir/$base
+	base=$(basename "$path")
+	cp "$path" "$tmpdir"
+	(cd "$tmpdir" && upx -q -q --best "$base")
+	cat "$tmpdir"/"$base" > "$path"
+	rm "$tmpdir"/"$base"
     done
 fi
