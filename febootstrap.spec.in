@@ -14,7 +14,7 @@ BuildArch:   noarch
 BuildRequires: /usr/bin/pod2man
 
 Requires:    fakeroot >= 1.11
-Requires:    fakechroot >= 2.8-15.fc10.rwmj3
+Requires:    fakechroot >= 2.8-15.fc10.rwmj4
 Requires:    yum >= 3.2
 Requires:    MAKEDEV
 Requires:    util-linux-ng
