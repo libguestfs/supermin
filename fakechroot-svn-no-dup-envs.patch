@@ -1,0 +1,40 @@
+This patch must be applied to fakechroot SVN in order to
+stop it from passing duplicated environment variables to
+child processes.  It is not necessary for fakechroot <= 2.8.
+
+Index: src/libfakechroot.c
+===================================================================
+--- src/libfakechroot.c	(revision 311)
++++ src/libfakechroot.c	(working copy)
+@@ -1479,7 +1479,7 @@
+     char *env;
+     char tmp[FAKECHROOT_MAXPATH], newfilename[FAKECHROOT_MAXPATH], argv0[FAKECHROOT_MAXPATH];
+     char *ptr;
+-    unsigned int i, j, n;
++    unsigned int i, j, n, len;
+     size_t sizeenvp;
+     char c;
+     char *fakechroot_path, *fakechroot_ptr, fakechroot_buf[FAKECHROOT_MAXPATH];
+@@ -1519,12 +1519,19 @@
+         errno = ENOMEM;
+         return -1;
+     }
+-    for (ep = envp, i = 0; *ep != NULL; ++ep, ++i) {
+-        newenvp[i] = *ep;
++    for (ep = envp, i = 0; *ep != NULL; ++ep) {
++	for (j = 0; j < sizeof (envkey) / sizeof (char *); j++) {
++	    len = strlen (envkey[j]);
++	    if (strncmp (*ep, envkey[j], len) == 0 && (*ep)[len] == '=')
++		goto skip;
++	}
++	newenvp[i] = *ep;
++	i++;
++    skip: ;
+     }
+ 
+     /* Add our variables to newenvp */
+-    newenvp = realloc( newenvp, ((sizeenvp + 1) * sizeof(char *) + sizeof(envkey)) );
++    newenvp = realloc( newenvp, i * sizeof(char *) + sizeof(envkey) );
+     if (newenvp == NULL) {
+         errno = ENOMEM;
+         return -1;

@@ -1,9 +1,11 @@
-This patch must be applied to fakeroot 2.8 in order to
+This patch must be applied to fakeroot 2.8 or SVN in order to
 enable correct handling of relative chroots, for rpm and yum.
 
---- fakechroot-2.8.orig/src/libfakechroot.c	2009-03-18 11:39:33.000000000 +0000
-+++ fakechroot-2.8.rpm/src/libfakechroot.c	2009-03-18 12:43:51.000000000 +0000
-@@ -1110,7 +1110,7 @@ int chroot (const char *path)
+Index: src/libfakechroot.c
+===================================================================
+--- src/libfakechroot.c	(revision 311)
++++ src/libfakechroot.c	(working copy)
+@@ -1147,7 +1147,7 @@
  {
      char *ptr, *ld_library_path, *tmp, *fakechroot_path;
      int status, len;
@@ -12,7 +14,18 @@ enable correct handling of relative chroots, for rpm and yum.
  #if !defined(HAVE_SETENV)
      char *envbuf;
  #endif
-@@ -1134,23 +1134,21 @@ int chroot (const char *path)
+@@ -1162,7 +1162,9 @@
+         return -1;
+     }
+     if (*path != '/') {
+-        if (getcwd(cwd, FAKECHROOT_MAXPATH) == NULL) {
++        if (next_getcwd == NULL) fakechroot_init();
++
++        if (next_getcwd(cwd, FAKECHROOT_MAXPATH) == NULL) {
+             errno = ENAMETOOLONG;
+             return -1;
+         }
+@@ -1171,24 +1173,22 @@
              return -1;
          }
          if (strcmp(cwd, "/") == 0) {
@@ -27,15 +40,12 @@ enable correct handling of relative chroots, for rpm and yum.
      else {
 -        snprintf(full_path, FAKECHROOT_MAXPATH, "%s", path);
 -    }
--
--    fakechroot_path = getenv("FAKECHROOT_BASE");
 +	fakechroot_path = getenv("FAKECHROOT_BASE");
  
+-    fakechroot_path = getenv("FAKECHROOT_BASE");
+-
 -    if (fakechroot_path != NULL) {
 -        snprintf(dir, FAKECHROOT_MAXPATH, "%s%s", fakechroot_path, full_path);
--    }
--    else {
--        snprintf(dir, FAKECHROOT_MAXPATH, "%s", full_path);
 +	if (fakechroot_path != NULL) {
 +	    snprintf(dir, FAKECHROOT_MAXPATH, "%s%s", fakechroot_path, path);
 +	}
@@ -43,5 +53,9 @@ enable correct handling of relative chroots, for rpm and yum.
 +	    snprintf(dir, FAKECHROOT_MAXPATH, "%s", path);
 +	}
      }
+-    else {
+-        snprintf(dir, FAKECHROOT_MAXPATH, "%s", full_path);
+-    }
  
  #if defined(HAVE___XSTAT) && defined(_STAT_VER)
+     if ((status = next___xstat(_STAT_VER, dir, &sb)) != 0) {
