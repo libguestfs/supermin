@@ -186,6 +186,7 @@ if [ "$keep_docs" != "yes" ]; then
     rm -rf "$target"/usr/share/man
     rm -rf "$target"/usr/share/doc
     rm -rf "$target"/usr/share/info
+    rm -rf "$target"/usr/share/gnome/help
 fi
 
 if [ "$keep_cracklib" != "yes" ]; then
