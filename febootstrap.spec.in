@@ -25,6 +25,7 @@ Requires:    upx
 # pulls in far too much stuff.
 #Requires:    qemu
 #Requires:    filelight
+#Requires:    baobab     # Not as nice as filelight.
 
 
 %description
