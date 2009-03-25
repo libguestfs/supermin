@@ -75,6 +75,9 @@ mirror="$3"
 # Architecture is currently always the same as the current arch.  We
 # cannot do --foreign builds.  See discussion in the manpage.
 arch=$(arch)
+case $arch in
+    i?86) arch=i386 ;;
+esac
 
 # Create a temporary directory, make sure it gets cleaned up at the end.
 tmpdir=$(mktemp -d)
