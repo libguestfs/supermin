@@ -23,6 +23,7 @@ bin_SCRIPTS = \
 	febootstrap \
 	febootstrap-minimize \
 	febootstrap-to-initramfs
+DISTCLEANFILES = $(bin_SCRIPTS)
 
 febootstrap: febootstrap.sh
 	rm -f $@
