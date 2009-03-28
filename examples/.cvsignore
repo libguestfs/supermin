@@ -1,9 +1,0 @@
-Makefile.in
-Makefile
-guestfs
-guestfs-initrd.img
-guest-image
-minimal
-minimal-initrd.img
-vmlinuz
-zero
