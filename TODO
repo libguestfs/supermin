@@ -1,0 +1,20 @@
+- More files in the root, eg: fstab, mtab, resolv.conf
+
+- febootstrap-run command which can be used to run extra commands inside
+  the root (just a wrapper around fakechroot/fakeroot/fakeroot.log)
+
+- Configurable stuff in the febootstrap repo, eg. proxies, extra repos
+
+- Update to latest fakechroot release
+
+- Patch fakechroot so it doesn't run /sbin/ldconfig etc.
+
+- 32-on-64 support in fakechroot/fakeroot
+
+- febootstrap on Debian etc (to bootstrap Fedora on Debian of course)
+
+
+
+For more to-do ideas, see:
+
+http://rwmj.wordpress.com/2009/03/19/febootstrap-fedora-equivalent-of-debootstrap/#comments
