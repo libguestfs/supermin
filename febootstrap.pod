@@ -148,10 +148,24 @@ C<--foreign> installs - see previous point).
 
 =head1 OTHER RESTRICTIONS AND BUGS
 
-C</sbin/ldconfig> and C</usr/sbin/glibc_post_upgrade> are not run
-during C<%post> scriptlets (because they are statically linked, and
-fakechroot cannot run statically linked programs).  If you wish, you
-can run them the first time you boot into the new machine.
+The following programs are not run during C<%post> scriptlets (because
+they are all statically linked, and fakechroot cannot run statically
+linked programs).
+
+=over 4
+
+=item C</sbin/ldconfig> (from many packages)
+
+=item C</usr/sbin/glibc_post_upgrade> (from C<glibc>)
+
+=item C</usr/sbin/build-locale-archive> (from C<glibc-common>)
+
+=item C</usr/sbin/libgcc_post_upgrade> (from C<libgcc>)
+
+=back
+
+If you wish, you can run them the first time you boot into the new
+machine.
 
 febootstrap recreates the repository anew each time, and this causes
 yum to download all the RPMs every time.  This is very wasteful, and
