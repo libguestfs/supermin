@@ -68,13 +68,15 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %doc COPYING README examples
 %{_bindir}/febootstrap
-%{_bindir}/febootstrap-to-initramfs
+%{_bindir}/febootstrap-run
 %{_bindir}/febootstrap-minimize
+%{_bindir}/febootstrap-to-initramfs
 %{_mandir}/man8/febootstrap.8*
-%{_mandir}/man8/febootstrap-to-initramfs.8*
+%{_mandir}/man8/febootstrap-run.8*
 %{_mandir}/man8/febootstrap-minimize.8*
+%{_mandir}/man8/febootstrap-to-initramfs.8*
 
 
 %changelog
-* Mon Mar 23 2009 Richard Jones <rjones@redhat.com> - 1.1-1
+* Mon Mar 23 2009 Richard Jones <rjones@redhat.com> - @VERSION@-1
 - Initial build.
