@@ -13,6 +13,8 @@
 # This is a realistic example for 'libguestfs', which contains a
 # selection of command-line tools, LVM, NTFS and an NFS server.
 
+set -e
+
 if [ $(id -u) -eq 0 ]; then
     echo "Don't run this script as root.  Read instructions in script first."
     exit 1
@@ -62,6 +64,6 @@ chmod +x init
 # Now run qemu to boot this guestfs system.
 
 qemu-system-$(arch) \
-  -m 128 \
+  -m 256 \
   -kernel vmlinuz -initrd guestfs-initrd.img \
   -hda guest-image -boot c

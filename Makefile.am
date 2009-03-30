@@ -21,11 +21,18 @@ SUBDIRS = examples
 
 bin_SCRIPTS = \
 	febootstrap \
+	febootstrap-run \
 	febootstrap-minimize \
 	febootstrap-to-initramfs
 DISTCLEANFILES = $(bin_SCRIPTS)
 
 febootstrap: febootstrap.sh
+	rm -f $@
+	cp $< $@-t
+	chmod 0555 $@-t
+	mv $@-t $@
+
+febootstrap-run: febootstrap-run.sh
 	rm -f $@
 	cp $< $@-t
 	chmod 0555 $@-t
@@ -45,6 +52,7 @@ febootstrap-to-initramfs: febootstrap-to-initramfs.sh
 
 man_MANS = \
 	febootstrap.8 \
+	febootstrap-run.8 \
 	febootstrap-minimize.8 \
 	febootstrap-to-initramfs.8
 
@@ -58,6 +66,16 @@ febootstrap.8: febootstrap.pod
 	  $< > $@
 
 febootstrap.txt: febootstrap.pod
+	pod2text $< > $@
+
+febootstrap-run.8: febootstrap-run.pod
+	pod2man \
+	  --section 8 \
+	  -c "Virtualization Support" \
+	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
+	  $< > $@
+
+febootstrap-run.txt: febootstrap-run.pod
 	pod2text $< > $@
 
 febootstrap-minimize.8: febootstrap-minimize.pod
@@ -88,6 +106,8 @@ EXTRA_DIST = \
 	fakechroot-svn-no-dup-envs.patch \
 	febootstrap.8 febootstrap.txt febootstrap.pod \
 	  febootstrap.sh \
+	febootstrap-run.8 febootstrap-run.txt febootstrap-run.pod \
+	  febootstrap-run.sh \
 	febootstrap-minimize.8 febootstrap-minimize.txt \
 	  febootstrap-minimize.pod \
 	  febootstrap-minimize.sh \

@@ -75,12 +75,37 @@ L<http://mirrors.fedoraproject.org/mirrorlist?repo=help&arch=i386>
 (If necessary replace C<i386> with your architecture, but it seems
 unlikely that this list will change based on architecture).
 
-=head1 FAKEROOT LOGFILE
+=head1 RUNNING EXTRA COMMANDS IN THE ROOT FILESYSTEM
+
+If you want to run further commands inside the root filesystem, for
+example additional C<yum> installs, then use C<febootstrap-run>.  See
+the L<febootstrap-run(8)> manual page for more details.
+
+You have to be careful about modifying files in the root filesystem
+directly (without using C<febootstrap-run>).  It's easy to confuse
+fakeroot and end up with the wrong permissions on files (see FAKEROOT
+LOGFILE below).
+
+C<febootstrap-run> runs the command inside the root filesystem, which
+means it won't normally have access to files outside the root.  You
+can use C<FAKECHROOT_EXCLUDE_PATH> environment variable (see
+L<fakechroot(1)>) or copy files into the root first.
+
+=head2 FAKEROOT LOGFILE
 
 When febootstrap is run as non-root (the normal case) we use fakeroot
 so that yum thinks it is running as root.  Fakeroot keeps track of
 "real" file permissions in a log file which is saved into the target
 directory as C<I<TARGET>/fakeroot.log>.
+
+This logfile is indexed by inode number, which makes certain
+operations safe and other operations unsafe.  For example, deleting
+files is usually safe.  Files should be replaced only by doing:
+
+ echo updated-content > old-file
+
+(since that preserves the original inode).  In most cases it's usually
+safest to use C<febootstrap-run>.
 
 You can use the fakeroot logfile in a number of ways:
 
@@ -88,14 +113,8 @@ You can use the fakeroot logfile in a number of ways:
 
 =item *
 
-Run
-
- fakeroot -i fakeroot.log command
-
-in order to run a command with the faked file permissions.  If the
-command will make updates, then do:
-
- fakeroot -i fakeroot.log -s fakeroot.log command
+Use L<febootstrap-run(8)> to run a command with the faked file
+permissions.
 
 =item *
 
@@ -109,7 +128,12 @@ tool C<febootstrap-fix-root> (requires root).
 
 =back
 
-=head1 COMPARISON TO debootstrap
+=head1 RUNNING FEBOOTSTRAP AS ROOT
+
+There is some rudimentary support for running C<febootstrap> as root.
+However it is not well-tested and generally not recommended.
+
+=head1 COMPARISON TO DEBOOTSTRAP
 
 febootstrap cannot do cross-architecture installs (C<debootstrap
 --foreign>).  The reason is that C<%pre> and C<%post> scripts cannot
@@ -153,6 +177,7 @@ L<http://et.redhat.com/~rjones/febootstrap>
 
 L<febootstrap-to-initramfs(8)>,
 L<febootstrap-minimize(8)>,
+L<febootstrap-run(8)>,
 L<fakeroot(1)>,
 L<fakechroot(1)>,
 L<yum(8)>,

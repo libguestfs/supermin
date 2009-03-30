@@ -1,0 +1,74 @@
+=head1 NAME
+
+febootstrap-run - Run extra commands in febootstrap root filesystem
+
+=head1 SYNOPSIS
+
+ febootstrap-run [--options] DIR [--] [CMD ...]
+
+=head1 DESCRIPTION
+
+This can be used to run extra commands in the febootstrap root
+filesystem.  It is just a simple wrapper around the standard
+C<fakeroot> and C<fakechroot> commands.
+
+If given, the C<CMD ...> is run inside the root filesystem.  The
+command acts as if it was run as root and chrooted into the root
+filesystem.
+
+If the command is omitted, then we start a shell.
+
+If C<CMD ...> could contain anything starting with a C<-> character
+then use C<--> to separate C<febootstrap-run> parameters from the
+command:
+
+ febootstrap-run ./f10 -- ls -l
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--ro>
+
+Usually any changes to permissions made by the command are recorded in
+the C<fakeroot.log> file.  However if C<--ro> flag is given, then
+changes to permissions are not recorded.  (Note: changes to file
+contents still happen).
+
+=back
+
+=head1 ENVIRONMENT VARIABLES
+
+Some L<fakechroot(1)> environment variables are applicable.  In
+particular you may want to set:
+
+ export FAKECHROOT_EXCLUDE_PATH=/proc
+
+=head1 SEE ALSO
+
+L<febootstrap(8)>,
+L<fakeroot(1)>,
+L<fakechroot(1)>.
+
+=head1 AUTHORS
+
+Richard W.M. Jones <rjones @ redhat . com>
+
+=head1 COPYRIGHT
+
+(C) Copyright 2009 Red Hat Inc.,
+L<http://et.redhat.com/~rjones/febootstrap>.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.

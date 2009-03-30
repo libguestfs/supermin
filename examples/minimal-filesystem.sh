@@ -12,6 +12,8 @@
 # few command line utilities.  One of the joys of Fedora is that even
 # this minimal install is still 200 MB ...
 
+set -e
+
 if [ $(id -u) -eq 0 ]; then
     echo "Don't run this script as root.  Read instructions in script first."
     exit 1
@@ -55,6 +57,6 @@ dd if=/dev/zero of=zero bs=2048 count=1
 # Now run qemu to boot this minimal system.
 
 qemu-system-$(arch) \
-  -m 128 \
+  -m 256 \
   -kernel vmlinuz -initrd minimal-initrd.img \
   -hda zero -boot c
