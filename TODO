@@ -4,8 +4,6 @@
 
 - Update to latest fakechroot release
 
-- Patch fakechroot so it doesn't run /sbin/ldconfig etc.
-
 - 32-on-64 support in fakechroot/fakeroot
 
 - febootstrap on Debian etc (to bootstrap Fedora on Debian of course)
