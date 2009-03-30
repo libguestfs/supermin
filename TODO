@@ -1,8 +1,5 @@
 - More files in the root, eg: fstab, mtab, resolv.conf
 
-- febootstrap-run command which can be used to run extra commands inside
-  the root (just a wrapper around fakechroot/fakeroot/fakeroot.log)
-
 - Configurable stuff in the febootstrap repo, eg. proxies, extra repos
 
 - Update to latest fakechroot release
