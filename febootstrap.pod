@@ -148,22 +148,10 @@ C<--foreign> installs - see previous point).
 
 =head1 OTHER RESTRICTIONS AND BUGS
 
-Some C<%post> scripts do not run correctly.  The most common case is
-C</sbin/ldconfig>.  Since this binary is statically linked, fakeroot
-and fakechroot's LD_PRELOAD hack does not work, so effectively
-ldconfig tries to update the system cache.  You will see the following
-error:
-
- /sbin/ldconfig: Can't create temporary cache file /etc/ld.so.cache~: Permission denied
-
-This error is mostly harmless.  Just run C</sbin/ldconfig> the first
-time you boot into the newly created Fedora system.
-
-Another error you will see is with C</usr/sbin/glibc_post_upgrade>
-which is caused for the same reason - this binary is statically
-linked.  We have examined what this binary does, and it is not really
-necessary for installs.  If it makes you happier, you can run it the
-first time you boot the new system.
+C</sbin/ldconfig> and C</usr/sbin/glibc_post_upgrade> are not run
+during C<%post> scriptlets (because they are statically linked, and
+fakechroot cannot run statically linked programs).  If you wish, you
+can run them the first time you boot into the new machine.
 
 febootstrap recreates the repository anew each time, and this causes
 yum to download all the RPMs every time.  This is very wasteful, and

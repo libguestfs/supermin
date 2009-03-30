@@ -124,6 +124,11 @@ mkdir -p "$target"/var/cache/yum/febootstrap/packages
 # error: unpacking of archive failed on file /proc: cpio: utime
 export FAKECHROOT_EXCLUDE_PATH=/proc
 
+# Substitute some statically-linked commands.  This is only supported
+# in fakechroot > 2.9.  For previous versions of fakechroot it is
+# ignored.
+export FAKECHROOT_CMD_SUBST=/sbin/ldconfig=/bin/true:/usr/sbin/glibc_post_upgrade.i686=/bin/true:/usr/sbin/glibc_post_upgrade.x86_64=/bin/true
+
 # Make the device nodes inside the fake chroot.
 # (Copied from mock/backend.py)  Why isn't there a base package which
 # creates these?
