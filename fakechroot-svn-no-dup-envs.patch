@@ -1,6 +1,4 @@
-This patch must be applied to fakechroot SVN in order to
-stop it from passing duplicated environment variables to
-child processes.  It is not necessary for fakechroot <= 2.8.
+Note, this patch has been included in upstream fakechroot >= 2.9
 
 Index: src/libfakechroot.c
 ===================================================================

@@ -16,7 +16,7 @@ Requirements
   fakeroot
     - Tested with version 1.11.
 
-  fakechroot > 2.8 or 2.8 + patch
+  fakechroot >= 2.9 or 2.8 + patch
     - **** NB. KNOWN NOT TO WORK WITH 2.8 *****  You MUST apply
       the patch 'fakechroot-2.8-relchroot.patch' to the fakechroot
       sources and recompile.  Hopefully this patch will be included
