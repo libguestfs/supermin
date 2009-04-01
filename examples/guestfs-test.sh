@@ -41,7 +41,9 @@ echo -n "After minimization:  "; du -sh guestfs
 
 # Create the /init which will scan for and enable all LVM volume groups.
 
-( cd guestfs && cat > init <<'__EOF__'
+create_init ()
+{
+  cat > /init <<'__EOF__'
 #!/bin/sh
 PATH=/sbin:/usr/sbin:$PATH
 MAKEDEV mem null port zero core full ram tty console fd \
@@ -54,8 +56,10 @@ lvm vgscan --ignorelockingfailure
 lvm vgchange -ay --ignorelockingfailure
 /bin/bash -i
 __EOF__
-chmod +x init
-)
+  chmod +x init
+}
+export -f create_init
+../febootstrap-run ./guestfs -- bash -c create_init
 
 # Convert the filesystem to an initrd image.
 

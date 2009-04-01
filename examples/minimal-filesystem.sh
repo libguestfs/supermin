@@ -35,15 +35,19 @@ echo -n "After minimization:  "; du -sh minimal
 # Create the /init which is just a simple script to give users an
 # interactive shell.
 
-( cd minimal && cat > init <<'__EOF__'
+create_init ()
+{
+  cat > /init <<'__EOF__'
 #!/bin/sh
 echo; echo; echo
 echo "Welcome to the minimal filesystem example"
 echo; echo; echo
 /bin/bash -i
 __EOF__
-chmod +x init
-)
+  chmod +x /init
+}
+export -f create_init
+../febootstrap-run ./minimal -- bash -c create_init
 
 # Convert the filesystem to an initrd image.
 

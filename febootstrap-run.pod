@@ -37,6 +37,35 @@ contents still happen).
 
 =back
 
+=head1 EXAMPLES
+
+One way to create a new file with specific ownership and permissions
+from a script is to create new content for a file as C<root/file.new>:
+
+ #!/bin/bash
+
+ echo blah > root/file.new
+
+then "install" it with the correct ownership and permissions.
+
+ febootstrap-run root -- install -m 0644 -o root -g root /file.new /file
+ rm root/file.new
+
+(This requires that the C</usr/bin/install> command from coreutils
+exists inside the root.)
+
+Another way to do complex operations from a script is to export a
+function:
+
+ #!/bin/bash
+
+ do_stuff ()
+ {
+     # complex operations inside the root
+ }
+ export -f do_stuff
+ febootstrap-run root -- bash -c do_stuff
+
 =head1 ENVIRONMENT VARIABLES
 
 Some L<fakechroot(1)> environment variables are applicable.  In
