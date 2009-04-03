@@ -104,8 +104,16 @@ files is usually safe.  Files should be replaced only by doing:
 
  echo updated-content > old-file
 
-(since that preserves the original inode).  In most cases it's usually
-safest to use C<febootstrap-run>.
+(since that preserves the original inode).
+
+Deleting files and then creating new ones (even with a different name)
+is usually unsafe, because the new files might reuse inodes claimed by
+the old files, and so appear with peculiar permissions
+(eg. unreadable, or as a symbolic link).  (XXX We need an
+C<febootstrap-install> utility to automate installing new files safely
+into a filesystem).
+
+In most cases it's usually safest to use C<febootstrap-run>.
 
 You can use the fakeroot logfile in a number of ways:
 
