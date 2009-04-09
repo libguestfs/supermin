@@ -70,6 +70,30 @@ yum commands inside the filesystem by hand.
 
 URL to the proxy server that yum should use.
 
+=item B<-u source>
+
+=item B<--updates=source>
+
+Pull in updates from an additional updates repository.  The possible
+sources are:
+
+=over 4
+
+=item -u C<http://...> (a URL)
+
+Get updates from the specific URL.
+
+=item -u C<updates-released-fN> (an updates repository name)
+
+Get updates from the public mirrors of the named repository
+(eg. C<updates-released-f10>).  See REPOSITORIES below.
+
+=item -u C<none> (default)
+
+Don't add an updates repository.  This is the default.
+
+=back
+
 =back
 
 =head1 REPOSITORIES

@@ -19,8 +19,8 @@
 # Written by Richard W.M. Jones <rjones@redhat.com>
 
 TEMP=`getopt \
-        -o g:i:p: \
-        --long groupinstall:,group-install:,help,install:,noclean,no-clean,proxy:  \
+        -o g:i:p:u: \
+        --long groupinstall:,group-install:,help,install:,noclean,no-clean,proxy:,updates: \
         -n febootstrap -- "$@"`
 if [ $? != 0 ]; then
     echo "febootstrap: problem parsing the command line arguments"
@@ -45,11 +45,14 @@ while true; do
 	-i|--install)
 	    packages[i++]="$2"
 	    shift 2;;
+	--groupinstall|--group-install)
+	    packages[i++]="@$2"
+	    shift 2;;
 	-p|--proxy)
 	    proxy="proxy=$2"
 	    shift 2;;
-	--groupinstall|--group-install)
-	    packages[i++]="@$2"
+	-u|--updates)
+	    updates="$2";
 	    shift 2;;
 	--noclean|--no-clean)
 	    clean=no
@@ -109,6 +112,36 @@ if [ -n "$mirror" ]; then
 else
     echo "mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=$repo&arch=$arch" >> "$tmpdir"/febootstrap.repo
 fi
+
+# Add the updates repository if asked.
+case "$updates" in
+    none|no)
+	;;
+    *://*)
+	cat >> $tmpdir/febootstrap.repo <<EOF
+
+[febootstrap-updates]
+name=febootstrap updates $arch
+failovermethod=priority
+enabled=1
+gpgcheck=0
+$proxy
+baseurl=$updates
+EOF
+	;;
+    *)
+	cat >> $tmpdir/febootstrap.repo <<EOF
+
+[febootstrap-updates]
+name=febootstrap $updates $arch
+failovermethod=priority
+enabled=1
+gpgcheck=0
+$proxy
+mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=$updates&arch=$arch
+EOF
+	;;
+esac
 
 # Create the target filesystem.
 rm -rf "$target"
