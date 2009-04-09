@@ -19,8 +19,8 @@
 # Written by Richard W.M. Jones <rjones@redhat.com>
 
 TEMP=`getopt \
-        -o g:i: \
-        --long groupinstall:,group-install:,help,install:,noclean,no-clean \
+        -o g:i:p: \
+        --long groupinstall:,group-install:,help,install:,noclean,no-clean,proxy:  \
         -n febootstrap -- "$@"`
 if [ $? != 0 ]; then
     echo "febootstrap: problem parsing the command line arguments"
@@ -44,6 +44,9 @@ while true; do
     case "$1" in
 	-i|--install)
 	    packages[i++]="$2"
+	    shift 2;;
+	-p|--proxy)
+	    proxy="proxy=$2"
 	    shift 2;;
 	--groupinstall|--group-install)
 	    packages[i++]="@$2"
@@ -96,6 +99,7 @@ name=febootstrap $repo $arch
 failovermethod=priority
 enabled=1
 gpgcheck=0
+$proxy
 __EOF__
 
 # "Mirror" parameter is a bit misnamed, but it means a local mirror,

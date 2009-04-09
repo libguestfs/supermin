@@ -64,6 +64,12 @@ RPMs and metadata.  However if you give the C<--no-clean> option, then
 the yum repository is left.  This is useful if you want to run further
 yum commands inside the filesystem by hand.
 
+=item B<-p "proxyurl">
+
+=item B<--proxy="proxyurl">
+
+URL to the proxy server that yum should use.
+
 =back
 
 =head1 REPOSITORIES
