@@ -42,5 +42,5 @@ if test "x$YUM" = "xno" ; then
 fi
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile examples/Makefile febootstrap.spec])
+AC_CONFIG_FILES([Makefile examples/Makefile])
 AC_OUTPUT

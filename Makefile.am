@@ -101,7 +101,6 @@ febootstrap-to-initramfs.txt: febootstrap-to-initramfs.pod
 endif
 
 EXTRA_DIST = \
-	febootstrap.spec febootstrap.spec.in \
 	fakechroot-2.8-relchroot.patch \
 	fakechroot-svn-no-dup-envs.patch \
 	febootstrap.8 febootstrap.txt febootstrap.pod \
