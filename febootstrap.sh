@@ -18,8 +18,6 @@
 #
 # Written by Richard W.M. Jones <rjones@redhat.com>
 
-unset CDPATH
-
 TEMP=`getopt \
         -o g:i:p:u: \
         --long groupinstall:,group-install:,help,install:,noclean,no-clean,proxy:,updates: \
@@ -150,7 +148,7 @@ rm -rf "$target"
 mkdir "$target"
 
 # Target must be an absolute path.
-target=$(cd "$target"; pwd)
+target=$(cd "$target" > /dev/null; pwd)
 
 # This is necessary to keep yum happy.  It's not clear why yum can't
 # just create this file itself.
