@@ -18,6 +18,8 @@
 #
 # Written by Richard W.M. Jones <rjones@redhat.com>
 
+unset CDPATH
+
 TEMP=`getopt \
         -o '' \
         --long help,all,none,keep-locales,drop-locales,keep-docs,drop-docs,keep-cracklib,drop-cracklib,keep-i18n,drop-i18n,keep-zoneinfo,drop-zoneinfo,keep-rpmdb,drop-rpmdb,keep-yum-cache,drop-yum-cache,keep-services,drop-services,keep-sln,drop-sln,keep-ldconfig,drop-ldconfig,no-pack-executables,pack-executables \

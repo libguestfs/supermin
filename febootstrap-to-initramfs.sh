@@ -18,6 +18,8 @@
 #
 # Written by Richard W.M. Jones <rjones@redhat.com>
 
+unset CDPATH
+
 if [ $# -ne 1 ]; then
     echo "febootstrap-to-initramfs DIR > initrd.img"
     exit 1

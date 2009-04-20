@@ -18,6 +18,8 @@
 #
 # Written by Richard W.M. Jones <rjones@redhat.com>
 
+unset CDPATH
+
 TEMP=`getopt \
         -o g:i: \
         --long help,ro \

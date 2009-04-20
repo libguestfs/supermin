@@ -18,6 +18,8 @@
 #
 # Written by Richard W.M. Jones <rjones@redhat.com>
 
+unset CDPATH
+
 TEMP=`getopt \
         -o g:i:p:u: \
         --long groupinstall:,group-install:,help,install:,noclean,no-clean,proxy:,updates: \
