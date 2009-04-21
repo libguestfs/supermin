@@ -25,7 +25,7 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
-cd "$1"
+cd "$1" > /dev/null
 
 if [ ! -f fakeroot.log -a $(id -u) -ne 0 ]; then
     echo "no fakeroot.log and not running as root"
