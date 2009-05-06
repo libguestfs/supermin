@@ -177,7 +177,7 @@ trap remove_tmpdir EXIT
 #----------------------------------------------------------------------
 
 if [ "$keep_locales" != "yes" ]; then
-    rm -f "$target"/usr/lib/locale/*
+    rm -rf "$target"/usr/lib/locale/*
     rm -rf "$target"/usr/share/locale
     rm -rf "$target"/usr/lib*/gconv
     rm -f "$target"/usr/bin/localedef
