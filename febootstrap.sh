@@ -47,7 +47,7 @@ while true; do
 	-i|--install)
 	    packages[i++]="$2"
 	    shift 2;;
-	--groupinstall|--group-install)
+	-g|--groupinstall|--group-install)
 	    packages[i++]="@$2"
 	    shift 2;;
 	-p|--proxy)
