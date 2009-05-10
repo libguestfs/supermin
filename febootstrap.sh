@@ -130,6 +130,7 @@ gpgcheck=0
 $proxy
 baseurl=$updates
 EOF
+addrepo=febootstrap-updates
 	;;
     *)
 	cat >> $tmpdir/febootstrap.repo <<EOF
@@ -142,6 +143,7 @@ gpgcheck=0
 $proxy
 mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=$updates&arch=$arch
 EOF
+addrepo=febootstrap-updates
 	;;
 esac
 
@@ -204,18 +206,24 @@ else
     make_device_nodes
 fi
 
+repos=febootstrap
+if [ -n "$addrepo" ]; then
+    repos="$repos,$addrepo"
+fi
+
 # Run yum.
 run_yum ()
 {
     yum \
 	-y -c "$tmpdir"/febootstrap.repo \
-	--disablerepo=* --enablerepo=febootstrap \
+	--disablerepo=* --enablerepo=$repos \
 	--noplugins --nogpgcheck \
 	--installroot="$target" \
 	install "$@"
 }
 export -f run_yum
 export tmpdir
+export repos
 
 if [ $(id -u) -ne 0 ]; then
     # Bash doesn't support exporting array variables, hence this
