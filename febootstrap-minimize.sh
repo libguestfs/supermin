@@ -176,43 +176,48 @@ trap remove_tmpdir EXIT
 
 #----------------------------------------------------------------------
 
+# ***NOTE*** Wildcards cannot be passed to febootstrap-run.
+
 if [ "$keep_locales" != "yes" ]; then
-    rm -rf "$target"/usr/lib/locale/*
-    rm -rf "$target"/usr/share/locale
-    rm -rf "$target"/usr/lib*/gconv
-    rm -f "$target"/usr/bin/localedef
-    rm -f "$target"/usr/sbin/build-locale-archive
+    febootstrap-run "$target" -- rm -rf usr/lib/locale
+    febootstrap-run "$target" -- rm -rf usr/share/locale
+    febootstrap-run "$target" -- rm -rf usr/lib/gconv usr/lib64/gconv
+    febootstrap-run "$target" -- rm -f usr/bin/localedef
+    febootstrap-run "$target" -- rm -f usr/sbin/build-locale-archive
 fi
 
 if [ "$keep_docs" != "yes" ]; then
-    rm -rf "$target"/usr/share/man
-    rm -rf "$target"/usr/share/doc
-    rm -rf "$target"/usr/share/info
-    rm -rf "$target"/usr/share/gnome/help
+    febootstrap-run "$target" -- rm -rf usr/share/man
+    febootstrap-run "$target" -- rm -rf usr/share/doc
+    febootstrap-run "$target" -- rm -rf usr/share/info
+    febootstrap-run "$target" -- rm -rf usr/share/gnome/help
 fi
 
 if [ "$keep_cracklib" != "yes" ]; then
-    rm -rf "$target"/usr/share/cracklib
+    febootstrap-run "$target" -- rm -rf usr/share/cracklib
 fi
 
 if [ "$keep_i18n" != "yes" ]; then
-    rm -rf "$target"/usr/share/i18n
+    febootstrap-run "$target" -- rm -rf usr/share/i18n
 fi
 
 if [ "$keep_zoneinfo" != "yes" ]; then
     mv "$target"/usr/share/zoneinfo/{UCT,UTC,Universal,Zulu,GMT*,*.tab} \
       "$target"
-    rm -rf "$target"/usr/share/zoneinfo/*
+    febootstrap-run "$target" -- rm -rf usr/share/zoneinfo
+    febootstrap-run "$target" -- mkdir -p --mode=0755 usr/share/zoneinfo
     mv "$target"/{UCT,UTC,Universal,Zulu,GMT*,*.tab} \
       "$target"/usr/share/zoneinfo/
 fi
 
 if [ "$keep_rpmdb" != "yes" ]; then
-    rm -rf "$target"/var/lib/rpm/*
+    febootstrap-run "$target" -- rm -rf var/lib/rpm
+    febootstrap-run "$target" -- mkdir -p --mode=0755 var/lib/rpm
 fi
 
 if [ "$keep_yum_cache" != "yes" ]; then
-    rm -rf "$target"/var/cache/yum/*
+    febootstrap-run "$target" -- rm -rf var/cache/yum
+    febootstrap-run "$target" -- mkdir -p --mode=0755 var/cache/yum
 fi
 
 if [ "$keep_services" != "yes" ]; then
@@ -270,13 +275,14 @@ __EOF__
 fi
 
 if [ "$keep_sln" != "yes" ]; then
-    rm -f "$target"/sbin/sln
+    febootstrap-run "$target" -- rm -f sbin/sln
 fi
 
 if [ "$keep_ldconfig" != "yes" ]; then
-    rm -f "$target"/sbin/ldconfig
-    rm -f "$target"/etc/ld.so.cache
-    rm -rf "$target"/var/cache/ldconfig/*
+    febootstrap-run "$target" -- rm -f sbin/ldconfig
+    febootstrap-run "$target" -- rm -f etc/ld.so.cache
+    febootstrap-run "$target" -- rm -rf var/cache/ldconfig
+    febootstrap-run "$target" -- mkdir -p --mode=0755 var/cache/ldconfig
 fi
 
 if [ "$pack_executables" = "yes" ]; then

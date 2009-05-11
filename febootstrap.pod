@@ -129,8 +129,8 @@ so that yum thinks it is running as root.  Fakeroot keeps track of
 directory as C<I<TARGET>/fakeroot.log>.
 
 This logfile is indexed by inode number, which makes certain
-operations safe and other operations unsafe.  For example, deleting
-files is usually safe.  Files should be replaced only by doing:
+operations safe and other operations unsafe.
+Files should be replaced only by doing:
 
  echo updated-content > old-file
 
@@ -139,9 +139,12 @@ files is usually safe.  Files should be replaced only by doing:
 Deleting files and then creating new ones (even with a different name)
 is usually unsafe, because the new files might reuse inodes claimed by
 the old files, and so appear with peculiar permissions
-(eg. unreadable, or as a symbolic link).  (XXX We need an
-C<febootstrap-install> utility to automate installing new files safely
-into a filesystem).
+(eg. unreadable, or as a symbolic link).
+
+Deleting files is also usually unsafe, although the reasons are more
+subtle.  If you just use C<rm> then the inode number is not deleted
+from C<fakeroot.log> which means it can be reused by another file
+later on.
 
 In most cases it's usually safest to use C<febootstrap-run>.
 
@@ -153,6 +156,11 @@ You can use the fakeroot logfile in a number of ways:
 
 Use L<febootstrap-run(8)> to run a command with the faked file
 permissions.
+
+=item *
+
+Use L<febootstrap-install(8)> to install a file with permissions
+in the root filesystem.
 
 =item *
 
@@ -218,6 +226,7 @@ L<http://et.redhat.com/~rjones/febootstrap>
 L<febootstrap-to-initramfs(8)>,
 L<febootstrap-minimize(8)>,
 L<febootstrap-run(8)>,
+L<febootstrap-install(8)>,
 L<fakeroot(1)>,
 L<fakechroot(1)>,
 L<yum(8)>,

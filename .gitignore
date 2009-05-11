@@ -13,6 +13,7 @@ config.status
 configure
 febootstrap
 febootstrap-run
+febootstrap-install
 febootstrap-minimize
 febootstrap-to-initramfs
 install-sh

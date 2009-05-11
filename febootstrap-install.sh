@@ -1,5 +1,5 @@
 #!/bin/bash -
-# febootstrap-to-initramfs
+# febootstrap-install
 # (C) Copyright 2009 Red Hat Inc.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -20,23 +20,26 @@
 
 unset CDPATH
 
-if [ $# -ne 1 ]; then
-    echo "febootstrap-to-initramfs DIR > initrd.img"
-    exit 1
-fi
+usage ()
+{
+    echo "Usage: febootstrap-install ROOT LOCALFILE TARGETPATH MODE OWNER[.GROUP]"
+    echo "Please read febootstrap-install(8) man page for more information."
+}
 
-cd "$1" > /dev/null
-
-if [ ! -f fakeroot.log -a $(id -u) -ne 0 ]; then
-    echo "no fakeroot.log and not running as root"
+if [ $# != 5 ]; then
+    usage
     exit 1
 fi
 
 set -e
 
-if [ -f fakeroot.log ]; then
-    fakeroot -i fakeroot.log \
-    sh -c 'find -not -name fakeroot.log -a -print0 | cpio -o0c | gzip --best'
-else
-    find -not -name fakeroot.log -a -print0 | cpio -o0c | gzip --best
-fi
+# This is a carefully chosen sequence of commands which
+# tries not to disturb any inode numbers apart from the
+# one for the new file.
+cp "$2" "$1"/"$3"
+ino=$(ls -i "$1"/"$3" | awk '{print $1}')
+cp "$1"/fakeroot.log "$1"/fakeroot.log.old
+grep -v "ino=$ino," "$1"/fakeroot.log.old > "$1"/fakeroot.log
+rm "$1"/fakeroot.log.old
+febootstrap-run "$1" -- chmod "$4" "$3"
+febootstrap-run "$1" -- chown "$5" "$3"
