@@ -117,7 +117,7 @@ fi
 
 # Add the updates repository if asked.
 case "$updates" in
-    none|no)
+    ""|none|no)
 	;;
     *://*)
 	cat >> $tmpdir/febootstrap.repo <<EOF
