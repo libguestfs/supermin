@@ -239,6 +239,8 @@ else
 fi
 
 # Clean up the yum repository.
+# XXX We shouldn't just rm files.
 if [ "$clean" = "yes" ]; then
     rm -rf "$target"/var/cache/yum/febootstrap
+    rm -rf "$target"/var/cache/yum/febootstrap-updates
 fi
