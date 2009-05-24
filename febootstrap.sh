@@ -82,7 +82,7 @@ mirror="$3"
 
 # Architecture is currently always the same as the current arch.  We
 # cannot do --foreign builds.  See discussion in the manpage.
-arch=$(arch)
+arch=$(uname -m)
 case $arch in
     i?86) arch=i386 ;;
 esac

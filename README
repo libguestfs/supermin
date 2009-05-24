@@ -23,7 +23,7 @@ Requirements
       in future versions of fakechroot.
 
   yum
-    - Tested with version 3.2.
+    - Tested with version 3.2 (works best with 3.2.21 or above)
     - Needs network access to a Fedora repository, or a local
       Fedora mirror.
 
