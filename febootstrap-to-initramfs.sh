@@ -36,7 +36,7 @@ set -e
 
 if [ -f fakeroot.log ]; then
     fakeroot -i fakeroot.log \
-    sh -c 'find -not -name fakeroot.log -a -print0 | cpio -o -0 -c -H newc | gzip --best'
+    sh -c 'find -not -name fakeroot.log -a -print0 | cpio -o -0 -H newc | gzip --best'
 else
-    find -not -name fakeroot.log -a -print0 | cpio -o -0 -c -H newc | gzip --best
+    find -not -name fakeroot.log -a -print0 | cpio -o -0 -H newc | gzip --best
 fi
