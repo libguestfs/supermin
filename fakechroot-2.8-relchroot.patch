@@ -1,7 +1,7 @@
 This patch must be applied to fakechroot 2.8 or SVN in order to
 enable correct handling of relative chroots, for rpm and yum.
 
-Note this patch has been included in upstreak fakechroot >= 2.9
+Note this patch has been included in upstream fakechroot >= 2.9
 
 Index: src/libfakechroot.c
 ===================================================================
