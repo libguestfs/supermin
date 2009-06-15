@@ -4,7 +4,7 @@ febootstrap-to-initramfs - Convert febootstrap root to initramfs (cpio) file.
 
 =head1 SYNOPSIS
 
- febootstrap-to-initramfs DIR > initrd.img
+ febootstrap-to-initramfs [--files=filelist] DIR > initrd.img
 
 =head1 DESCRIPTION
 
@@ -19,6 +19,21 @@ other formats.
 The permissions inside the initrd image are corrected automatically
 (see the discussion of fakeroot logfile in the L<febootstrap(8)>
 page).  You do I<not> need to run this command as root.
+
+=head1 OPTIONS
+
+=over 4
+
+=item --files=filelist
+
+C<filelist> should be a file containing a list of the files to be
+added to the initramfs (one per line).  Only those files are added and
+any others are ignored.
+
+When the C<--files> option is not given, all files in C<DIR> are added
+to the initramfs image.
+
+=back
 
 =head1 /init
 

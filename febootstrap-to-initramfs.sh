@@ -20,8 +20,43 @@
 
 unset CDPATH
 
+TEMP=`getopt \
+        -o '' \
+        --long files:,help \
+        -n febootstrap-to-initramfs -- "$@"`
+if [ $? != 0 ]; then
+    echo "febootstrap-to-initramfs: problem parsing the command line arguments"
+    exit 1
+fi
+eval set -- "$TEMP"
+
+files=
+
+usage ()
+{
+    echo "Usage: febootstrap-to-initramfs [--files=filelist] DIR"
+    echo "Please read febootstrap-to-initramfs(8) man page for more information."
+}
+
+while true; do
+    case "$1" in
+	--files)
+	    files=$2
+	    shift 2;;
+	--help)
+	    usage
+	    exit 0;;
+	--)
+	    shift
+	    break;;
+	*)
+	    echo "Internal error!"
+	    exit 1;;
+    esac
+done
+
 if [ $# -ne 1 ]; then
-    echo "febootstrap-to-initramfs DIR > initrd.img"
+    usage
     exit 1
 fi
 
@@ -35,8 +70,17 @@ fi
 set -e
 
 if [ -f fakeroot.log ]; then
-    fakeroot -i fakeroot.log \
-    sh -c 'find -not -name fakeroot.log -a -print0 | cpio -o -0 -H newc | gzip --best'
+    if [ -z "$files" ]; then
+	fakeroot -i fakeroot.log \
+	sh -c 'find -not -name fakeroot.log -a -print0 | cpio -o -0 -H newc | gzip --best'
+    else
+	fakeroot -i fakeroot.log \
+	sh -c 'cpio -o -H newc | gzip --best' < $files
+    fi
 else
-    find -not -name fakeroot.log -a -print0 | cpio -o -0 -H newc | gzip --best
+    if [ -z "$files" ]; then
+	find -not -name fakeroot.log -a -print0 | cpio -o -0 -H newc | gzip --best
+    else
+	cpio -o -H newc < $files | gzip --best
+    fi
 fi
