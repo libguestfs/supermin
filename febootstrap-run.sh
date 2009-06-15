@@ -21,7 +21,7 @@
 unset CDPATH
 
 TEMP=`getopt \
-        -o g:i: \
+        -o '' \
         --long help,ro \
         -n febootstrap-run -- "$@"`
 if [ $? != 0 ]; then
