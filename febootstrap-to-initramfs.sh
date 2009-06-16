@@ -22,7 +22,7 @@ unset CDPATH
 
 TEMP=`getopt \
         -o '' \
-        --long files:,help \
+        --long files:,nocompress,help \
         -n febootstrap-to-initramfs -- "$@"`
 if [ $? != 0 ]; then
     echo "febootstrap-to-initramfs: problem parsing the command line arguments"
@@ -30,11 +30,12 @@ if [ $? != 0 ]; then
 fi
 eval set -- "$TEMP"
 
+compress=yes
 files=
 
 usage ()
 {
-    echo "Usage: febootstrap-to-initramfs [--files=filelist] DIR"
+    echo "Usage: febootstrap-to-initramfs [--files=filelist] [--nocompress] DIR"
     echo "Please read febootstrap-to-initramfs(8) man page for more information."
 }
 
@@ -46,6 +47,9 @@ while true; do
 	--help)
 	    usage
 	    exit 0;;
+	--nocompress)
+	    compress=no
+	    shift;;
 	--)
 	    shift
 	    break;;
@@ -69,18 +73,26 @@ fi
 
 set -e
 
+(
 if [ -f fakeroot.log ]; then
     if [ -z "$files" ]; then
 	fakeroot -i fakeroot.log \
-	sh -c 'find -not -name fakeroot.log -a -print0 | cpio -o -0 -H newc | gzip --best'
+	sh -c 'find -not -name fakeroot.log -a -print0 | cpio --quiet -o -0 -H newc'
     else
 	fakeroot -i fakeroot.log \
-	sh -c 'cpio -o -H newc | gzip --best' < $files
+	sh -c 'cpio --quiet -o -H newc' < $files
     fi
 else
     if [ -z "$files" ]; then
-	find -not -name fakeroot.log -a -print0 | cpio -o -0 -H newc | gzip --best
+	find -not -name fakeroot.log -a -print0 | cpio --quiet -o -0 -H newc
     else
-	cpio -o -H newc < $files | gzip --best
+	cpio --quiet -o -H newc < $files
     fi
 fi
+) | (
+if [ "$compress" = "yes" ]; then
+    gzip --best
+else
+    cat
+fi
+)

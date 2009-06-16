@@ -33,6 +33,13 @@ any others are ignored.
 When the C<--files> option is not given, all files in C<DIR> are added
 to the initramfs image.
 
+=item --nocompress
+
+This prevents the initramfs image from being compressed.
+
+Linux can boot from uncompressed initramfs images (in fact, faster),
+but they take up a lot more space on disk.
+
 =back
 
 =head1 /init
