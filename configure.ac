@@ -17,7 +17,7 @@ dnl Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 dnl
 dnl Written by Richard W.M. Jones <rjones@redhat.com>
 
-AC_INIT(febootstrap,2.3)
+AC_INIT(febootstrap,2.4)
 AM_INIT_AUTOMAKE
 
 AC_CHECK_PROG(PERLDOC,[perldoc],[perldoc],[no])
