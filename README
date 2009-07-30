@@ -47,6 +47,12 @@ Building and installing
   make
   sudo make install
 
+Note, if you want to run the scripts locally without installing,
+you have to set the $PATH to the current directory, ie:
+
+  PATH=$(pwd):$PATH
+  febootstrap [...]
+
 Feedback and bugs
 -----------------
 

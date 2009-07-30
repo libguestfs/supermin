@@ -24,12 +24,12 @@ if [ ! -e vmlinuz ]; then
     exit 1
 fi
 
-../febootstrap -i bash -i coreutils fedora-10 ./minimal $1
+febootstrap -i bash -i coreutils fedora-10 ./minimal $1
 
 # ... but let's minimize it aggressively.
 
 echo -n "Before minimization: "; du -sh minimal
-../febootstrap-minimize --all --pack-executables ./minimal
+febootstrap-minimize --all --pack-executables ./minimal
 echo -n "After minimization:  "; du -sh minimal
 
 # Create the /init which is just a simple script to give users an
@@ -47,11 +47,11 @@ __EOF__
   chmod +x /init
 }
 export -f create_init
-../febootstrap-run ./minimal -- bash -c create_init
+febootstrap-run ./minimal -- bash -c create_init
 
 # Convert the filesystem to an initrd image.
 
-../febootstrap-to-initramfs ./minimal > minimal-initrd.img
+febootstrap-to-initramfs ./minimal > minimal-initrd.img
 
 # This is needed because of crappiness with qemu.
 

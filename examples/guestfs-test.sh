@@ -25,7 +25,7 @@ if [ ! -e vmlinuz -o ! -e guest-image ]; then
     exit 1
 fi
 
-../febootstrap \
+febootstrap \
     -i bash \
     -i coreutils \
     -i lvm2 \
@@ -36,7 +36,7 @@ fi
     fedora-10 ./guestfs $1
 
 echo -n "Before minimization: "; du -sh guestfs
-../febootstrap-minimize --all ./guestfs
+febootstrap-minimize --all ./guestfs
 echo -n "After minimization:  "; du -sh guestfs
 
 # Create the /init which will scan for and enable all LVM volume groups.
@@ -59,11 +59,11 @@ __EOF__
   chmod +x init
 }
 export -f create_init
-../febootstrap-run ./guestfs -- bash -c create_init
+febootstrap-run ./guestfs -- bash -c create_init
 
 # Convert the filesystem to an initrd image.
 
-../febootstrap-to-initramfs ./guestfs > guestfs-initrd.img
+febootstrap-to-initramfs ./guestfs > guestfs-initrd.img
 
 # Now run qemu to boot this guestfs system.
 
