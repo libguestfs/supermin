@@ -53,6 +53,34 @@ you have to set the $PATH to the current directory, ie:
   PATH=$(pwd):$PATH
   febootstrap [...]
 
+Debugging
+---------
+
+If you get segfaults while running febootstrap or errors in the %post
+scripts, these are often caused by some incompatibility in the
+emulation provided by fakeroot/fakechroot.  You can track them down by
+running the yum command explicitly.  Try:
+
+  fakeroot fakechroot -s \
+    yum -y -c /tmp/repo \
+      --disablerepo=\* --enablerepo=febootstrap \
+      --noplugins --nogpgcheck \
+      --installroot=/tmp/root \
+      install "@Core"
+
+where /tmp/repo would be a file like this (change repo and arch
+parameters as appropriate):
+
+  [febootstrap]
+  name=febootstrap
+  failovermethod=priority
+  enabled=1
+  gpgcheck=0
+  mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=rawhide&arch=x86_64
+
+You can insert gdb in the appropriate place in the fakeroot /
+fakechroot / yum command.
+
 Feedback and bugs
 -----------------
 
