@@ -63,6 +63,11 @@ fi
 target="$1"
 shift
 
+if [ $(id -u) -eq 0 ]; then
+    chroot "$target" "$@"
+    exit 0
+fi
+
 if [ ! -f "$target"/fakeroot.log ]; then
     echo "febootstrap-run: $target: not a root filesystem"
     exit 1
