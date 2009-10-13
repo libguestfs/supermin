@@ -81,8 +81,8 @@ Keep or drop all timezones (except UTC which is never deleted).
 
 =item B<--drop-rpmdb>
 
-Keep or drop the RPM package database.  Obviously RPM will be
-completely non-functional if you drop this.
+Keep or drop the RPM and YUM package databases.  Obviously RPM and YUM will be
+completely non-functional if you drop these.
 
 =item B<--keep-yum-cache>
 

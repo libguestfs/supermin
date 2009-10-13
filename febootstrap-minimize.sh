@@ -213,6 +213,8 @@ fi
 if [ "$keep_rpmdb" != "yes" ]; then
     febootstrap-run "$target" -- rm -rf var/lib/rpm
     febootstrap-run "$target" -- mkdir -p --mode=0755 var/lib/rpm
+    febootstrap-run "$target" -- rm -rf var/lib/yum
+    febootstrap-run "$target" -- mkdir -p --mode=0755 var/lib/yum
 fi
 
 if [ "$keep_yum_cache" != "yes" ]; then
