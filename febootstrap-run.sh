@@ -68,15 +68,19 @@ if [ $(id -u) -eq 0 ]; then
     exit 0
 fi
 
-if [ ! -f "$target"/fakeroot.log ]; then
+if [ $(id -u) -ne 0 -a ! -f "$target"/fakeroot.log ]; then
     echo "febootstrap-run: $target: not a root filesystem"
     exit 1
 fi
 
 if [ "$readonly" = "no" ]; then
-    fakeroot -i "$target"/fakeroot.log -s "$target"/fakeroot.log \
-	fakechroot -s \
+    if [ $(id -u) -ne 0 ]; then
+    	fakeroot -i "$target"/fakeroot.log -s "$target"/fakeroot.log \
+	    fakechroot -s \
+	    chroot "$target" "$@"
+    else
 	chroot "$target" "$@"
+    fi
 else
     fakeroot -i "$target"/fakeroot.log \
 	fakechroot -s \
