@@ -169,6 +169,11 @@ permissions using the tool C<febootstrap-to-initramfs>.
 
 =item *
 
+Generate a supermin appliance using the tool
+C<febootstrap-to-supermin>.
+
+=item *
+
 Apply the permissions to the target directory using the forthcoming
 tool C<febootstrap-fix-root> (requires root).
 
@@ -227,6 +232,7 @@ L<febootstrap-to-initramfs(8)>,
 L<febootstrap-minimize(8)>,
 L<febootstrap-run(8)>,
 L<febootstrap-install(8)>,
+L<febootstrap-to-supermin(8)>,
 L<fakeroot(1)>,
 L<fakechroot(1)>,
 L<yum(8)>,

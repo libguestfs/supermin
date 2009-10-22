@@ -1,0 +1,105 @@
+=head1 NAME
+
+febootstrap-supermin-helper - Reconstruct initramfs from supermin appliance.
+
+=head1 SYNOPSIS
+
+ febootstrap-supermin-helper supermin.img hostfiles.txt kernel initrd
+
+=head1 DESCRIPTION
+
+I<febootstrap-supermin-helper> reconstructs a bootable kernel and
+initramfs from a supermin appliance.  First you should be familiar
+with L<febootstrap(8)>, L<febootstrap-to-initramfs(8)> and
+L<febootstrap-to-supermin(8)>.
+
+=head1 PARAMETERS
+
+Of the four parameters, the first two are I<input> files, and the last
+two are I<output> files.
+
+C<supermin.img> and C<hostfiles.txt> are the input files which
+describe the supermin appliance.
+
+C<kernel> and C<initrd> are the temporary output files that this
+script produces.  These output files are meant to be used just for
+booting the appliance, and should be deleted straight afterwards.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--kmods file>
+
+If this option is specified, then C<file> should be a list of
+wildcards matching kernel module names, eg:
+
+ virtio*.ko
+ scsi*.ko
+ piix.ko
+
+In this case, only kernel modules matching those wildcards will be
+included in the output appliance.  Note: You must resolve any
+dependencies yourself as this does not pull in dependent modules
+automatically.
+
+If this option is not specified, then every kernel module from the
+host will be included.  This is safer, but can produce rather large
+appliances which need a lot more memory to boot.
+
+=back
+
+=head1 SPEED
+
+In libguestfs, on a mid-range Intel-based PC, we reconstruct the
+initramfs using this script in around 1/5th of a second (assuming a
+"hot cache" - it's rather slower when run the first time on a cold
+cache).
+
+Some tips to improve performance:
+
+=over 4
+
+=item *
+
+Use a kernel module whitelist (the C<--kmods> option), and only
+list the kernel modules you really need.
+
+=item *
+
+Minimize the appliance, removing as much extraneous junk as possible.
+
+As well as using L<febootstrap-minimize(8)> it is worth checking for
+anything that is not necessary for your particular application and
+removing it by hand.
+
+=back
+
+=head1 SEE ALSO
+
+L<febootstrap(8)>,
+L<febootstrap-to-initramfs(8)>,
+L<febootstrap-to-supermin(8)>.
+
+=head1 AUTHORS
+
+Richard W.M. Jones <rjones @ redhat . com>
+
+=head1 COPYRIGHT
+
+(C) Copyright 2009 Red Hat Inc.,
+L<http://et.redhat.com/~rjones/febootstrap>.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.

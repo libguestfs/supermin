@@ -24,7 +24,9 @@ bin_SCRIPTS = \
 	febootstrap-run \
 	febootstrap-install \
 	febootstrap-minimize \
-	febootstrap-to-initramfs
+	febootstrap-to-initramfs \
+	febootstrap-to-supermin \
+	febootstrap-supermin-helper
 DISTCLEANFILES = $(bin_SCRIPTS)
 
 febootstrap: febootstrap.sh
@@ -57,12 +59,26 @@ febootstrap-to-initramfs: febootstrap-to-initramfs.sh
 	chmod 0555 $@-t
 	mv $@-t $@
 
+febootstrap-to-supermin: febootstrap-to-supermin.sh
+	rm -f $@
+	cp $< $@-t
+	chmod 0555 $@-t
+	mv $@-t $@
+
+febootstrap-supermin-helper: febootstrap-supermin-helper.sh
+	rm -f $@
+	cp $< $@-t
+	chmod 0555 $@-t
+	mv $@-t $@
+
 man_MANS = \
 	febootstrap.8 \
 	febootstrap-run.8 \
 	febootstrap-install.8 \
 	febootstrap-minimize.8 \
-	febootstrap-to-initramfs.8
+	febootstrap-to-initramfs.8 \
+	febootstrap-to-supermin.8 \
+	febootstrap-supermin-helper.8
 
 if HAVE_PERLDOC
 
@@ -116,6 +132,26 @@ febootstrap-to-initramfs.8: febootstrap-to-initramfs.pod
 febootstrap-to-initramfs.txt: febootstrap-to-initramfs.pod
 	pod2text $< > $@
 
+febootstrap-to-supermin.8: febootstrap-to-supermin.pod
+	pod2man \
+	  --section 8 \
+	  -c "Virtualization Support" \
+	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
+	  $< > $@
+
+febootstrap-to-supermin.txt: febootstrap-to-supermin.pod
+	pod2text $< > $@
+
+febootstrap-supermin-helper.8: febootstrap-supermin-helper.pod
+	pod2man \
+	  --section 8 \
+	  -c "Virtualization Support" \
+	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
+	  $< > $@
+
+febootstrap-supermin-helper.txt: febootstrap-supermin-helper.pod
+	pod2text $< > $@
+
 endif
 
 EXTRA_DIST = \
@@ -132,4 +168,10 @@ EXTRA_DIST = \
 	  febootstrap-minimize.sh \
 	febootstrap-to-initramfs.8 febootstrap-to-initramfs.txt \
 	  febootstrap-to-initramfs.pod \
-	  febootstrap-to-initramfs.sh
+	  febootstrap-to-initramfs.sh \
+	febootstrap-to-supermin.8 febootstrap-to-supermin.txt \
+	  febootstrap-to-supermin.pod \
+	  febootstrap-to-supermin.sh \
+	febootstrap-supermin-helper.8 febootstrap-supermin-helper.txt \
+	  febootstrap-supermin-helper.pod \
+	  febootstrap-supermin-helper.sh

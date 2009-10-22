@@ -16,6 +16,8 @@ febootstrap-run
 febootstrap-install
 febootstrap-minimize
 febootstrap-to-initramfs
+febootstrap-to-supermin
+febootstrap-supermin-helper
 install-sh
 missing
 stamp-h1
