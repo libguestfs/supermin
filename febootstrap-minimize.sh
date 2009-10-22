@@ -22,7 +22,7 @@ unset CDPATH
 
 TEMP=`getopt \
         -o '' \
-        --long help,all,none,keep-locales,drop-locales,keep-docs,drop-docs,keep-cracklib,drop-cracklib,keep-i18n,drop-i18n,keep-zoneinfo,drop-zoneinfo,keep-rpmdb,drop-rpmdb,keep-yum-cache,drop-yum-cache,keep-services,drop-services,keep-sln,drop-sln,keep-ldconfig,drop-ldconfig,no-pack-executables,pack-executables \
+        --long help,all,none,keep-locales,drop-locales,keep-docs,drop-docs,keep-cracklib,drop-cracklib,keep-i18n,drop-i18n,keep-zoneinfo,drop-zoneinfo,keep-rpmdb,drop-rpmdb,keep-yum-cache,drop-yum-cache,keep-services,drop-services,keep-sln,drop-sln,keep-ldconfig,drop-ldconfig \
         -n febootstrap-minimize -- "$@"`
 if [ $? != 0 ]; then
     echo "febootstrap-minimize: problem parsing the command line arguments"
@@ -59,7 +59,6 @@ keep_yum_cache=yes
 }
 
 set_all
-pack_executables=no
 
 usage ()
 {
@@ -134,12 +133,6 @@ while true; do
 	    shift;;
 	--drop-ldconfig)
 	    keep_ldconfig=no
-	    shift;;
-	--no-pack-executables)
-	    pack_executables=no
-	    shift;;
-	--pack-executables)
-	    pack_executables=yes
 	    shift;;
 	--help)
 	    usage
@@ -285,19 +278,4 @@ if [ "$keep_ldconfig" != "yes" ]; then
     febootstrap-run "$target" -- rm -f etc/ld.so.cache
     febootstrap-run "$target" -- rm -rf var/cache/ldconfig
     febootstrap-run "$target" -- mkdir -p --mode=0755 var/cache/ldconfig
-fi
-
-if [ "$pack_executables" = "yes" ]; then
-    # NB. Be careful to keep the same inode number, since fakeroot
-    # tracks files by inode number.
-    for path in $(find "$target" -type f -perm /111 |
-	          xargs file |
-		  grep executable |
-		  awk -F: '{print $1}'); do
-	base=$(basename "$path")
-	cp "$path" "$tmpdir"
-	(cd "$tmpdir" && upx -q -q --best "$base")
-	cat "$tmpdir"/"$base" > "$path"
-	rm "$tmpdir"/"$base"
-    done
 fi
