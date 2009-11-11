@@ -129,4 +129,4 @@ find "$modpath" \( -not -name '*.ko' $whitelist \) -a -print0 |
 hostfiles=$(readlink -f "$hostfiles")
 (cd / &&
     ls -1df $(cat "$hostfiles") 2>/dev/null |
-    cpio --quiet -o -H newc ) >> "$initrd"
+    cpio -C 65536 --quiet -o -H newc ) >> "$initrd"
