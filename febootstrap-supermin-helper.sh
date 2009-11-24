@@ -82,6 +82,12 @@ rm -f "$kernel" "$initrd"
 
 arch=$(echo "@host_cpu@" | sed 's/^i.86$/i?86/')
 kernels=$(ls -1vr /boot/vmlinuz-*.$arch* 2>/dev/null | grep -v xen; ls -1vr /boot/vmlinuz-* 2>/dev/null | grep -v xen)
+
+if [ -z "$kernels" ]; then
+    echo "$0: failed to find a suitable kernel" >&2
+    exit 1
+fi
+
 for f in $kernels; do
     b=$(basename "$f")
     b=$(echo "$b" | sed 's,vmlinuz-,,')
