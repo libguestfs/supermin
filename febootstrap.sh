@@ -168,7 +168,7 @@ export FAKECHROOT_EXCLUDE_PATH=/proc
 # Substitute some statically-linked commands.  This is only supported
 # in fakechroot > 2.9.  For previous versions of fakechroot it is
 # ignored.
-export FAKECHROOT_CMD_SUBST=/sbin/ldconfig=/bin/true:/usr/sbin/glibc_post_upgrade.i686=/bin/true:/usr/sbin/glibc_post_upgrade.x86_64=/bin/true:/usr/sbin/build-locale-archive=/bin/true:/usr/sbin/libgcc_post_upgrade=/bin/true
+export FAKECHROOT_CMD_SUBST=/sbin/ldconfig=/bin/true:/usr/sbin/glibc_post_upgrade.i686=/bin/true:/usr/sbin/glibc_post_upgrade.x86_64=/bin/true:/usr/sbin/build-locale-archive=/bin/true:/usr/sbin/libgcc_post_upgrade=/bin/true:/sbin/new-kernel-pkg=/bin/true:/usr/sbin/nscd=/bin/true
 
 # Use the libraries inside the chroot.
 export LD_LIBRARY_PATH="$target"/usr/lib64:"$target"/usr/lib:"$target"/lib64:"$target"/usr/lib
