@@ -4,7 +4,7 @@ febootstrap-supermin-helper - Reconstruct initramfs from supermin appliance.
 
 =head1 SYNOPSIS
 
- febootstrap-supermin-helper supermin.img hostfiles.txt kernel initrd
+ febootstrap-supermin-helper supermin.img hostfiles.txt host_cpu kernel initrd
 
 =head1 DESCRIPTION
 
@@ -15,11 +15,13 @@ L<febootstrap-to-supermin(8)>.
 
 =head1 PARAMETERS
 
-Of the four parameters, the first two are I<input> files, and the last
+Of the five parameters, the first two are I<input> files, and the last
 two are I<output> files.
 
 C<supermin.img> and C<hostfiles.txt> are the input files which
 describe the supermin appliance.
+
+C<host_cpu> should be the host CPU, eg. C<x86_64> or C<i686>.
 
 C<kernel> and C<initrd> are the temporary output files that this
 script produces.  These output files are meant to be used just for

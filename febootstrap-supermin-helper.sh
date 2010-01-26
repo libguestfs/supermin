@@ -32,7 +32,7 @@ eval set -- "$TEMP"
 
 usage ()
 {
-    echo "Usage: febootstrap-supermin-helper supermin.img hostfiles.txt kernel initrd"
+    echo "Usage: febootstrap-supermin-helper supermin.img hostfiles.txt host_cpu kernel initrd"
     echo "Please read febootstrap-supermin-helper(8) man page for more information."
 }
 
@@ -55,7 +55,7 @@ while true; do
     esac
 done
 
-if [ $# -ne 4 ]; then
+if [ $# -ne 5 ]; then
     usage
     exit 1
 fi
@@ -66,9 +66,11 @@ set -e
 supermin="$1"
 hostfiles="$2"
 
+host_cpu=$3
+
 # Output files.
-kernel="$3"
-initrd="$4"
+kernel="$4"
+initrd="$5"
 
 rm -f "$kernel" "$initrd"
 
@@ -80,7 +82,7 @@ rm -f "$kernel" "$initrd"
 # RHEL 5 didn't append the arch to the kernel name, so look for kernels
 # without arch second.
 
-arch=$(echo "@host_cpu@" | sed 's/^i.86$/i?86/')
+arch=$(echo $host_cpu | sed 's/^i.86$/i?86/')
 kernels=$(
     ls -1dvr /boot/vmlinuz-*.$arch* 2>/dev/null | grep -v xen ||: ;
     ls -1dvr /boot/vmlinuz-* 2>/dev/null | grep -v xen
