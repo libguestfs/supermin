@@ -107,6 +107,10 @@ while read path <&7; do
     elif [[ "$file" =~ '^libbfd-.*\.so$' ]]; then
         echo "$dir/libbfd-*.so" >&6
 
+    # Special case for libgcc_s-<gccversion>-<date>.so.N
+    elif [[ "$file" =~ '^libgcc_s-.*\.so\.([0-9]+)$' ]]; then
+        echo "$dir/libgcc_s-*.so.${BASH_REMATCH[1]}" >&6
+
     # libfoo-1.2.3.so
     elif [[ "$file" =~ '^lib(.*)-[-.0-9]+\.so$' ]]; then
         echo "$dir/lib${BASH_REMATCH[1]}-*.so" >&6
