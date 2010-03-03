@@ -81,6 +81,17 @@ while read path <&7; do
     # question E14 here http://tiswww.case.edu/php/chet/bash/FAQ and
     # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=487387#25
     # (RHBZ#566511).
+    p_etc='^\./etc'
+    p_dev='^\./dev'
+    p_var='^\./var'
+    p_lib_modules='^\./lib/modules/'
+    p_builddir='^\./builddir'
+    p_ld_so='^ld-[.0-9]+\.so$'
+    p_libbfd='^libbfd-.*\.so$'
+    p_libgcc='^libgcc_s-.*\.so\.([0-9]+)$'
+    p_lib123so='^lib(.*)-[-.0-9]+\.so$'
+    p_lib123so123='^lib(.*)-[-.0-9]+\.so\.([0-9]+)\.'
+    p_libso123='^lib(.*)\.so\.([0-9]+)\.'
 
     # Ignore fakeroot.log.
     if [ "$path" = "./fakeroot.log" ]; then
@@ -91,18 +102,18 @@ while read path <&7; do
     elif [ "$path" = "./init" ]; then
         echo "$path" >&5
 
-    elif [[ "$path" =~ ^\./etc || "$path" =~ ^\./dev || "$path" =~ ^\./var ]]
+    elif [[ "$path" =~ $p_etc || "$path" =~ $p_dev || "$path" =~ $p_var ]]
     then
         echo "$path" >&5
 
     # Kernel modules are always copied in from the host, including all
     # the dependency information files.
-    elif [[ "$path" =~ ^\./lib/modules/ ]]; then
+    elif [[ "$path" =~ $p_lib_modules ]]; then
 	:
 
     # On mock/Koji, exclude bogus /builddir directory which for some
     # reason contains some yum temporary files (RHBZ#566512).
-    elif [[ "$path" =~ ^\./builddir ]]; then
+    elif [[ "$path" =~ $p_builddir ]]; then
         :
 
     # Always write directory names to both output files.
@@ -112,27 +123,27 @@ while read path <&7; do
 
     # Some libraries need fixed version numbers replaced by wildcards.
 
-    elif [[ "$file" =~ ^ld-[.0-9]+\.so$ ]]; then
+    elif [[ "$file" =~ $p_ld_so ]]; then
         echo "$dir/ld-*.so" >&6
 
     # Special case for libbfd
-    elif [[ "$file" =~ ^libbfd-.*\.so$ ]]; then
+    elif [[ "$file" =~ $p_libbfd ]]; then
         echo "$dir/libbfd-*.so" >&6
 
     # Special case for libgcc_s-<gccversion>-<date>.so.N
-    elif [[ "$file" =~ ^libgcc_s-.*\.so\.([0-9]+)$ ]]; then
+    elif [[ "$file" =~ $p_libgcc ]]; then
         echo "$dir/libgcc_s-*.so.${BASH_REMATCH[1]}" >&6
 
     # libfoo-1.2.3.so
-    elif [[ "$file" =~ ^lib(.*)-[-.0-9]+\.so$ ]]; then
+    elif [[ "$file" =~ $p_lib123so ]]; then
         echo "$dir/lib${BASH_REMATCH[1]}-*.so" >&6
 
     # libfoo-1.2.3.so.1.2.3 (but NOT '*.so.N')
-    elif [[ "$file" =~ ^lib(.*)-[-.0-9]+\.so\.([0-9]+)\. ]]; then
+    elif [[ "$file" =~ $p_lib123so123 ]]; then
         echo "$dir/lib${BASH_REMATCH[1]}-*.so.${BASH_REMATCH[2]}.*" >&6
 
     # libfoo.so.1.2.3 (but NOT '*.so.N')
-    elif [[ "$file" =~ ^lib(.*)\.so\.([0-9]+)\. ]]; then
+    elif [[ "$file" =~ $p_libso123 ]]; then
         echo "$dir/lib${BASH_REMATCH[1]}.so.${BASH_REMATCH[2]}.*" >&6
 
     else
