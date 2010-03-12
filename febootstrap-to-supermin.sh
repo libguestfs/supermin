@@ -89,6 +89,7 @@ while read path <&7; do
     p_ld_so='^ld-[.0-9]+\.so$'
     p_libbfd='^libbfd-.*\.so$'
     p_libgcc='^libgcc_s-.*\.so\.([0-9]+)$'
+    p_libntfs3g='^libntfs-3g\.so\..*$'
     p_lib123so='^lib(.*)-[-.0-9]+\.so$'
     p_lib123so123='^lib(.*)-[-.0-9]+\.so\.([0-9]+)\.'
     p_libso123='^lib(.*)\.so\.([0-9]+)\.'
@@ -133,6 +134,11 @@ while read path <&7; do
     # Special case for libgcc_s-<gccversion>-<date>.so.N
     elif [[ "$file" =~ $p_libgcc ]]; then
         echo "$dir/libgcc_s-*.so.${BASH_REMATCH[1]}" >&6
+
+    # Special case for libntfs-3g.so.*
+    elif [[ "$file" =~ $p_libntfs3g ]]; then
+       [ -n "$libntfs3g_once" ] || echo "$dir/libntfs-3g.so.*" >&6
+       libntfs3g_once=1
 
     # libfoo-1.2.3.so
     elif [[ "$file" =~ $p_lib123so ]]; then
