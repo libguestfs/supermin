@@ -103,6 +103,10 @@ while read path <&7; do
     elif [ "$path" = "./init" ]; then
         echo "$path" >&5
 
+    # Get timezone configuration from local system.
+    elif [ "$path" = "./etc/localtime" ]; then
+        echo "$path" >&6
+
     elif [[ "$path" =~ $p_etc || "$path" =~ $p_dev || "$path" =~ $p_var ]]
     then
         echo "$path" >&5
