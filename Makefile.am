@@ -1,5 +1,5 @@
 # febootstrap Makefile.am
-# (C) Copyright 2009 Red Hat Inc.
+# (C) Copyright 2009-2010 Red Hat Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,9 @@
 #
 # Written by Richard W.M. Jones <rjones@redhat.com>
 
-SUBDIRS = examples
+ACLOCAL_AMFLAGS = -I m4
+
+SUBDIRS = lib examples
 
 bin_SCRIPTS = \
 	febootstrap \
@@ -25,7 +27,8 @@ bin_SCRIPTS = \
 	febootstrap-install \
 	febootstrap-minimize \
 	febootstrap-to-initramfs \
-	febootstrap-to-supermin \
+	febootstrap-to-supermin
+bin_PROGRAMS = \
 	febootstrap-supermin-helper
 DISTCLEANFILES = $(bin_SCRIPTS)
 
@@ -65,11 +68,9 @@ febootstrap-to-supermin: febootstrap-to-supermin.sh
 	chmod 0555 $@-t
 	mv $@-t $@
 
-febootstrap-supermin-helper: febootstrap-supermin-helper.sh
-	rm -f $@
-	cp $< $@-t
-	chmod 0555 $@-t
-	mv $@-t $@
+febootstrap_supermin_helper_SOURCES = febootstrap-supermin-helper.c
+febootstrap_supermin_helper_CFLAGS = -Wall -Ilib
+febootstrap_supermin_helper_LDADD = $(LTLIBINTL) -Llib -lgnu
 
 man_MANS = \
 	febootstrap.8 \
@@ -174,4 +175,4 @@ EXTRA_DIST = \
 	  febootstrap-to-supermin.sh \
 	febootstrap-supermin-helper.8 febootstrap-supermin-helper.txt \
 	  febootstrap-supermin-helper.pod \
-	  febootstrap-supermin-helper.sh
+	m4/gnulib-cache.m4

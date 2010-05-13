@@ -1,5 +1,5 @@
 dnl febootstrap configure.ac
-dnl (C) Copyright 2009 Red Hat Inc.
+dnl (C) Copyright 2009-2010 Red Hat Inc.
 dnl
 dnl This program is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -17,8 +17,25 @@ dnl Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 dnl
 dnl Written by Richard W.M. Jones <rjones@redhat.com>
 
-AC_INIT(febootstrap,2.6)
+AC_INIT(febootstrap,2.7)
 AM_INIT_AUTOMAKE
+
+dnl Check for basic C environment.
+AC_PROG_CC_STDC
+gl_EARLY
+
+AC_PROG_INSTALL
+AC_PROG_CPP
+
+AC_C_PROTOTYPES
+test "x$U" != "x" && AC_MSG_ERROR([Compiler not ANSI compliant])
+
+AM_PROG_CC_C_O
+
+dnl Check support for 64 bit file offsets.
+AC_SYS_LARGEFILE
+
+gl_INIT
 
 AC_CHECK_PROG(PERLDOC,[perldoc],[perldoc],[no])
 if test "x$PERLDOC" = "xno" ; then
@@ -42,5 +59,5 @@ if test "x$YUM" = "xno" ; then
 fi
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile examples/Makefile])
+AC_CONFIG_FILES([lib/Makefile Makefile examples/Makefile])
 AC_OUTPUT

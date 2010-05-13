@@ -79,7 +79,8 @@ Use supermin appliances with caution.
 
 =head2 ANATOMY OF A SUPERMIN APPLIANCE
 
-A supermin appliance consists of two files:
+A supermin appliance consists usually of just two files, but can
+contain several files and directories from the list below:
 
 =over 4
 
@@ -89,6 +90,10 @@ The image file (conventionally called C<supermin.img>, but you can
 call it anything you want) is the skeleton initramfs.  This is like an
 initramfs built by L<febootstrap-to-initramfs(8)>, but all libraries
 and binaries are removed.
+
+Note that this file is a cpio file in cpio "newc" format, and is
+I<not> compressed (unlike initramfs files which are compressed cpio
+files).
 
 =item hostfiles.txt
 
@@ -105,6 +110,14 @@ instead of listing
 the file contains
 
  lib64/libreadline.so.6.*
+
+=item any directory
+
+You can specify a directory which should contain image file(s)
+and hostfile(s).
+
+Using a directory is useful either to keep the appliance-related files
+together, or to make more complex appliances containing optional bits.
 
 =back
 
@@ -175,8 +188,8 @@ Richard W.M. Jones <rjones @ redhat . com>
 
 =head1 COPYRIGHT
 
-(C) Copyright 2009 Red Hat Inc.,
-L<http://et.redhat.com/~rjones/febootstrap>.
+(C) Copyright 2009-2010 Red Hat Inc.,
+L<http://people.redhat.com/~rjones/febootstrap>.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

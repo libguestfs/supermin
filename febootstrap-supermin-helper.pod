@@ -5,6 +5,7 @@ febootstrap-supermin-helper - Reconstruct initramfs from supermin appliance.
 =head1 SYNOPSIS
 
  febootstrap-supermin-helper supermin.img hostfiles.txt host_cpu kernel initrd
+ febootstrap-supermin-helper input [...] host_cpu kernel initrd
 
 =head1 DESCRIPTION
 
@@ -15,11 +16,12 @@ L<febootstrap-to-supermin(8)>.
 
 =head1 PARAMETERS
 
-Of the five parameters, the first two are I<input> files, and the last
-two are I<output> files.
+Of the four or five required parameters, the first few are I<input>
+files, and the last two are I<output> files.
 
 C<supermin.img> and C<hostfiles.txt> are the input files which
-describe the supermin appliance.
+describe the supermin appliance.  (You can also use a directory name
+here which is searched for files).
 
 C<host_cpu> should be the host CPU, eg. C<x86_64> or C<i686>.
 
@@ -31,7 +33,7 @@ booting the appliance, and should be deleted straight afterwards.
 
 =over 4
 
-=item B<--kmods file>
+=item B<-k file> | B<--kmods file>
 
 If this option is specified, then C<file> should be a list of
 wildcards matching kernel module names, eg:
@@ -89,8 +91,8 @@ Richard W.M. Jones <rjones @ redhat . com>
 
 =head1 COPYRIGHT
 
-(C) Copyright 2009 Red Hat Inc.,
-L<http://et.redhat.com/~rjones/febootstrap>.
+(C) Copyright 2009-2010 Red Hat Inc.,
+L<http://people.redhat.com/~rjones/febootstrap>.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

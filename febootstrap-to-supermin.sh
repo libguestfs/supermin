@@ -98,7 +98,7 @@ while read path <&7; do
     if [ "$path" = "./fakeroot.log" ]; then
 	:
 
-    # All we're going to keep are the special files /init, the daemon,
+    # All we're going to keep are the special files /init,
     # configuration files (/etc), devices and modifiable stuff (/var).
     elif [ "$path" = "./init" ]; then
         echo "$path" >&5

@@ -1,5 +1,6 @@
 febootstrap - Bootstrap a basic Fedora system
 by Richard W.M. Jones (rjones@redhat.com)
+http://people.redhat.com/~rjones/febootstrap
 ----------------------------------------------------------------------
 
 febootstrap is a Fedora equivalent to Debian's debootstrap.  You can
@@ -32,7 +33,7 @@ Requirements
 
   bash
 
-  MAKEDEV
+  gcc
 
   qemu
     - If you want to test-run your systems.
