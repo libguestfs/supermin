@@ -233,6 +233,7 @@ print_timestamped_message (const char *fs, ...)
 }
 
 static char **read_dir (const char *dir);
+static char **filter (char **strings, int (*)(const char *));
 static char **filter_fnmatch (char **strings, const char *patt, int flags);
 static char **filter_notmatching_substring (char **strings, const char *sub);
 static void sort (char **strings, int (*compare) (const void *, const void *));
@@ -246,6 +247,48 @@ reverse_filevercmp (const void *p1, const void *p2)
 
   /* Note, arguments are reversed to achieve a reverse sort. */
   return filevercmp (s2, s1);
+}
+
+static char *
+get_modpath (const char *kernel_name)
+{
+  /* Ignore "vmlinuz-" at the beginning of the kernel name. */
+  const char *version = &kernel_name[8];
+
+  /* /lib/modules/<version> */
+  char *modpath = xasprintf (MODULESDIR "/%s", version);
+  if (!modpath) {
+    perror ("xasprintf");
+    exit (EXIT_FAILURE);
+  }
+
+  return modpath;
+}
+
+/* kernel_name is "vmlinuz-*".  Check if there is a corresponding
+ * module path in /lib/modules.
+ */
+static int
+has_modpath (const char *kernel_name)
+{
+  char *modpath = get_modpath (kernel_name);
+
+  if (verbose)
+    fprintf (stderr, "checking modpath %s is a directory\n", modpath);
+
+  int r = isdir (modpath);
+
+  if (r) {
+    if (verbose)
+      fprintf (stderr, "picked %s because modpath %s exists\n",
+               kernel_name, modpath);
+    free (modpath);
+    return 1;
+  }
+  else {
+    free (modpath);
+    return 0;
+  }
 }
 
 /* Create the kernel.  This chooses an appropriate kernel and makes a
@@ -278,12 +321,14 @@ create_kernel (const char *hostcpu, const char *kernel)
   char **candidates;
   candidates = filter_fnmatch (all_files, patt, FNM_NOESCAPE);
   candidates = filter_notmatching_substring (candidates, "xen");
+  candidates = filter (candidates, has_modpath);
 
   if (candidates[0] == NULL) {
     /* In original: ls -1dvr /boot/vmlinuz-* 2>/dev/null | grep -v xen */
     patt = "vmlinuz-*";
     candidates = filter_fnmatch (all_files, patt, FNM_NOESCAPE);
     candidates = filter_notmatching_substring (candidates, "xen");
+    candidates = filter (candidates, has_modpath);
 
     if (candidates[0] == NULL)
       goto no_kernels;
@@ -291,41 +336,18 @@ create_kernel (const char *hostcpu, const char *kernel)
 
   sort (candidates, reverse_filevercmp);
 
-  /* Choose the first candidate which has a corresponding /lib/modules
-   * directory.
-   */
-  int i;
-  for (i = 0; candidates[i] != NULL; ++i) {
-    if (verbose >= 2)
-      fprintf (stderr, "candidate kernel: " KERNELDIR "/%s\n", candidates[i]);
+  /* Choose the first candidate. */
+  char *tmp = xasprintf (KERNELDIR "/%s", candidates[0]);
 
-    /* Ignore "vmlinuz-" at the beginning of the kernel name. */
-    const char *version = &candidates[i][8];
+  if (verbose)
+    fprintf (stderr, "creating symlink %s -> %s\n", kernel, tmp);
 
-    /* /lib/modules/<version> */
-    char *modpath = xasprintf (MODULESDIR "/%s", version);
+  if (symlink (tmp, kernel) == -1)
+    error (EXIT_FAILURE, errno, "symlink kernel");
 
-    if (verbose >= 2)
-      fprintf (stderr, "checking modpath %s is a directory\n", modpath);
+  free (tmp);
 
-    if (isdir (modpath)) {
-      if (verbose >= 2)
-        fprintf (stderr, "picked %s because modpath %s exists\n",
-                 candidates[i], modpath);
-
-      char *tmp = xasprintf (KERNELDIR "/%s", candidates[i]);
-
-      if (verbose >= 2)
-        fprintf (stderr, "creating symlink %s -> %s\n", kernel, tmp);
-
-      if (symlink (tmp, kernel) == -1)
-        error (EXIT_FAILURE, errno, "symlink kernel");
-
-      free (tmp);
-
-      return modpath;
-    }
-  }
+  return get_modpath (candidates[0]);
 
   /* Print more diagnostics here than the old script did. */
  no_kernels:
@@ -714,6 +736,23 @@ read_dir (const char *name)
   assert (p != NULL);
 
   return files;
+}
+
+/* Filter a list of strings, returning only those where f(s) != 0. */
+static char **
+filter (char **strings, int (*f) (const char *))
+{
+  char **out = NULL;
+  size_t n_used = 0, n_alloc = 0;
+
+  int i;
+  for (i = 0; strings[i] != NULL; ++i) {
+    if (f (strings[i]) != 0)
+      add_string (&out, &n_used, &n_alloc, strings[i]);
+  }
+
+  add_string (&out, &n_used, &n_alloc, NULL);
+  return out;
 }
 
 /* Filter a list of strings and return only those matching the wildcard. */
