@@ -36,11 +36,14 @@
 struct timeval start_t;
 int verbose = 0;
 
+static const char *format = "cpio";
+
 enum { HELP_OPTION = CHAR_MAX + 1 };
 
-static const char *options = "k:vV";
+static const char *options = "f:k:vV";
 static const struct option long_options[] = {
   { "help", 0, 0, HELP_OPTION },
+  { "format", required_argument, 0, 'f' },
   { "kmods", required_argument, 0, 'k' },
   { "verbose", 0, 0, 'v' },
   { "version", 0, 0, 'V' },
@@ -68,6 +71,8 @@ usage (const char *progname)
           "Options:\n"
           "  --help\n"
           "       Display this help text and exit.\n"
+          "  -f cpio | --format cpio\n"
+          "       Specify output format (default: cpio).\n"
           "  -k file | --kmods file\n"
           "       Specify kernel module whitelist.\n"
           "  --verbose | -v\n"
@@ -95,6 +100,10 @@ main (int argc, char *argv[])
       usage (argv[0]);
       exit (EXIT_SUCCESS);
 
+    case 'f':
+      format = optarg;
+      break;
+
     case 'k':
       whitelist = optarg;
       break;
@@ -111,6 +120,17 @@ main (int argc, char *argv[])
       usage (argv[0]);
       exit (EXIT_FAILURE);
     }
+  }
+
+  /* Select the correct writer module. */
+  struct writer *writer;
+
+  if (strcmp (format, "cpio") == 0)
+    writer = &cpio_writer;
+  else {
+    fprintf (stderr, "%s: incorrect output format (-f): must be cpio\n",
+             argv[0]);
+    exit (EXIT_FAILURE);
   }
 
   char **inputs = &argv[optind];
@@ -152,8 +172,7 @@ main (int argc, char *argv[])
     print_timestamped_message ("finished creating kernel");
 
   /* Create the appliance. */
-  create_appliance (inputs, nr_inputs, whitelist, modpath, appliance,
-                    &cpio_writer);
+  create_appliance (inputs, nr_inputs, whitelist, modpath, appliance, writer);
 
   if (verbose)
     print_timestamped_message ("finished creating appliance");

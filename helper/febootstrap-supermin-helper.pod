@@ -33,6 +33,11 @@ booting the appliance, and should be deleted straight afterwards.
 
 =over 4
 
+=item B<-f cpio> | B<--format cpio>
+
+Select the output format.  The default, and only possible output
+format, is C<cpio> (ie. a Linux initramfs).
+
 =item B<-k file> | B<--kmods file>
 
 If this option is specified, then C<file> should be a list of
