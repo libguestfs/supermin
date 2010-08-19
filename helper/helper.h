@@ -23,8 +23,15 @@
 #include "fts_.h"
 
 struct writer {
-  /* Start a new appliance, finish one off. */
-  void (*wr_start) (const char *appliance);
+  /* Start building a new appliance.
+   * 'appliance' is the output appliance.
+   * 'initrd' is the mini-initrd to create (only used for ext2 output).
+   * 'modpath' is the kernel module path.
+   */
+  void (*wr_start) (const char *appliance,
+                    const char *modpath, const char *initrd);
+
+  /* Finish off the appliance. */
   void (*wr_end) (void);
 
   /* Append the named host file to the appliance being built.  The
@@ -45,10 +52,13 @@ extern struct timeval start_t;
 extern int verbose;
 
 /* appliance.c */
-extern void create_appliance (char **inputs, int nr_inputs, const char *whitelist, const char *modpath, const char *appliance, struct writer *writer);
+extern void create_appliance (char **inputs, int nr_inputs, const char *whitelist, const char *modpath, const char *initrd, const char *appliance, struct writer *writer);
 
 /* cpio.c */
 extern struct writer cpio_writer;
+
+/* ext2.c */
+extern struct writer ext2_writer;
 
 /* kernel.c */
 extern const char *create_kernel (const char *hostcpu, const char *kernel);

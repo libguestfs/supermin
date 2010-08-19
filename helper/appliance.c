@@ -68,10 +68,11 @@ void
 create_appliance (char **inputs, int nr_inputs,
                   const char *whitelist,
                   const char *modpath,
+                  const char *initrd,
                   const char *appliance,
                   struct writer *writer)
 {
-  writer->wr_start (appliance);
+  writer->wr_start (appliance, modpath, initrd);
 
   iterate_inputs (inputs, nr_inputs, writer);
 

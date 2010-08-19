@@ -24,6 +24,7 @@ febootstrap_supermin_helper_SOURCES = \
 	helper.h \
 	appliance.c \
 	cpio.c \
+	ext2.c \
 	kernel.c \
 	main.c \
 	utils.c

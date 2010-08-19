@@ -57,6 +57,7 @@ usage (const char *progname)
           "\n"
           "Usage:\n"
           "  %s [-options] inputs [...] whitelist host_cpu kernel initrd\n"
+          "  %s -f ext2 inputs [...] whitelist host_cpu kernel initrd appliance\n"
           "  %s --help\n"
           "  %s --version\n"
           "\n"
@@ -79,7 +80,7 @@ usage (const char *progname)
           "       Enable verbose messages (give multiple times for more verbosity).\n"
           "  --version | -V\n"
           "       Display version number and exit.\n",
-          progname, progname, progname, progname);
+          progname, progname, progname, progname, progname);
 }
 
 int
@@ -124,37 +125,56 @@ main (int argc, char *argv[])
 
   /* Select the correct writer module. */
   struct writer *writer;
+  int nr_outputs;
 
-  if (strcmp (format, "cpio") == 0)
+  if (strcmp (format, "cpio") == 0) {
     writer = &cpio_writer;
+    nr_outputs = 2;             /* kernel and appliance (== initrd) */
+  }
+  else if (strcmp (format, "ext2") == 0) {
+    writer = &ext2_writer;
+    nr_outputs = 3;             /* kernel, initrd, appliance */
+  }
   else {
     fprintf (stderr, "%s: incorrect output format (-f): must be cpio\n",
              argv[0]);
     exit (EXIT_FAILURE);
   }
 
+  /* [optind .. optind+nr_inputs-1] hostcpu [argc-nr_outputs-1 .. argc-1]
+   * <----     nr_inputs      ---->    1    <----    nr_outputs     ---->
+   */
   char **inputs = &argv[optind];
-  int nr_inputs = argc - optind - 3;
+  int nr_inputs = argc - nr_outputs - 1 - optind;
+  char **outputs = &argv[optind+nr_inputs+1];
+  /*assert (outputs [nr_outputs] == NULL);
+    assert (inputs [nr_inputs + 1 + nr_outputs] == NULL);*/
 
   if (nr_inputs < 1) {
-    usage (argv[0]);
+    fprintf (stderr, "%s: not enough files specified on the command line\n",
+             argv[0]);
     exit (EXIT_FAILURE);
   }
 
   /* See: https://bugzilla.redhat.com/show_bug.cgi?id=558593 */
-  const char *hostcpu = argv[argc-3];
+  const char *hostcpu = outputs[-1];
 
   /* Output files. */
-  const char *kernel = argv[argc-2];
-  const char *appliance = argv[argc-1];
+  const char *kernel = outputs[0];
+  const char *initrd;
+  const char *appliance;
+  initrd = appliance = outputs[1];
+  if (nr_outputs > 2)
+    appliance = outputs[2];
 
   if (verbose) {
     print_timestamped_message ("whitelist = %s, "
                                "host_cpu = %s, "
                                "kernel = %s, "
+                               "initrd = %s, "
                                "appliance = %s",
                                whitelist ? : "(not specified)",
-                               hostcpu, kernel, appliance);
+                               hostcpu, kernel, initrd, appliance);
     int i;
     for (i = 0; i < nr_inputs; ++i)
       print_timestamped_message ("inputs[%d] = %s", i, inputs[i]);
@@ -162,7 +182,9 @@ main (int argc, char *argv[])
 
   /* Remove the output files if they exist. */
   unlink (kernel);
-  unlink (appliance);
+  unlink (initrd);
+  if (initrd != appliance)
+    unlink (appliance);
 
   /* Create kernel output file. */
   const char *modpath;
@@ -172,7 +194,8 @@ main (int argc, char *argv[])
     print_timestamped_message ("finished creating kernel");
 
   /* Create the appliance. */
-  create_appliance (inputs, nr_inputs, whitelist, modpath, appliance, writer);
+  create_appliance (inputs, nr_inputs, whitelist, modpath,
+                    initrd, appliance, writer);
 
   if (verbose)
     print_timestamped_message ("finished creating appliance");

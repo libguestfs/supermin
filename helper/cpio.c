@@ -250,7 +250,8 @@ write_padding (size_t len)
 }
 
 static void
-cpio_start (const char *appliance)
+cpio_start (const char *appliance,
+            const char *modpath, const char *initrd)
 {
   out_fd = open (appliance, O_WRONLY | O_CREAT | O_TRUNC | O_NOCTTY, 0644);
   if (out_fd == -1)

@@ -7,6 +7,8 @@ febootstrap-supermin-helper - Reconstruct initramfs from supermin appliance.
  febootstrap-supermin-helper supermin.img hostfiles.txt host_cpu kernel initrd
  febootstrap-supermin-helper input [...] host_cpu kernel initrd
 
+ febootstrap-supermin-helper -f ext2 input [...] host_cpu kernel initrd appliance
+
 =head1 DESCRIPTION
 
 I<febootstrap-supermin-helper> reconstructs a bootable kernel and
@@ -16,8 +18,8 @@ L<febootstrap-to-supermin(8)>.
 
 =head1 PARAMETERS
 
-Of the four or five required parameters, the first few are I<input>
-files, and the last two are I<output> files.
+Of the required parameters, the first few are I<input> files, and the
+last two or three are I<output> files.
 
 C<supermin.img> and C<hostfiles.txt> are the input files which
 describe the supermin appliance.  (You can also use a directory name
@@ -25,18 +27,38 @@ here which is searched for files).
 
 C<host_cpu> should be the host CPU, eg. C<x86_64> or C<i686>.
 
-C<kernel> and C<initrd> are the temporary output files that this
-script produces.  These output files are meant to be used just for
-booting the appliance, and should be deleted straight afterwards.
+C<kernel>, C<initrd> and C<appliance> are the temporary output files
+that this script produces.  These output files are meant to be used
+just for booting the appliance, and should be deleted straight
+afterwards.  The extra C<appliance> parameter is only required when
+the format is C<ext2>.
 
 =head1 OPTIONS
 
 =over 4
 
-=item B<-f cpio> | B<--format cpio>
+=item B<-f fmt> | B<--format fmt>
 
-Select the output format.  The default, and only possible output
-format, is C<cpio> (ie. a Linux initramfs).
+Select the output format for the appliance.  Possible formats are:
+
+=over 4
+
+=item cpio
+
+A Linux initramfs.  This is the default.
+
+In this case you have to supply names for the C<kernel>
+and C<initrd>, where the C<initrd> is the appliance.
+
+=item ext2
+
+An ext2 filesystem.
+
+In this case you have to supply names for the C<kernel>,
+a small C<initrd> which is used just to locate the appliance,
+and the C<appliance> (the ext2 filesystem).
+
+=back
 
 =item B<-k file> | B<--kmods file>
 
