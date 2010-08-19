@@ -126,15 +126,15 @@ main (int argc, char *argv[])
 
   /* Output files. */
   const char *kernel = argv[argc-2];
-  const char *initrd = argv[argc-1];
+  const char *appliance = argv[argc-1];
 
   if (verbose) {
     print_timestamped_message ("whitelist = %s, "
                                "host_cpu = %s, "
                                "kernel = %s, "
-                               "initrd = %s",
+                               "appliance = %s",
                                whitelist ? : "(not specified)",
-                               hostcpu, kernel, initrd);
+                               hostcpu, kernel, appliance);
     int i;
     for (i = 0; i < nr_inputs; ++i)
       print_timestamped_message ("inputs[%d] = %s", i, inputs[i]);
@@ -142,7 +142,7 @@ main (int argc, char *argv[])
 
   /* Remove the output files if they exist. */
   unlink (kernel);
-  unlink (initrd);
+  unlink (appliance);
 
   /* Create kernel output file. */
   const char *modpath;
@@ -152,7 +152,7 @@ main (int argc, char *argv[])
     print_timestamped_message ("finished creating kernel");
 
   /* Create the appliance. */
-  create_appliance (inputs, nr_inputs, whitelist, modpath, initrd);
+  create_appliance (inputs, nr_inputs, whitelist, modpath, appliance);
 
   if (verbose)
     print_timestamped_message ("finished creating appliance");

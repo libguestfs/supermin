@@ -86,11 +86,11 @@ void
 create_appliance (char **inputs, int nr_inputs,
                   const char *whitelist,
                   const char *modpath,
-                  const char *initrd)
+                  const char *appliance)
 {
-  out_fd = open (initrd, O_WRONLY | O_CREAT | O_TRUNC | O_NOCTTY, 0644);
+  out_fd = open (appliance, O_WRONLY | O_CREAT | O_TRUNC | O_NOCTTY, 0644);
   if (out_fd == -1)
-    error (EXIT_FAILURE, errno, "open: %s", initrd);
+    error (EXIT_FAILURE, errno, "open: %s", appliance);
   out_offset = 0;
 
   iterate_inputs (inputs, nr_inputs);
@@ -102,7 +102,7 @@ create_appliance (char **inputs, int nr_inputs,
 
   /* Finish off and close output file. */
   if (close (out_fd) == -1)
-    error (EXIT_FAILURE, errno, "close: %s", initrd);
+    error (EXIT_FAILURE, errno, "close: %s", appliance);
 }
 
 /* Iterate over the inputs to find out what they are, visiting

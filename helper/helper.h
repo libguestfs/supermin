@@ -24,7 +24,7 @@ extern struct timeval start_t;
 extern int verbose;
 
 /* appliance.c */
-extern void create_appliance (char **inputs, int nr_inputs, const char *whitelist, const char *modpath, const char *initrd);
+extern void create_appliance (char **inputs, int nr_inputs, const char *whitelist, const char *modpath, const char *appliance);
 
 /* kernel.c */
 extern const char *create_kernel (const char *hostcpu, const char *kernel);
