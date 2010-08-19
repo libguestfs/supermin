@@ -19,7 +19,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = lib examples
+SUBDIRS = lib helper examples
 
 bin_SCRIPTS = \
 	febootstrap \
@@ -28,8 +28,6 @@ bin_SCRIPTS = \
 	febootstrap-minimize \
 	febootstrap-to-initramfs \
 	febootstrap-to-supermin
-bin_PROGRAMS = \
-	febootstrap-supermin-helper
 DISTCLEANFILES = $(bin_SCRIPTS)
 
 febootstrap: febootstrap.sh
@@ -68,18 +66,13 @@ febootstrap-to-supermin: febootstrap-to-supermin.sh
 	chmod 0555 $@-t
 	mv $@-t $@
 
-febootstrap_supermin_helper_SOURCES = febootstrap-supermin-helper.c
-febootstrap_supermin_helper_CFLAGS = -Wall -Ilib
-febootstrap_supermin_helper_LDADD = $(LTLIBINTL) -Llib -lgnu
-
 man_MANS = \
 	febootstrap.8 \
 	febootstrap-run.8 \
 	febootstrap-install.8 \
 	febootstrap-minimize.8 \
 	febootstrap-to-initramfs.8 \
-	febootstrap-to-supermin.8 \
-	febootstrap-supermin-helper.8
+	febootstrap-to-supermin.8
 
 if HAVE_PERLDOC
 
@@ -143,16 +136,6 @@ febootstrap-to-supermin.8: febootstrap-to-supermin.pod
 febootstrap-to-supermin.txt: febootstrap-to-supermin.pod
 	pod2text $< > $@
 
-febootstrap-supermin-helper.8: febootstrap-supermin-helper.pod
-	pod2man \
-	  --section 8 \
-	  -c "Virtualization Support" \
-	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
-	  $< > $@
-
-febootstrap-supermin-helper.txt: febootstrap-supermin-helper.pod
-	pod2text $< > $@
-
 endif
 
 EXTRA_DIST = \
@@ -173,6 +156,4 @@ EXTRA_DIST = \
 	febootstrap-to-supermin.8 febootstrap-to-supermin.txt \
 	  febootstrap-to-supermin.pod \
 	  febootstrap-to-supermin.sh \
-	febootstrap-supermin-helper.8 febootstrap-supermin-helper.txt \
-	  febootstrap-supermin-helper.pod \
 	m4/gnulib-cache.m4
