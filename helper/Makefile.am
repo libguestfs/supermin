@@ -23,6 +23,7 @@ bin_PROGRAMS = \
 febootstrap_supermin_helper_SOURCES = \
 	helper.h \
 	appliance.c \
+	cpio.c \
 	kernel.c \
 	main.c \
 	utils.c

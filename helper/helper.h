@@ -19,12 +19,36 @@
 #ifndef FEBOOTSTRAP_SUPERMIN_HELPER_H
 #define FEBOOTSTRAP_SUPERMIN_HELPER_H
 
+#include <sys/stat.h>
+#include "fts_.h"
+
+struct writer {
+  /* Start a new appliance, finish one off. */
+  void (*wr_start) (const char *appliance);
+  void (*wr_end) (void);
+
+  /* Append the named host file to the appliance being built.  The
+   * wr_file_stat form is used where we have already stat'd this file,
+   * to avoid having to stat it a second time.  The wr_fts_entry form
+   * is used where the caller has an FTSENT.
+   */
+  void (*wr_file) (const char *filename);
+  void (*wr_file_stat) (const char *filename, const struct stat *);
+  void (*wr_fts_entry) (FTSENT *entry);
+
+  /* Append the contents of cpio file to the appliance being built. */
+  void (*wr_cpio_file) (const char *cpio_file);
+};
+
 /* main.c */
 extern struct timeval start_t;
 extern int verbose;
 
 /* appliance.c */
-extern void create_appliance (char **inputs, int nr_inputs, const char *whitelist, const char *modpath, const char *appliance);
+extern void create_appliance (char **inputs, int nr_inputs, const char *whitelist, const char *modpath, const char *appliance, struct writer *writer);
+
+/* cpio.c */
+extern struct writer cpio_writer;
 
 /* kernel.c */
 extern const char *create_kernel (const char *hostcpu, const char *kernel);

@@ -152,7 +152,8 @@ main (int argc, char *argv[])
     print_timestamped_message ("finished creating kernel");
 
   /* Create the appliance. */
-  create_appliance (inputs, nr_inputs, whitelist, modpath, appliance);
+  create_appliance (inputs, nr_inputs, whitelist, modpath, appliance,
+                    &cpio_writer);
 
   if (verbose)
     print_timestamped_message ("finished creating appliance");
