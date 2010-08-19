@@ -1,0 +1,11 @@
+This directory contains the febootstrap-supermin-helper
+reimplementation in C.
+
+This program builds the supermin appliance on the fly each time the
+appliance runs (or in recent versions of libguestfs, the appliance is
+cached as long as the host files don't change).
+
+*NOTE*: This program is designed to be very short-lived, and so we
+don't normally bother to free up any memory that we allocate.  That's
+not completely true - we free up stuff if it's obvious and easy to
+free up, and ignore the rest.

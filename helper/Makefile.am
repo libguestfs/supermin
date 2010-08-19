@@ -20,7 +20,12 @@
 bin_PROGRAMS = \
 	febootstrap-supermin-helper
 
-febootstrap_supermin_helper_SOURCES = main.c
+febootstrap_supermin_helper_SOURCES = \
+	helper.h \
+	appliance.c \
+	kernel.c \
+	main.c \
+	utils.c
 febootstrap_supermin_helper_CFLAGS = -Wall -I../lib
 febootstrap_supermin_helper_LDADD = $(LTLIBINTL) -L../lib -lgnu
 
