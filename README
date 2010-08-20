@@ -38,6 +38,10 @@ Requirements
   qemu
     - If you want to test-run your systems.
 
+  libext2fs
+  /sbin/mke2fs
+    - These are part of e2fsprogs.
+
 Building and installing
 -----------------------
 

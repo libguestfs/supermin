@@ -72,7 +72,7 @@ usage (const char *progname)
           "Options:\n"
           "  --help\n"
           "       Display this help text and exit.\n"
-          "  -f cpio | --format cpio\n"
+          "  -f cpio|ext2 | --format cpio|ext2\n"
           "       Specify output format (default: cpio).\n"
           "  -k file | --kmods file\n"
           "       Specify kernel module whitelist.\n"
@@ -136,7 +136,7 @@ main (int argc, char *argv[])
     nr_outputs = 3;             /* kernel, initrd, appliance */
   }
   else {
-    fprintf (stderr, "%s: incorrect output format (-f): must be cpio\n",
+    fprintf (stderr, "%s: incorrect output format (-f): must be cpio|ext2\n",
              argv[0]);
     exit (EXIT_FAILURE);
   }

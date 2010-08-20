@@ -27,6 +27,7 @@ febootstrap-supermin-helper
 febootstrap*.8
 febootstrap*.txt
 febootstrap-*.tar.gz
+helper/init
 lib/alloca.h
 lib/arg-nonnull.h
 lib/c++defs.h

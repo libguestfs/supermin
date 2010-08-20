@@ -25,11 +25,29 @@ febootstrap_supermin_helper_SOURCES = \
 	appliance.c \
 	cpio.c \
 	ext2.c \
+	ext2cpio.c \
+	ext2initrd.c \
+	ext2internal.h \
 	kernel.c \
 	main.c \
 	utils.c
 febootstrap_supermin_helper_CFLAGS = -Wall -I../lib
-febootstrap_supermin_helper_LDADD = $(LTLIBINTL) -L../lib -lgnu
+febootstrap_supermin_helper_LDADD = \
+	ext2init.o -lext2fs -lcom_err $(LTLIBINTL) -L../lib -lgnu
+
+# init "script" used by ext2 initrd.
+noinst_PROGRAMS = init
+init_SOURCES = init.c
+init_CFLAGS = -static
+init_LDFLAGS = -all-static
+
+# http://www.doof.me.uk/2010/05/07/cute-objcopy-hack/
+ELF_DEFAULT_ARCH = $(shell $(srcdir)/elf-default-arch)
+ext2init.o: init
+	strip --strip-all $<
+	@file $< | grep -isq static || \
+	  (echo "*** error: init is not staticly linked"; exit 1)
+	objcopy -I binary -B i386 -O $(ELF_DEFAULT_ARCH) $< $@
 
 man_MANS = \
 	febootstrap-supermin-helper.8
@@ -50,4 +68,5 @@ endif
 
 EXTRA_DIST = \
 	febootstrap-supermin-helper.8 febootstrap-supermin-helper.txt \
-	  febootstrap-supermin-helper.pod
+	  febootstrap-supermin-helper.pod \
+	  elf-default-arch
