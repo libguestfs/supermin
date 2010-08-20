@@ -52,7 +52,7 @@ ext2_filsys fs;
 #define APPLIANCE_SIZE (1024*1024*1024)
 
 static void
-ext2_start (const char *appliance,
+ext2_start (const char *hostcpu, const char *appliance,
             const char *modpath, const char *initrd)
 {
   initialize_ext2_error_table ();

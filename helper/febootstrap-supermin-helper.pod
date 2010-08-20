@@ -9,6 +9,8 @@ febootstrap-supermin-helper - Reconstruct initramfs from supermin appliance.
 
  febootstrap-supermin-helper -f ext2 input [...] host_cpu kernel initrd appliance
 
+ febootstrap-supermin-helper -f checksum input [...] host_cpu
+
 =head1 DESCRIPTION
 
 I<febootstrap-supermin-helper> reconstructs a bootable kernel and
@@ -31,7 +33,8 @@ C<kernel>, C<initrd> and C<appliance> are the temporary output files
 that this script produces.  These output files are meant to be used
 just for booting the appliance, and should be deleted straight
 afterwards.  The extra C<appliance> parameter is only required when
-the format is C<ext2>.
+the format is C<ext2>.  None of these parameters are needed for
+the checksum output C<-f checksum>.
 
 =head1 OPTIONS
 
@@ -54,9 +57,22 @@ and C<initrd>, where the C<initrd> is the appliance.
 
 An ext2 filesystem.
 
-In this case you have to supply names for the C<kernel>,
-a small C<initrd> which is used just to locate the appliance,
-and the C<appliance> (the ext2 filesystem).
+In this case you have to supply names for the C<kernel>, a small
+C<initrd> which is used just to locate the appliance, and the
+C<appliance> (the ext2 filesystem).
+
+=item checksum
+
+Output a checksum.
+
+This prints a checksum which only changes when one of the input files
+changes.
+
+You can use this in order to cache the output of a previous run of
+this program: computing the checksum is much quicker than building an
+appliance, and you only need to invalidate the cache (and consequently
+rebuild the appliance) when the checksum changes.  Note that the
+host_cpu and the UID of the current user are included in the checksum.
 
 =back
 

@@ -65,14 +65,15 @@ static void add_hostfiles (const char *hostfiles_file, struct writer *);
  * hostfiles) or use a directory to store these files.
  */
 void
-create_appliance (char **inputs, int nr_inputs,
+create_appliance (const char *hostcpu,
+                  char **inputs, int nr_inputs,
                   const char *whitelist,
                   const char *modpath,
                   const char *initrd,
                   const char *appliance,
                   struct writer *writer)
 {
-  writer->wr_start (appliance, modpath, initrd);
+  writer->wr_start (hostcpu, appliance, modpath, initrd);
 
   iterate_inputs (inputs, nr_inputs, writer);
 

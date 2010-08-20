@@ -58,6 +58,7 @@ usage (const char *progname)
           "Usage:\n"
           "  %s [-options] inputs [...] host_cpu kernel initrd\n"
           "  %s -f ext2 inputs [...] host_cpu kernel initrd appliance\n"
+          "  %s -f checksum inputs [...] host_cpu\n"
           "  %s --help\n"
           "  %s --version\n"
           "\n"
@@ -72,7 +73,7 @@ usage (const char *progname)
           "Options:\n"
           "  --help\n"
           "       Display this help text and exit.\n"
-          "  -f cpio|ext2 | --format cpio|ext2\n"
+          "  -f cpio|ext2|checksum | --format cpio|ext2|checksum\n"
           "       Specify output format (default: cpio).\n"
           "  -k file | --kmods file\n"
           "       Specify kernel module whitelist.\n"
@@ -80,7 +81,7 @@ usage (const char *progname)
           "       Enable verbose messages (give multiple times for more verbosity).\n"
           "  --version | -V\n"
           "       Display version number and exit.\n",
-          progname, progname, progname, progname, progname);
+          progname, progname, progname, progname, progname, progname);
 }
 
 int
@@ -135,8 +136,13 @@ main (int argc, char *argv[])
     writer = &ext2_writer;
     nr_outputs = 3;             /* kernel, initrd, appliance */
   }
+  else if (strcmp (format, "checksum") == 0) {
+    writer = &checksum_writer;
+    nr_outputs = 0;             /* (none) */
+  }
   else {
-    fprintf (stderr, "%s: incorrect output format (-f): must be cpio|ext2\n",
+    fprintf (stderr,
+             "%s: incorrect output format (-f): must be cpio|ext2|checksum\n",
              argv[0]);
     exit (EXIT_FAILURE);
   }
@@ -160,10 +166,11 @@ main (int argc, char *argv[])
   const char *hostcpu = outputs[-1];
 
   /* Output files. */
-  const char *kernel = outputs[0];
-  const char *initrd;
-  const char *appliance;
-  initrd = appliance = outputs[1];
+  const char *kernel = NULL, *initrd = NULL, *appliance = NULL;
+  if (nr_outputs > 0)
+    kernel = outputs[0];
+  if (nr_outputs > 1)
+    initrd = appliance = outputs[1];
   if (nr_outputs > 2)
     appliance = outputs[2];
 
@@ -181,20 +188,21 @@ main (int argc, char *argv[])
   }
 
   /* Remove the output files if they exist. */
-  unlink (kernel);
-  unlink (initrd);
-  if (initrd != appliance)
+  if (kernel)
+    unlink (kernel);
+  if (initrd)
+    unlink (initrd);
+  if (appliance && initrd != appliance)
     unlink (appliance);
 
   /* Create kernel output file. */
-  const char *modpath;
-  modpath = create_kernel (hostcpu, kernel);
+  const char *modpath = create_kernel (hostcpu, kernel);
 
   if (verbose)
     print_timestamped_message ("finished creating kernel");
 
   /* Create the appliance. */
-  create_appliance (inputs, nr_inputs, whitelist, modpath,
+  create_appliance (hostcpu, inputs, nr_inputs, whitelist, modpath,
                     initrd, appliance, writer);
 
   if (verbose)

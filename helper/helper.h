@@ -28,7 +28,7 @@ struct writer {
    * 'initrd' is the mini-initrd to create (only used for ext2 output).
    * 'modpath' is the kernel module path.
    */
-  void (*wr_start) (const char *appliance,
+  void (*wr_start) (const char *hostcpu, const char *appliance,
                     const char *modpath, const char *initrd);
 
   /* Finish off the appliance. */
@@ -52,7 +52,10 @@ extern struct timeval start_t;
 extern int verbose;
 
 /* appliance.c */
-extern void create_appliance (char **inputs, int nr_inputs, const char *whitelist, const char *modpath, const char *initrd, const char *appliance, struct writer *writer);
+extern void create_appliance (const char *hostcpu, char **inputs, int nr_inputs, const char *whitelist, const char *modpath, const char *initrd, const char *appliance, struct writer *writer);
+
+/* checksum.c */
+extern struct writer checksum_writer;
 
 /* cpio.c */
 extern struct writer cpio_writer;

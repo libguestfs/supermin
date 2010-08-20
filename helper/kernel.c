@@ -122,16 +122,18 @@ create_kernel (const char *hostcpu, const char *kernel)
 
   sort (candidates, reverse_filevercmp);
 
-  /* Choose the first candidate. */
-  char *tmp = xasprintf (KERNELDIR "/%s", candidates[0]);
+  if (kernel) {
+    /* Choose the first candidate. */
+    char *tmp = xasprintf (KERNELDIR "/%s", candidates[0]);
 
-  if (verbose)
-    fprintf (stderr, "creating symlink %s -> %s\n", kernel, tmp);
+    if (verbose >= 2)
+      fprintf (stderr, "creating symlink %s -> %s\n", kernel, tmp);
 
-  if (symlink (tmp, kernel) == -1)
-    error (EXIT_FAILURE, errno, "symlink kernel");
+    if (symlink (tmp, kernel) == -1)
+      error (EXIT_FAILURE, errno, "symlink kernel");
 
-  free (tmp);
+    free (tmp);
+  }
 
   return get_modpath (candidates[0]);
 
