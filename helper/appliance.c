@@ -144,6 +144,11 @@ iterate_input_directory (const char *dirname, int dirfd, struct writer *writer)
     if (d->d_name[0] == '.') /* ignore ., .. and any hidden files. */
       continue;
 
+    /* Ignore *~ files created by editors. */
+    size_t len = strlen (d->d_name);
+    if (len > 0 && d->d_name[len-1] == '~')
+      continue;
+
     add_string (&entries, &nr_entries, &nr_alloc, d->d_name);
   }
 
