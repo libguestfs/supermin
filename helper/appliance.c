@@ -123,27 +123,28 @@ iterate_inputs (char **inputs, int nr_inputs, struct writer *writer)
   }
 }
 
+static int
+string_compare (const void *p1, const void *p2)
+{
+  return strcmp (* (char * const *) p1, * (char * const *) p2);
+}
+
 static void
 iterate_input_directory (const char *dirname, int dirfd, struct writer *writer)
 {
-  char path[PATH_MAX];
-  strcpy (path, dirname);
-  size_t len = strlen (dirname);
-  path[len++] = '/';
-
-  char *inputs[] = { path };
-
   DIR *dir = fdopendir (dirfd);
   if (dir == NULL)
     error (EXIT_FAILURE, errno, "fdopendir: %s", dirname);
+
+  char **entries = NULL;
+  size_t nr_entries = 0, nr_alloc = 0;
 
   struct dirent *d;
   while ((errno = 0, d = readdir (dir)) != NULL) {
     if (d->d_name[0] == '.') /* ignore ., .. and any hidden files. */
       continue;
 
-    strcpy (&path[len], d->d_name);
-    iterate_inputs (inputs, 1, writer);
+    add_string (&entries, &nr_entries, &nr_alloc, d->d_name);
   }
 
   if (errno != 0)
@@ -151,6 +152,27 @@ iterate_input_directory (const char *dirname, int dirfd, struct writer *writer)
 
   if (closedir (dir) == -1)
     error (EXIT_FAILURE, errno, "closedir: %s", dirname);
+
+  add_string (&entries, &nr_entries, &nr_alloc, NULL);
+
+  /* Visit directory entries in order.  In febootstrap <= 2.8 we
+   * didn't impose any order, but that led to some difficult
+   * heisenbugs.
+   */
+  sort (entries, string_compare);
+
+  char path[PATH_MAX];
+  strcpy (path, dirname);
+  size_t len = strlen (dirname);
+  path[len++] = '/';
+
+  char *inputs[] = { path };
+
+  size_t i;
+  for (i = 0; entries[i] != NULL; ++i) {
+    strcpy (&path[len], entries[i]);
+    iterate_inputs (inputs, 1, writer);
+  }
 }
 
 /* Copy kernel modules.
