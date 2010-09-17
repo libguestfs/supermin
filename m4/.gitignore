@@ -89,3 +89,4 @@
 /xsize.m4
 /xvasprintf.m4
 /asm-underscore.m4
+/sys_wait_h.m4

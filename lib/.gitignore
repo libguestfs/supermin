@@ -131,3 +131,4 @@
 /xvasprintf.h
 /hash-pjw.c
 /hash-pjw.h
+/sys_wait.in.h
