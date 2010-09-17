@@ -43,12 +43,13 @@ init_CFLAGS = -static
 init_LDFLAGS = -all-static
 
 # http://www.doof.me.uk/2010/05/07/cute-objcopy-hack/
-ELF_DEFAULT_ARCH = $(shell $(srcdir)/elf-default-arch)
+ELF_DEFAULT_ARCH = $(shell $(srcdir)/elf-default-arch | gawk '{ print $$1 }')
+DEFAULT_ARCH = $(shell $(srcdir)/elf-default-arch | gawk '{ print $$2 }')
 ext2init.o: init
 	strip --strip-all $<
 	@file $< | grep -isq static || \
 	  (echo "*** error: init is not staticly linked"; exit 1)
-	objcopy -I binary -B i386 -O $(ELF_DEFAULT_ARCH) $< $@
+	objcopy -I binary -B $(DEFAULT_ARCH) -O $(ELF_DEFAULT_ARCH) $< $@
 
 man_MANS = \
 	febootstrap-supermin-helper.8

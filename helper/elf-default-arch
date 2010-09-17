@@ -20,8 +20,10 @@
 # so instead we hard code it.
 
 case $(uname -m) in
-    i[3456]86) echo elf32-i386 ;;
-    x86_64) echo elf64-x86-64 ;;
+    i[3456]86) echo "elf32-i386 i386" ;;
+    x86_64) echo "elf64-x86-64 i386" ;;
+    s390) echo "elf32-s390 s390:31-bit" ;;
+    s390x) echo "elf64-s390 s390:31-bit" ;;
     *)
         echo "This architecture is not recognized.  Please update helper/elf-default-arch."
 esac
