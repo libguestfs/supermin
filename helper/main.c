@@ -51,9 +51,10 @@ static const struct option long_options[] = {
 };
 
 static void
-usage (const char *progname)
+usage (FILE *f, const char *progname)
 {
-  printf ("%s: build the supermin appliance on the fly\n"
+  fprintf (f,
+          "%s: build the supermin appliance on the fly\n"
           "\n"
           "Usage:\n"
           "  %s [-options] inputs [...] host_cpu kernel initrd\n"
@@ -99,7 +100,7 @@ main (int argc, char *argv[])
 
     switch (c) {
     case HELP_OPTION:
-      usage (argv[0]);
+      usage (stdout, argv[0]);
       exit (EXIT_SUCCESS);
 
     case 'f':
@@ -119,7 +120,7 @@ main (int argc, char *argv[])
       exit (EXIT_SUCCESS);
 
     default:
-      usage (argv[0]);
+      usage (stderr, argv[0]);
       exit (EXIT_FAILURE);
     }
   }
