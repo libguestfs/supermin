@@ -1,8 +1,6 @@
 #!/bin/sh -
 
-if [ -d ../gnulib ]; then
-    ../gnulib/gnulib-tool --update
-fi
+./gnulib/gnulib-tool --update
 
 export AUTOMAKE='automake --foreign --add-missing'
 autoreconf
