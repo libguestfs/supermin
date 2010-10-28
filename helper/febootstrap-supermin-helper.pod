@@ -94,6 +94,19 @@ If this option is not specified, then every kernel module from the
 host will be included.  This is safer, but can produce rather large
 appliances which need a lot more memory to boot.
 
+=item B<-u user> | B<--user user> | B<-g group> | B<--group group>
+
+Run febootstrap-supermin-helper as an alternate user and/or group.
+C<user> and C<group> can be specified as either a name, which will
+be resolved using the system name service, or a uid/gid.  Use of these
+options requires root privileges.
+
+Use of these options is required if running febootstrap-supermin-helper
+as root with the effective uid/gid set to non-root.  Bash will reset
+the effective uid/gid to the real uid/gid when invoked.  As
+febootstrap-supermin-helper uses bash in parts, this will result in the
+creation of an appliance with a mixture of ownerships.
+
 =back
 
 =head1 SPEED

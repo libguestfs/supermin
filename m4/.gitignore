@@ -90,3 +90,7 @@
 /xvasprintf.m4
 /asm-underscore.m4
 /sys_wait_h.m4
+/getopt.m4
+/inttypes-pri.m4
+/inttypes.m4
+/xstrtol.m4

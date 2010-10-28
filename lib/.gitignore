@@ -132,3 +132,13 @@
 /hash-pjw.c
 /hash-pjw.h
 /sys_wait.in.h
+/getopt.c
+/getopt.in.h
+/getopt1.c
+/getopt_int.h
+/inttypes.h
+/inttypes.in.h
+/xstrtol-error.c
+/xstrtol.c
+/xstrtol.h
+/xstrtoul.c
