@@ -304,9 +304,19 @@ ext2_clean_path (ext2_ino_t dir_ino,
       if (err != 0)
         error (EXIT_FAILURE, 0, "ext2fs_write_inode: %s", error_message (err));
 
-      if (ext2fs_inode_has_valid_blocks (&inode))
-        ext2fs_block_iterate (fs, ino, BLOCK_FLAG_READ_ONLY, NULL,
+      if (ext2fs_inode_has_valid_blocks (&inode)) {
+	int flags = 0;
+	/* From the docs: "BLOCK_FLAG_READ_ONLY is a promise by the
+	 * caller that it will not modify returned block number."
+	 * RHEL 5 does not have this flag, so just omit it if it is
+	 * not defined.
+	 */
+#ifdef BLOCK_FLAG_READ_ONLY
+	flags |= BLOCK_FLAG_READ_ONLY;
+#endif
+        ext2fs_block_iterate (fs, ino, flags, NULL,
                               release_block, NULL);
+      }
 
       ext2fs_inode_alloc_stats2 (fs, ino, -1, isdir);
     }
