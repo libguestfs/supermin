@@ -45,7 +45,7 @@ static void insmod (const char *filename);
 
 static char line[1024];
 
-void
+int
 main ()
 {
   print_uptime ();
