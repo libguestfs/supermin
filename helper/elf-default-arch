@@ -24,6 +24,8 @@ case $(uname -m) in
     x86_64) echo "elf64-x86-64 i386" ;;
     s390) echo "elf32-s390 s390:31-bit" ;;
     s390x) echo "elf64-s390 s390:31-bit" ;;
+    ppc) echo "elf32-powerpc powerpc" ;;
+    ppc64) echo "elf64-powerpc powerpc" ;;
     *)
         echo "This architecture is not recognized.  Please update helper/elf-default-arch."
 esac
