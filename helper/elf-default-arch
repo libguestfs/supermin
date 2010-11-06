@@ -28,4 +28,5 @@ case $(uname -m) in
     ppc64) echo "elf64-powerpc powerpc" ;;
     *)
         echo "This architecture is not recognized.  Please update helper/elf-default-arch."
+        exit 1
 esac
