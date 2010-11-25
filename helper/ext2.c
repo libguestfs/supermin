@@ -135,10 +135,20 @@ ext2_mkdir (ext2_ino_t dir_ino, const char *dirname, const char *basename,
   if (err != 0)
     error (EXIT_FAILURE, 0, "ext2fs_new_inode: %s", error_message (err));
 
+ try_again:
   err = ext2fs_mkdir (fs, dir_ino, ino, basename);
-  if (err != 0)
-    error (EXIT_FAILURE, 0, "ext2fs_mkdir: %s/%s: %s",
-           dirname, basename, error_message (err));
+  if (err != 0) {
+    /* See: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=217892 */
+    if (err == EXT2_ET_DIR_NO_SPACE) {
+      err = ext2fs_expand_dir (fs, dir_ino);
+      if (err)
+        error (EXIT_FAILURE, 0, "ext2fs_expand_dir: %s/%s: %s",
+               dirname, basename, error_message (err));
+      goto try_again;
+    } else
+      error (EXIT_FAILURE, 0, "ext2fs_mkdir: %s/%s: %s",
+             dirname, basename, error_message (err));
+  }
 
   /* Copy the final permissions, UID etc. to the inode. */
   struct ext2_inode inode;
