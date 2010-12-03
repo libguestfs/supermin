@@ -63,12 +63,9 @@ febootstrap-supermin-helper.8: febootstrap-supermin-helper.pod
 	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
 	  $< > $@
 
-febootstrap-supermin-helper.txt: febootstrap-supermin-helper.pod
-	pod2text $< > $@
-
 endif
 
 EXTRA_DIST = \
-	febootstrap-supermin-helper.8 febootstrap-supermin-helper.txt \
-	  febootstrap-supermin-helper.pod \
-	  elf-default-arch
+	febootstrap-supermin-helper.8 \
+	febootstrap-supermin-helper.pod \
+	elf-default-arch

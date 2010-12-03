@@ -17,7 +17,7 @@ dnl Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 dnl
 dnl Written by Richard W.M. Jones <rjones@redhat.com>
 
-AC_INIT(febootstrap,2.11)
+AC_INIT(febootstrap,3.0)
 AM_INIT_AUTOMAKE
 
 dnl Check for basic C environment.
@@ -37,27 +37,34 @@ AC_SYS_LARGEFILE
 
 gl_INIT
 
+# OCaml and ocamlfind are required to compile.
+AC_PROG_OCAML
+if test "$OCAMLC" = "no"; then
+    AC_MSG_ERROR([You must install the OCaml compiler])
+fi
+AM_CONDITIONAL([HAVE_OCAMLOPT],[test "$OCAMLBEST" = "opt"])
+AC_PROG_FINDLIB
+if test "$OCAMLFIND" = "no"; then
+    AC_MSG_ERROR([You must install OCaml findlib (the ocamlfind command)])
+fi
+
+dnl Optional programs.
 AC_CHECK_PROG(PERLDOC,[perldoc],[perldoc],[no])
 if test "x$PERLDOC" = "xno" ; then
   AC_MSG_WARN([perldoc not found - install perl to make man pages])
 fi
 AM_CONDITIONAL(HAVE_PERLDOC,[test "$perldoc" != "no"])
 
-AC_CHECK_PROG(FAKEROOT,[fakeroot],[fakeroot],[no])
-if test "x$FAKEROOT" = "xno" ; then
-  AC_MSG_FAILURE([fakeroot program not found])
-fi
-
-AC_CHECK_PROG(FAKECHROOT,[fakechroot],[fakechroot],[no])
-if test "x$FAKECHROOT" = "xno" ; then
-  AC_MSG_FAILURE([fakechroot program not found])
-fi
-
+dnl For yum-rpm handler.
 AC_CHECK_PROG(YUM,[yum],[yum],[no])
-if test "x$YUM" = "xno" ; then
-  AC_MSG_FAILURE([yum program not found])
-fi
+AC_CHECK_PROG(RPM,[rpm],[rpm],[no])
+AC_CHECK_PROG(YUMDOWNLOADER,[yumdownloader],[yumdownloader],[no])
 
+dnl For Debian handler.
+AC_CHECK_PROG(APTITUDE,[aptitude],[aptitude],[no])
+AC_CHECK_PROG(DPKG,[dpkg],[dpkg],[no])
+
+dnl Required e2fsprogs, libs.
 AC_PATH_PROG([MKE2FS],[mke2fs],[no])
 if test "x$MKE2FS" = "xno" ; then
   AC_MSG_FAILURE([mke2fs program not found (is /sbin in your current path?)])
@@ -82,5 +89,5 @@ AC_CHECK_HEADER([ext2fs/ext2fs.h],[],[
 ])
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile lib/Makefile helper/Makefile examples/Makefile])
+AC_CONFIG_FILES([config.ml Makefile lib/Makefile helper/Makefile])
 AC_OUTPUT

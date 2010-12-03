@@ -1,32 +1,29 @@
-febootstrap - Bootstrap a basic Fedora system
+febootstrap - Bootstrapping tool for creating supermin appliances
 by Richard W.M. Jones (rjones@redhat.com)
 http://people.redhat.com/~rjones/febootstrap
 ----------------------------------------------------------------------
 
-febootstrap is a Fedora equivalent to Debian's debootstrap.  You can
-use it to create a basic Fedora filesystem.
+febootstrap is a tool for building supermin appliances.  These are
+tiny appliances [similar to virtual machines], usually around 100KB in
+size, which get fully instantiated on-the-fly in a fraction of a
+second when you need to boot one of them.
 
-There are currently some restrictions compared to debootstrap.
+A complete description is in the febootstrap(8) man page.
 
-For instructions, restrictions, examples etc. please read the manpage
-febootstrap(8).
+IMPORTANT NOTE FOR USERS OF FEBOOTSTRAP 2.x:
+  febootstrap 3.x is a complete rewrite.  febootstrap 2.x could only
+  build Fedora distributions.  This version can build many varieties
+  of Linux distros.  3.x only builds supermin appliances, it does not
+  build chroots.  3.x does not build cross-distro, cross-release or
+  cross-architecture systems.  If you want febootstrap 2.x, please use
+  the 'febootstrap-2.x' branch from the git repository.
 
 Requirements
 ------------
 
-  fakeroot
-    - Tested with version 1.11.
+  ocaml
 
-  fakechroot >= 2.9 or 2.8 + patch
-    - **** NB. KNOWN NOT TO WORK WITH 2.8 *****  You MUST apply
-      the patch 'fakechroot-2.8-relchroot.patch' to the fakechroot
-      sources and recompile.  Hopefully this patch will be included
-      in future versions of fakechroot.
-
-  yum
-    - Tested with version 3.2 (works best with 3.2.21 or above)
-    - Needs network access to a Fedora repository, or a local
-      Fedora mirror.
+  ocaml findlib ("ocamlfind" program)
 
   perldoc
     - This is just used to generate the manpage.
@@ -36,11 +33,20 @@ Requirements
   gcc
 
   qemu
-    - If you want to test-run your systems.
+    - Only if you need to test-boot appliances.
 
   libext2fs
   /sbin/mke2fs
     - These are part of e2fsprogs.
+
+Optional
+--------
+(but you will need a package manager for your Linux distro)
+
+  yum
+  rpm
+  apt-get
+  dpkg
 
 Building and installing
 -----------------------
@@ -49,42 +55,9 @@ Building and installing
   make
   sudo make install
 
-Note, if you want to run the scripts locally without installing,
-you have to set the $PATH to the current directory, ie:
-
-  PATH=$(pwd):$PATH
-  febootstrap [...]
-
-Debugging
----------
-
-If you get segfaults while running febootstrap or errors in the %post
-scripts, these are often caused by some incompatibility in the
-emulation provided by fakeroot/fakechroot.  You can track them down by
-running the yum command explicitly.  Try:
-
-  fakeroot fakechroot -s \
-    yum -y -c /tmp/repo \
-      --disablerepo=\* --enablerepo=febootstrap \
-      --noplugins --nogpgcheck \
-      --installroot=/tmp/root \
-      install "@Core"
-
-where /tmp/repo would be a file like this (change repo and arch
-parameters as appropriate):
-
-  [febootstrap]
-  name=febootstrap
-  failovermethod=priority
-  enabled=1
-  gpgcheck=0
-  mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=rawhide&arch=x86_64
-
-You can insert gdb in the appropriate place in the fakeroot /
-fakechroot / yum command.
-
 Feedback and bugs
 -----------------
 
-Send feedback to rjones@redhat.com.  You can file bugs in
-http://bugzilla.redhat.com/
+Send feedback to libguestfs@redhat.com.  You can file bugs in
+https://bugzilla.redhat.com/ (under "Fedora", "febootstrap")
+

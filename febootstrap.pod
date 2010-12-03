@@ -1,259 +1,170 @@
+=encoding utf8
+
 =head1 NAME
 
-febootstrap - Bootstrap a basic Fedora system (like Debian debootstrap)
+febootstrap - Bootstrapping tool for creating supermin appliances
 
 =head1 SYNOPSIS
 
- febootstrap [--options] REPO TARGET [MIRROR]
-
-=head1 EXAMPLES
-
- febootstrap fedora-10 /tmp/f10
- febootstrap rawhide /tmp/rawhide
- febootstrap rawhide /tmp/rawhide http://mymirror/rawhide/x86_64/os
- febootstrap --groupinstall="Mail Server" fedora-10 /tmp/mailserver
+ febootstrap [-o OUTPUTDIR] --names LIST OF PKGS ...
+ febootstrap [-o OUTPUTDIR] PKG FILE NAMES ...
 
 =head1 DESCRIPTION
 
-febootstrap creates a Fedora root filesystem, based on the Fedora
-version specified by I<REPO> under the directory specified by
-I<TARGET>.  Optionally I<MIRROR> can point to a local mirror
-(otherwise the public Fedora mirrors are used).  I<REPO> names are
-C<fedora-I<VERSION>> (eg. C<fedora-10>) or C<rawhide>.
+febootstrap is a tool for building supermin appliances.  These are
+tiny appliances (similar to virtual machines), usually around 100KB in
+size, which get fully instantiated on-the-fly in a fraction of a
+second when you need to boot one of them.
 
-febootstrap does I<not> need to be run as root.  If for some reason
-you do run it as root, then it works slightly differently and may have
-side effects such as stopping or starting system daemons.
+Originally "fe" in febootstrap stood for "Fedora", but this tool is
+now distro-independent and can build supermin appliances for several
+popular Linux distros, and adding support for others is reasonably
+easy.
 
-For more advanced needs, take a look at L<mock(1)>, C<livecd-creator>
-and I<thincrust.net>'s C<appliance-creator>.
+Note that this manual page documents febootstrap 3.x which is a
+complete rewrite and quite different from version 2.x.  If you are
+looking for the febootstrap 2.x tools, then this is not the right
+place.
 
-The normal output is a root directory located at I<TARGET> and
-a fakeroot logfile at C<I<TARGET>/fakeroot.log>.
+=head2 BASIC OPERATION
+
+There are two modes for using febootstrap.  With the I<--names>
+parameter, febootstrap takes a list of package names and creates a
+supermin appliance containing those packages and all dependencies that
+those packages require.  In this mode febootstrap usually needs
+network access because it may need to consult package repositories in
+order to work out dependencies and download packages.
+
+Without I<--names>, febootstrap takes a list of packages (ie.
+filenames of locally available packages).  This package set must be
+complete and consistent with no dependencies outside the set of
+packages you provide.  In this mode febootstrap does not require any
+network access.  It works by looking at the package files themselves.
+
+By "package" we mean the RPM, DEB, (etc.) package.  A package name
+might be the fully qualified name (eg. C<coreutils-8.5-7.fc14.x86_64>)
+or some abbreviation (eg. C<coreutils>).  The precise format of the
+name and what abbreviations are allowed depends on the package
+manager.
+
+The supermin appliance that febootstrap writes consists of two files
+called C<hostfiles> and C<base.img> (it is common for users to add
+more files).  By default these are written to the current directory.
+If you specify the I<-o OUTPUTDIR> option then these files are written
+to the named directory instead (traditionally this directory is named
+C<supermin.d> but you can call it whatever you want).
+
+In all cases febootstrap can only build a supermin appliance which is
+identical in distro, version and architecture to the host.  It does
+I<not> do cross-builds.
+
+=head2 MINIMIZING THE SUPERMIN APPLIANCE
+
+You may want to "minimize" the supermin appliance in order to save
+time and space when it is instantiated.  Typically you might want to
+remove documentation, info files, man pages and locales.  We used to
+provide a separate tool called C<febootstrap-minimize> for this
+purpose, but it is no longer provided.  Instead you can post-process
+C<hostfiles> yourself to remove any files or directories that you
+don't want (by removing lines from the file).  Be careful what you
+remove because files may be necessary for correct operation of the
+appliance.
+
+=head2 KERNEL AND KERNEL MODULES
+
+Usually the kernel and kernel modules are I<not> included in the
+supermin appliance.  When the appliance is instantiated, the kernel
+modules from the host kernel are copied in, and it is booted using the
+host kernel.
+
+=head2 BOOTING AND CACHING THE SUPERMIN APPLIANCE
+
+To instantiate and boot the supermin appliance you need to use the
+separate tool L<febootstrap-supermin-helper(8)>.  For fastest boot
+times you should cache the output of that tool.  See the libguestfs
+source file C<src/appliance.c> for an example of how this is done.
+
+=head2 ENFORCING AVAILABILITY OF HOSTFILES
+
+L<febootstrap-supermin-helper(8)> builds the appliance by copying in
+host files as listed in C<hostfiles>.  For this to work those host
+files must be available.  We usually enforce this by adding
+requirements (eg. RPM C<Requires:> lines) on the package that uses the
+supermin appliance, so that package cannot be installed without
+pulling in the dependent packages and thus making sure the host files
+are available.
 
 =head1 OPTIONS
 
 =over 4
 
-=item B<-i package>
+=item B<--help>
 
-=item B<--install=package>
+Display brief command line usage, and exit.
 
-=item B<-g "group">
+=item B<--exclude REGEXP>
 
-=item B<--groupinstall="group">
+After doing dependency resolution, exclude packages which match the
+regular expression.
 
-Specify the package or group to install.  To list multiple packages or
-groups, you must give multiple C<-i> or C<-g> options.  Group names
-can contain spaces, so use quotes where necessary.
+This option is only used with I<--names>, and it can be given multiple
+times on the command line.
 
-These are passed directly to C<yum install> or C<yum groupinstall>
-commands, and thus any dependencies are also resolved by yum.  You can
-also use shell globs and filenames here, as with ordinary yum.
+=item B<--names>
 
-If no packages or groups are given, then we install the C<Core> group
-which is a small working Fedora installation (but by no means
-minimal).  Use C<yum groupinfo Core> to list the packages currently in
-the C<Core> group.
+Provide a list of package names, instead of providing packages
+directly.  In this mode febootstrap may require network access.  See
+L</BASIC OPERATION> above.
 
-=item B<--no-clean>
+=item B<--no-warnings>
 
-Normally febootstrap will clean up the yum repository
-(C</var/cache/yum> inside the image).  This contains the downloaded
-RPMs and metadata.  However if you give the C<--no-clean> option, then
-the yum repository is left.  This is useful if you want to run further
-yum commands inside the filesystem by hand.
+Don't print warnings about packaging problems.
 
-=item B<-p "proxyurl">
+=item B<-o outputdir>
 
-=item B<--proxy="proxyurl">
+Select the output directory where the two supermin appliance files are
+written (C<hostfiles> and C<base.img>).  The default directory is the
+current directory.  Note that if this files exist already in the
+output directory then they will be overwritten.
 
-URL to the proxy server that yum should use.
+=item B<-v>
 
-=item B<-u source>
+=item B<--verbose>
 
-=item B<--updates=source>
+Enable verbose messages.
 
-Pull in updates from an additional updates repository.  The possible
-sources are:
+=item B<-V>
 
-=over 4
+=item B<--version>
 
-=item -u C<http://...> (a URL)
-
-Get updates from the specific URL.
-
-=item -u C<updates-released-fN> (an updates repository name)
-
-Get updates from the public mirrors of the named repository
-(eg. C<updates-released-f10>).  See REPOSITORIES below.
-
-=item -u C<none> (default)
-
-Don't add an updates repository.  This is the default.
+Print the package name and version number, and exit.
 
 =back
-
-=back
-
-=head1 REPOSITORIES
-
-You can list available repositories by visiting this URL:
-
-L<http://mirrors.fedoraproject.org/mirrorlist?repo=help&arch=i386>
-
-(If necessary replace C<i386> with your architecture, but it seems
-unlikely that this list will change based on architecture).
-
-=head1 RUNNING EXTRA COMMANDS IN THE ROOT FILESYSTEM
-
-If you want to run further commands inside the root filesystem, for
-example additional C<yum> installs, then use C<febootstrap-run>.  See
-the L<febootstrap-run(8)> manual page for more details.
-
-You have to be careful about modifying files in the root filesystem
-directly (without using C<febootstrap-run>).  It's easy to confuse
-fakeroot and end up with the wrong permissions on files (see FAKEROOT
-LOGFILE below).
-
-C<febootstrap-run> runs the command inside the root filesystem, which
-means it won't normally have access to files outside the root.  You
-can use C<FAKECHROOT_EXCLUDE_PATH> environment variable (see
-L<fakechroot(1)>) or copy files into the root first.
-
-=head2 FAKEROOT LOGFILE
-
-When febootstrap is run as non-root (the normal case) we use fakeroot
-so that yum thinks it is running as root.  Fakeroot keeps track of
-"real" file permissions in a log file which is saved into the target
-directory as C<I<TARGET>/fakeroot.log>.
-
-This logfile is indexed by inode number, which makes certain
-operations safe and other operations unsafe.
-Files should be replaced only by doing:
-
- echo updated-content > old-file
-
-(since that preserves the original inode).
-
-Deleting files and then creating new ones (even with a different name)
-is usually unsafe, because the new files might reuse inodes claimed by
-the old files, and so appear with peculiar permissions
-(eg. unreadable, or as a symbolic link).
-
-Deleting files is also usually unsafe, although the reasons are more
-subtle.  If you just use C<rm> then the inode number is not deleted
-from C<fakeroot.log> which means it can be reused by another file
-later on.
-
-In most cases it's usually safest to use C<febootstrap-run>.
-
-You can use the fakeroot logfile in a number of ways:
-
-=over 4
-
-=item *
-
-Use L<febootstrap-run(8)> to run a command with the faked file
-permissions.
-
-=item *
-
-Use L<febootstrap-install(8)> to install a file with permissions
-in the root filesystem.
-
-=item *
-
-Generate an initramfs (compressed cpio) file containing the correct
-permissions using the tool C<febootstrap-to-initramfs>.
-
-=item *
-
-Generate a supermin appliance using the tool
-C<febootstrap-to-supermin>.
-
-=item *
-
-Apply the permissions to the target directory using the forthcoming
-tool C<febootstrap-fix-root> (requires root).
-
-=back
-
-=head1 RUNNING FEBOOTSTRAP AS ROOT
-
-There is some rudimentary support for running C<febootstrap> as root.
-However it is not well-tested and generally not recommended.
-
-=head1 COMPARISON TO DEBOOTSTRAP
-
-febootstrap cannot do cross-architecture installs (C<debootstrap
---foreign>).  The reason is that C<%pre> and C<%post> scripts cannot
-run.  It may be possible to defer running of scriptlets (which is
-basically how debootstrap works), and patches to do this are welcomed.
-
-febootstrap cannot do 32-on-64 bit installs.  The reason is that
-fakeroot and fakechroot do not load the correct preload library.  This
-is really a bug in fakeroot/fakechroot, which we think would be easy
-to fix.  (debootstrap deals with this case the same as for
-C<--foreign> installs - see previous point).
-
-=head1 OTHER RESTRICTIONS AND BUGS
-
-The following programs are not run during C<%post> scriptlets (because
-they are all statically linked, and fakechroot cannot run statically
-linked programs).
-
-=over 4
-
-=item C</sbin/ldconfig> (from many packages)
-
-=item C</usr/sbin/glibc_post_upgrade> (from C<glibc>)
-
-=item C</usr/sbin/build-locale-archive> (from C<glibc-common>)
-
-=item C</usr/sbin/libgcc_post_upgrade> (from C<libgcc>)
-
-=back
-
-If you wish, you can run them the first time you boot into the new
-machine.
-
-febootstrap recreates the repository anew each time, and this causes
-yum to download all the RPMs every time.  This is very wasteful, and
-we should provide a way to cache the repository.
-
-=head1 HOME PAGE
-
-L<http://people.redhat.com/~rjones/febootstrap>
 
 =head1 SEE ALSO
 
-L<febootstrap-to-initramfs(8)>,
-L<febootstrap-minimize(8)>,
-L<febootstrap-run(8)>,
-L<febootstrap-install(8)>,
-L<febootstrap-to-supermin(8)>,
-L<fakeroot(1)>,
-L<fakechroot(1)>,
-L<yum(8)>,
-L<rpm(8)>.
-
-=head1 ALTERNATIVES
-
-L<mock(1)>,
-L<http://fedoraproject.org/wiki/FedoraLiveCD/LiveCDHowTo>,
-L<http://thincrust.net/>,
-L<debootstrap(8)>,
-C<ubuntu-vm-builder>.
+L<febootstrap-supermin-helper(8)>,
+L<http://people.redhat.com/~rjones/febootstrap/>,
+L<guestfs(3)>,
+L<http://libguestfs.org/>.
 
 =head1 AUTHORS
 
-Richard W.M. Jones <rjones @ redhat . com>
+=over 4
+
+=item *
+
+Richard W.M. Jones L<http://people.redhat.com/~rjones/>
+
+=item *
+
+Matthew Booth L<mbooth@redhat.com>
+
+=back
 
 =head1 COPYRIGHT
 
-(C) Copyright 2009 Red Hat Inc.,
-L<http://people.redhat.com/~rjones/febootstrap>.
+Copyright (C) 2009-2010 Red Hat Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

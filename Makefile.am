@@ -19,60 +19,71 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = lib helper examples
+SUBDIRS = lib helper
 
-bin_SCRIPTS = \
-	febootstrap \
-	febootstrap-run \
-	febootstrap-install \
-	febootstrap-minimize \
-	febootstrap-to-initramfs \
-	febootstrap-to-supermin
-DISTCLEANFILES = $(bin_SCRIPTS)
+# Note these must be in build dependency order.
+SOURCES = \
+	config.ml \
+	febootstrap_utils.mli \
+	febootstrap_utils.ml \
+	febootstrap_cmdline.mli \
+	febootstrap_cmdline.ml \
+	febootstrap_package_handlers.mli \
+	febootstrap_package_handlers.ml \
+	febootstrap_yum_rpm.ml \
+	febootstrap_debian.ml \
+	febootstrap.ml
 
-febootstrap: febootstrap.sh
-	rm -f $@
-	cp $< $@-t
-	chmod 0555 $@-t
-	mv $@-t $@
+CLEANFILES = *~ *.cmi *.cmo *.cmx *.o febootstrap
 
-febootstrap-run: febootstrap-run.sh
-	rm -f $@
-	cp $< $@-t
-	chmod 0555 $@-t
-	mv $@-t $@
-
-febootstrap-install: febootstrap-install.sh
-	rm -f $@
-	cp $< $@-t
-	chmod 0555 $@-t
-	mv $@-t $@
-
-febootstrap-minimize: febootstrap-minimize.sh
-	rm -f $@
-	cp $< $@-t
-	chmod 0555 $@-t
-	mv $@-t $@
-
-febootstrap-to-initramfs: febootstrap-to-initramfs.sh
-	rm -f $@
-	cp $< $@-t
-	chmod 0555 $@-t
-	mv $@-t $@
-
-febootstrap-to-supermin: febootstrap-to-supermin.sh
-	rm -f $@
-	cp $< $@-t
-	chmod 0555 $@-t
-	mv $@-t $@
+EXTRA_DIST = \
+	.gitignore \
+	.gitmodules \
+	autogen.sh \
+	febootstrap.8 \
+	febootstrap.pod \
+	m4/gnulib-cache.m4 \
+	$(SOURCES)
 
 man_MANS = \
-	febootstrap.8 \
-	febootstrap-run.8 \
-	febootstrap-install.8 \
-	febootstrap-minimize.8 \
-	febootstrap-to-initramfs.8 \
-	febootstrap-to-supermin.8
+	febootstrap.8
+
+bin_SCRIPTS = febootstrap
+
+SOURCES_ML = $(filter %.ml,$(SOURCES))
+BOBJECTS = $(SOURCES_ML:.ml=.cmo)
+XOBJECTS = $(SOURCES_ML:.ml=.cmx)
+
+if !HAVE_OCAMLOPT
+OBJECTS = $(BOBJECTS)
+else
+OBJECTS = $(XOBJECTS)
+endif
+
+OCAMLPACKAGES = -package unix,str
+OCAMLFLAGS = -warn-error CDEFLMPSUVXYZ
+
+febootstrap: $(OBJECTS)
+	$(OCAMLFIND) $(OCAMLBEST) $(OCAMLFLAGS) $(OCAMLPACKAGES) -linkpkg \
+	  $^ -o $@
+
+.mli.cmi:
+	$(OCAMLFIND) ocamlc $(OCAMLFLAGS) $(OCAMLPACKAGES) -c $< -o $@
+.ml.cmo:
+	$(OCAMLFIND) ocamlc $(OCAMLFLAGS) $(OCAMLPACKAGES) -c $< -o $@
+.ml.cmx:
+	$(OCAMLFIND) ocamlopt $(OCAMLFLAGS) $(OCAMLPACKAGES) -c $< -o $@
+
+depend: .depend
+
+.depend: $(SOURCES)
+	rm -f $@ $@-t
+	$(OCAMLFIND) ocamldep $^ > $@-t
+	mv $@-t $@
+
+include .depend
+
+SUFFIXES = .cmo .cmi .cmx .ml .mli .mll .mly
 
 if HAVE_PERLDOC
 
@@ -82,78 +93,4 @@ febootstrap.8: febootstrap.pod
 	  -c "Virtualization Support" \
 	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
 	  $< > $@
-
-febootstrap.txt: febootstrap.pod
-	pod2text $< > $@
-
-febootstrap-run.8: febootstrap-run.pod
-	pod2man \
-	  --section 8 \
-	  -c "Virtualization Support" \
-	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
-	  $< > $@
-
-febootstrap-run.txt: febootstrap-run.pod
-	pod2text $< > $@
-
-febootstrap-install.8: febootstrap-install.pod
-	pod2man \
-	  --section 8 \
-	  -c "Virtualization Support" \
-	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
-	  $< > $@
-
-febootstrap-install.txt: febootstrap-install.pod
-	pod2text $< > $@
-
-febootstrap-minimize.8: febootstrap-minimize.pod
-	pod2man \
-	  --section 8 \
-	  -c "Virtualization Support" \
-	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
-	  $< > $@
-
-febootstrap-minimize.txt: febootstrap-minimize.pod
-	pod2text $< > $@
-
-febootstrap-to-initramfs.8: febootstrap-to-initramfs.pod
-	pod2man \
-	  --section 8 \
-	  -c "Virtualization Support" \
-	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
-	  $< > $@
-
-febootstrap-to-initramfs.txt: febootstrap-to-initramfs.pod
-	pod2text $< > $@
-
-febootstrap-to-supermin.8: febootstrap-to-supermin.pod
-	pod2man \
-	  --section 8 \
-	  -c "Virtualization Support" \
-	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
-	  $< > $@
-
-febootstrap-to-supermin.txt: febootstrap-to-supermin.pod
-	pod2text $< > $@
-
 endif
-
-EXTRA_DIST = \
-	fakechroot-2.8-relchroot.patch \
-	fakechroot-svn-no-dup-envs.patch \
-	febootstrap.8 febootstrap.txt febootstrap.pod \
-	  febootstrap.sh \
-	febootstrap-run.8 febootstrap-run.txt febootstrap-run.pod \
-	  febootstrap-run.sh \
-	febootstrap-install.8 febootstrap-install.txt febootstrap-install.pod \
-	  febootstrap-install.sh \
-	febootstrap-minimize.8 febootstrap-minimize.txt \
-	  febootstrap-minimize.pod \
-	  febootstrap-minimize.sh \
-	febootstrap-to-initramfs.8 febootstrap-to-initramfs.txt \
-	  febootstrap-to-initramfs.pod \
-	  febootstrap-to-initramfs.sh \
-	febootstrap-to-supermin.8 febootstrap-to-supermin.txt \
-	  febootstrap-to-supermin.pod \
-	  febootstrap-to-supermin.sh \
-	m4/gnulib-cache.m4
