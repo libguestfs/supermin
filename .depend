@@ -19,6 +19,10 @@ febootstrap_debian.cmo: febootstrap_utils.cmi \
     febootstrap_package_handlers.cmi febootstrap_cmdline.cmi config.cmo 
 febootstrap_debian.cmx: febootstrap_utils.cmx \
     febootstrap_package_handlers.cmx febootstrap_cmdline.cmx config.cmx 
+febootstrap_pacman.cmo: febootstrap_utils.cmi \
+    febootstrap_package_handlers.cmi febootstrap_cmdline.cmi config.cmo 
+febootstrap_pacman.cmx: febootstrap_utils.cmx \
+    febootstrap_package_handlers.cmx febootstrap_cmdline.cmx config.cmx 
 febootstrap.cmo: febootstrap_utils.cmi febootstrap_package_handlers.cmi \
     febootstrap_cmdline.cmi config.cmo 
 febootstrap.cmx: febootstrap_utils.cmx febootstrap_package_handlers.cmx \

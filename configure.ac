@@ -64,6 +64,9 @@ dnl For Debian handler.
 AC_CHECK_PROG(APTITUDE,[aptitude],[aptitude],[no])
 AC_CHECK_PROG(DPKG,[dpkg],[dpkg],[no])
 
+dnl For ArchLinux handler.
+AC_CHECK_PROG(PACMAN,[pacman],[pacman],[no])
+
 dnl Required programs, libraries.
 AC_PATH_PROG([INSMODSTATIC],[insmod.static],[no])
 if test "x$INSMODSTATIC" = "xno" ; then

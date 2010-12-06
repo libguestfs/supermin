@@ -32,6 +32,7 @@ SOURCES = \
 	febootstrap_package_handlers.ml \
 	febootstrap_yum_rpm.ml \
 	febootstrap_debian.ml \
+	febootstrap_pacman.ml \
 	febootstrap.ml
 
 CLEANFILES = *~ *.cmi *.cmo *.cmx *.o febootstrap
