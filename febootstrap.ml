@@ -374,19 +374,22 @@ let () =
     (match !warn_unreadable with
      | [] -> ()
      | paths ->
-         eprintf "febootstrap: warning: some host files are unreadable by non-root\nGet your distro to fix these files:\n";
+         eprintf "febootstrap: warning: some host files are unreadable by non-root\n";
+         eprintf "febootstrap: warning: get your distro to fix these files:\n";
          List.iter
-           (fun path -> eprintf "\t%s\n" path)
+           (fun path -> eprintf "\t%s\n%!" path)
            (List.sort compare paths)
     );
   );
 
   (* Near-atomically copy files to the final output directory. *)
+  debug "writing %s ..." (outputdir // "base.img");
   let cmd =
     sprintf "mv %s %s"
       (Filename.quote (tmpdir // "base.img"))
       (Filename.quote (outputdir // "base.img")) in
   run_command cmd;
+  debug "writing %s ..." (outputdir // "hostfiles");
   let cmd =
     sprintf "mv %s %s"
       (Filename.quote (tmpdir // "hostfiles"))
