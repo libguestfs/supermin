@@ -151,7 +151,7 @@ let () =
   );
 
   (* Split the list of files into ones for hostfiles and ones for base image. *)
-  let p_hmac = Str.regexp "/\\.*\\.hmac$" in
+  let p_hmac = Str.regexp "/\\..*\\.hmac$" in
 
   let hostfiles = ref []
   and baseimgfiles = ref [] in
