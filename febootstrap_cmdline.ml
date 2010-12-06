@@ -77,6 +77,7 @@ let excludes = List.rev !excludes
 let names_mode = !names_mode
 let outputdir = !outputdir
 let packages = List.rev !packages
+let verbose = !verbose
 let warnings = !warnings
 
-let debug fs = ksprintf (fun str -> if !verbose then print_endline str) fs
+let debug fs = ksprintf (fun str -> if verbose then print_endline str) fs

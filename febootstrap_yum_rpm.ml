@@ -34,13 +34,14 @@ let yum_rpm_detect () =
 
 let yum_rpm_resolve_dependencies_and_download names =
   (* Liberate this data from python. *)
-  let py = "
+  let py = sprintf "
 import yum
 import yum.misc
 import sys
 
 yb = yum.YumBase ()
-#yum.logginglevels.setDebugLevel(0) -- doesn't work?
+yb.preconf.debuglevel = %d
+yb.preconf.errorlevel = %d
 
 # Look up the base packages from the command line.
 deps = dict ()
@@ -68,10 +69,10 @@ while not stable:
 # Write it to a file because yum spews garbage on stdout.
 f = open (sys.argv[1], \"w\")
 for pkg in deps.keys ():
-    f.write (\"%s %s %s %s %s\\n\" %
+    f.write (\"%%s %%s %%s %%s %%s\\n\" %%
              (pkg.name, pkg.epoch, pkg.version, pkg.release, pkg.arch))
 f.close ()
-" in
+" (if verbose then 1 else 0) (if verbose then 1 else 0) in
   let tmpfile = tmpdir // "names.tmp" in
   run_python py (tmpfile :: names);
   let chan = open_in tmpfile in
@@ -136,7 +137,8 @@ f.close ()
     exit 1
   );
 
-  let cmd = sprintf "yumdownloader --destdir %s %s"
+  let cmd = sprintf "yumdownloader%s --destdir %s %s"
+    (if verbose then "" else " --quiet")
     (Filename.quote tmpdir)
     (String.concat " " (List.map Filename.quote pkgnames)) in
   run_command cmd;
