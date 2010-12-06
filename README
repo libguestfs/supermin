@@ -32,9 +32,6 @@ Requirements
 
   gcc
 
-  qemu
-    - Only if you need to test-boot appliances.
-
   gawk
 
   libcom_err
@@ -47,14 +44,25 @@ Requirements
       package this, you have to build it yourself (or copy the file
       from a Fedora machine which also works ...)
 
+For Fedora/RHEL:
+
+  rpm
+  yum
+  yumdownloader
+
+For Debian/Ubuntu:
+
+  dpkg
+  aptitude
+
 Optional
 --------
-(but you will need a package manager for your Linux distro)
 
-  yum
-  rpm
-  apt-get
-  dpkg
+These are only needed if you plan to boot the supermin appliances you
+are building:
+
+  qemu >= 0.13
+  kernel >= 2.6.36
 
 Building and installing
 -----------------------
