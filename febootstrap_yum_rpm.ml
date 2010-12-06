@@ -42,6 +42,7 @@ import sys
 yb = yum.YumBase ()
 yb.preconf.debuglevel = %d
 yb.preconf.errorlevel = %d
+yb.setCacheDir ()
 
 # Look up the base packages from the command line.
 deps = dict ()
