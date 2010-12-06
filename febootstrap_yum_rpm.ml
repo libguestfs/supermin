@@ -43,6 +43,8 @@ import sys
 yb = yum.YumBase ()
 yb.preconf.debuglevel = %d
 yb.preconf.errorlevel = %d
+if %s:
+    yb.preconf.fn = %S
 yb.setCacheDir ()
 
 # Look up the base packages from the command line.
@@ -74,7 +76,12 @@ for pkg in deps.keys ():
     f.write (\"%%s %%s %%s %%s %%s\\n\" %%
              (pkg.name, pkg.epoch, pkg.version, pkg.release, pkg.arch))
 f.close ()
-" (if verbose then 1 else 0) (if verbose then 1 else 0) tmpfile in
+"
+    (if verbose then 1 else 0)
+    (if verbose then 1 else 0)
+    (match yum_config with None -> "False" | Some _ -> "True")
+    (match yum_config with None -> "" | Some filename -> filename)
+    tmpfile in
   run_python py names;
   let chan = open_in tmpfile in
   let lines = input_all_lines chan in
@@ -138,8 +145,10 @@ f.close ()
     exit 1
   );
 
-  let cmd = sprintf "yumdownloader%s --destdir %s %s"
+  let cmd = sprintf "yumdownloader%s%s --destdir %s %s"
     (if verbose then "" else " --quiet")
+    (match yum_config with None -> ""
+     | Some filename -> sprintf " -c %s" filename)
     (Filename.quote tmpdir)
     (String.concat " " (List.map Filename.quote pkgnames)) in
   run_command cmd;

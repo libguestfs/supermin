@@ -139,6 +139,14 @@ Enable verbose messages.
 
 Print the package name and version number, and exit.
 
+=item B<--yum-config CONFIGFILE>
+
+(Yum/RPM package handler only).  Use an alternate configuration file
+instead of C</etc/yum.conf>.  If you also want to specify alternate
+repositories then you can put them in this file directly or add a
+C<reposdir> option to this file.  For more information on the file
+format see L<yum.conf(5)>.
+
 =back
 
 =head1 SEE ALSO

@@ -41,3 +41,6 @@ val verbose : bool
 
 val warnings : bool
   (** If true, print warnings.  [--no-warnings] sets this to false. *)
+
+val yum_config : string option
+  (** Yum configuration file. *)
