@@ -35,6 +35,8 @@ Requirements
   qemu
     - Only if you need to test-boot appliances.
 
+  gawk
+
   libcom_err
   libext2fs
   /sbin/mke2fs
