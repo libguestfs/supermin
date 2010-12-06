@@ -144,12 +144,12 @@ ext2_make_initrd (const char *modpath, const char *initrd)
   free_module_deps ();
 
   /* Copy in insmod static binary. */
-  cmd = xasprintf ("cp /sbin/insmod.static %s", dir);
+  cmd = xasprintf ("cp %s %s", INSMODSTATIC, dir);
   if (verbose >= 2) fprintf (stderr, "%s\n", cmd);
   r = system (cmd);
   if (r == -1 || WEXITSTATUS (r) != 0)
     error (EXIT_FAILURE, 0,
-           "ext2_make_initrd: copy /sbin/insmod.static failed");
+           "ext2_make_initrd: copy %s failed", INSMODSTATIC);
   free (cmd);
 
   /* Copy in the init program, linked into this program as a data blob. */
