@@ -35,6 +35,7 @@ Requirements
   qemu
     - Only if you need to test-boot appliances.
 
+  libcom_err
   libext2fs
   /sbin/mke2fs
     - These are part of e2fsprogs.
