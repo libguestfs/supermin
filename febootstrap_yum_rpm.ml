@@ -34,6 +34,7 @@ let yum_rpm_detect () =
 
 let yum_rpm_resolve_dependencies_and_download names =
   (* Liberate this data from python. *)
+  let tmpfile = tmpdir // "names.tmp" in
   let py = sprintf "
 import yum
 import yum.misc
@@ -46,7 +47,7 @@ yb.setCacheDir ()
 
 # Look up the base packages from the command line.
 deps = dict ()
-pkgs = yb.pkgSack.returnPackages (patterns=sys.argv[2:])
+pkgs = yb.pkgSack.returnPackages (patterns=sys.argv[1:])
 for pkg in pkgs:
     deps[pkg] = False
 
@@ -68,14 +69,13 @@ while not stable:
             deps[pkg] = yum.misc.unique (deps[pkg])
 
 # Write it to a file because yum spews garbage on stdout.
-f = open (sys.argv[1], \"w\")
+f = open (%S, \"w\")
 for pkg in deps.keys ():
     f.write (\"%%s %%s %%s %%s %%s\\n\" %%
              (pkg.name, pkg.epoch, pkg.version, pkg.release, pkg.arch))
 f.close ()
-" (if verbose then 1 else 0) (if verbose then 1 else 0) in
-  let tmpfile = tmpdir // "names.tmp" in
-  run_python py (tmpfile :: names);
+" (if verbose then 1 else 0) (if verbose then 1 else 0) tmpfile in
+  run_python py names;
   let chan = open_in tmpfile in
   let lines = input_all_lines chan in
   close_in chan;
