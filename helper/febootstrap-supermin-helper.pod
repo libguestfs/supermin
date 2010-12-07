@@ -15,8 +15,7 @@ febootstrap-supermin-helper - Reconstruct initramfs from supermin appliance.
 
 I<febootstrap-supermin-helper> reconstructs a bootable kernel and
 initramfs from a supermin appliance.  First you should be familiar
-with L<febootstrap(8)>, L<febootstrap-to-initramfs(8)> and
-L<febootstrap-to-supermin(8)>.
+with L<febootstrap(8)>.
 
 =head1 PARAMETERS
 
@@ -129,17 +128,11 @@ list the kernel modules you really need.
 
 Minimize the appliance, removing as much extraneous junk as possible.
 
-As well as using L<febootstrap-minimize(8)> it is worth checking for
-anything that is not necessary for your particular application and
-removing it by hand.
-
 =back
 
 =head1 SEE ALSO
 
-L<febootstrap(8)>,
-L<febootstrap-to-initramfs(8)>,
-L<febootstrap-to-supermin(8)>.
+L<febootstrap(8)>.
 
 =head1 AUTHORS
 
