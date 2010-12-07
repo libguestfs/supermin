@@ -41,6 +41,7 @@ lib/time.h
 lib/unistd.h
 lib/warn-on-use.h
 lib/wchar.h
+/local*
 INSTALL
 install-sh
 missing
