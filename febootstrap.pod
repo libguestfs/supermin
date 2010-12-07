@@ -238,7 +238,7 @@ appliance.
 
 For example:
 
- < supermin.d/hostfiles
+ < supermin.d/hostfiles \
  grep -v '^/usr/share/man/' |
  grep -v '^/usr/share/doc/' |
  grep -v '^/usr/share/info/' > supermin.d/hostfiles-t
