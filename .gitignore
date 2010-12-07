@@ -28,6 +28,8 @@ febootstrap*.txt
 febootstrap-*.tar.gz
 helper/febootstrap-supermin-helper
 helper/init
+html/febootstrap-supermin-helper.8.html
+html/febootstrap.8.html
 lib/alloca.h
 lib/arg-nonnull.h
 lib/c++defs.h
@@ -45,6 +47,7 @@ lib/wchar.h
 INSTALL
 install-sh
 missing
+pod2htm?.tmp
 stamp-h1
 /warn-on-use.h
 examples/guestfs

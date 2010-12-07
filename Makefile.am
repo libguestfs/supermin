@@ -94,4 +94,28 @@ febootstrap.8: febootstrap.pod
 	  -c "Virtualization Support" \
 	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
 	  $< > $@
+
+noinst_DATA = \
+	html/febootstrap.8.html
+
+html/febootstrap.8.html: febootstrap.pod
+	mkdir -p html
+	pod2html \
+	  --css 'pod.css' \
+	  --htmldir html \
+	  --outfile html/febootstrap.8.html \
+	  febootstrap.pod
+
 endif
+
+# Maintainer website update.
+HTMLFILES = \
+	html/febootstrap.8.html \
+	html/febootstrap-supermin-helper.8.html
+
+WEBSITEDIR = $(HOME)/d/redhat/websites/libguestfs
+
+website: $(HTMLFILES)
+	cp $(HTMLFILES) $(WEBSITEDIR)
+
+CLEANFILES += $(HTMLFILES) pod2*.tmp

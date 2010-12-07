@@ -63,6 +63,17 @@ febootstrap-supermin-helper.8: febootstrap-supermin-helper.pod
 	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
 	  $< > $@
 
+noinst_DATA = \
+	$(top_builddir)/html/febootstrap-supermin-helper.8.html
+
+$(top_builddir)/html/febootstrap-supermin-helper.8.html: febootstrap-supermin-helper.pod
+	mkdir -p $(top_builddir)/html
+	cd $(top_builddir) && pod2html \
+	  --css 'pod.css' \
+	  --htmldir html \
+	  --outfile html/febootstrap-supermin-helper.8.html \
+	  helper/febootstrap-supermin-helper.pod
+
 endif
 
 EXTRA_DIST = \
