@@ -43,6 +43,7 @@ EXTRA_DIST = \
 	autogen.sh \
 	febootstrap.8 \
 	febootstrap.pod \
+	html/pod.css \
 	m4/gnulib-cache.m4 \
 	$(SOURCES)
 
