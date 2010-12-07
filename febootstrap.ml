@@ -151,12 +151,14 @@ let () =
   );
 
   (* Split the list of files into ones for hostfiles and ones for base image. *)
-  let p_hmac = Str.regexp "/\\..*\\.hmac$" in
+  let p_hmac = Str.regexp "^\\..*\\.hmac$" in
 
   let hostfiles = ref []
   and baseimgfiles = ref [] in
   List.iter (
     fun (path, {ft_dir = dir; ft_ghost = ghost; ft_config = config} ,_ as f) ->
+      let file = Filename.basename path in
+
       (* Ignore boot files, kernel, kernel modules.  Supermin appliances
        * are booted from external kernel and initrd, and
        * febootstrap-supermin-helper copies the host kernel modules.
@@ -176,7 +178,7 @@ let () =
         hostfiles := f :: !hostfiles
 
       (* Ignore FIPS files (.*.hmac) (RHBZ#654638). *)
-      else if Str.string_match p_hmac path 0 then ()
+      else if Str.string_match p_hmac file 0 then ()
 
       (* Ghost files are created empty in the base image. *)
       else if ghost then
