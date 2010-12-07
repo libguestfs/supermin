@@ -48,51 +48,15 @@ name and what abbreviations are allowed depends on the package
 manager.
 
 The supermin appliance that febootstrap writes consists of two files
-called C<hostfiles> and C<base.img> (it is common for users to add
-more files).  By default these are written to the current directory.
-If you specify the I<-o OUTPUTDIR> option then these files are written
-to the named directory instead (traditionally this directory is named
+called C<hostfiles> and C<base.img> (see L</SUPERMIN APPLIANCES>
+below).  By default these are written to the current directory.  If
+you specify the I<-o OUTPUTDIR> option then these files are written to
+the named directory instead (traditionally this directory is named
 C<supermin.d> but you can call it whatever you want).
 
 In all cases febootstrap can only build a supermin appliance which is
 identical in distro, version and architecture to the host.  It does
 I<not> do cross-builds.
-
-=head2 MINIMIZING THE SUPERMIN APPLIANCE
-
-You may want to "minimize" the supermin appliance in order to save
-time and space when it is instantiated.  Typically you might want to
-remove documentation, info files, man pages and locales.  We used to
-provide a separate tool called C<febootstrap-minimize> for this
-purpose, but it is no longer provided.  Instead you can post-process
-C<hostfiles> yourself to remove any files or directories that you
-don't want (by removing lines from the file).  Be careful what you
-remove because files may be necessary for correct operation of the
-appliance.
-
-=head2 KERNEL AND KERNEL MODULES
-
-Usually the kernel and kernel modules are I<not> included in the
-supermin appliance.  When the appliance is instantiated, the kernel
-modules from the host kernel are copied in, and it is booted using the
-host kernel.
-
-=head2 BOOTING AND CACHING THE SUPERMIN APPLIANCE
-
-To instantiate and boot the supermin appliance you need to use the
-separate tool L<febootstrap-supermin-helper(8)>.  For fastest boot
-times you should cache the output of that tool.  See the libguestfs
-source file C<src/appliance.c> for an example of how this is done.
-
-=head2 ENFORCING AVAILABILITY OF HOSTFILES
-
-L<febootstrap-supermin-helper(8)> builds the appliance by copying in
-host files as listed in C<hostfiles>.  For this to work those host
-files must be available.  We usually enforce this by adding
-requirements (eg. RPM C<Requires:> lines) on the package that uses the
-supermin appliance, so that package cannot be installed without
-pulling in the dependent packages and thus making sure the host files
-are available.
 
 =head1 OPTIONS
 
@@ -148,6 +112,160 @@ C<reposdir> option to this file.  For more information on the file
 format see L<yum.conf(5)>.
 
 =back
+
+=head1 SUPERMIN APPLIANCES
+
+Supermin appliances consist of just enough information to be able to
+build an appliance containing the same operating system (Linux
+version, distro, release etc) as the host OS.  Since the host and
+appliance share many common files such as C</bin/bash> and
+C</lib/libc.so> there is no reason to ship these files in the
+appliance.  They can simply be read from the host on demand when the
+appliance is launched.  Therefore to save space we just store the
+names of the host files that we want.
+
+There are some files which cannot just be copied from the host in this
+way.  These include configuration files which the host admin might
+have edited.  So along with the list of host files, we also store a
+skeleton base image which contains these files and the outline
+directory structure.
+
+Therefore the supermin appliance normally consists of at least two
+control files:
+
+=over 4
+
+=item B<hostfiles>
+
+The list of files that are to be copied from the host.  This is a
+plain text file with one pathname per line.  Directories are included
+in this file.
+
+Paths can contain wildcards, which are expanded when the appliance
+is created, eg:
+
+ /etc/yum.repos.d/*.repo
+
+would copy all of the C<*.repo> files into the appliance.
+
+Each pathname in the file should start with a C</> character.  (In
+older versions of febootstrap, paths started with C<./> and were
+relative to the root directory, but you should not do that in new
+files).
+
+=item B<base.img>
+
+This uncompressed cpio file contains the skeleton filesystem.  Mostly
+it contains directories and a few configuration files.
+
+All paths in the cpio file should be relative to the root directory of
+the appliance.
+
+Note that unlike C<hostfiles>, paths and directories in the base image
+don't need to have any relationship to the host filesystem.
+
+=back
+
+=head2 RECONSTRUCTING THE APPLIANCE
+
+The separate tool L<febootstrap-supermin-helper(8)> is used to
+reconstruct an appliance from the hostfiles and base image files.
+
+This program in fact iterates recursively over the files and
+directories passed to it.  A common layout is:
+
+ supermin.d/
+ supermin.d/base.img
+ supermin.d/extra.img
+ supermin.d/hostfiles
+
+and then invoking febootstrap-supermin-helper with just the
+C<supermin.d> directory path as an argument.
+
+In this way extra files can be added to the appliance just by creating
+another cpio file (C<extra.img> in the example above) and dropping it
+into the directory.  When the appliance is constructed, the extra
+files will appear in the appliance.
+
+=head3 DIRECTORIES BEFORE FILES
+
+In order for febootstrap-supermin-helper to run quickly, it does not
+know how to create directories automatically.  Inside hostfiles and
+the cpio files, directories must be specified before any files that
+they contain.  For example:
+
+ /usr
+ /usr/sbin
+ /usr/sbin/serviced
+
+It is fine to list the same directory name multiple times.
+
+=head3 LEXICOGRAPHICAL ORDER
+
+febootstrap-supermin-helper visits the supermin control files in
+lexicographical order.  Thus in the example above, in the order
+C<base.img> -E<gt> C<extra.img> -E<gt> C<hostfiles>.
+
+This has an important effect: files contained in later cpio files
+overwrite earlier files, and directories do not need to be specified
+if they have already been created in earlier control files.
+
+=head3 EXAMPLE OF CREATING EXTRA CPIO FILE
+
+You can create a file like C<extra.img> very easily using a shell
+snippet similar to this one:
+
+ cd $tmpdir
+ mkdir -p usr/sbin
+ cp /path/to/serviced usr/sbin/
+ echo -e "usr\nusr/sbin\nusr/sbin/serviced" |
+   cpio --quiet -o -H newc > extra.img
+ rm -rf usr
+
+Notice how we instruct cpio to create intermediate directories.
+
+=head2 MINIMIZING THE SUPERMIN APPLIANCE
+
+You may want to "minimize" the supermin appliance in order to save
+time and space when it is instantiated.  Typically you might want to
+remove documentation, info files, man pages and locales.  We used to
+provide a separate tool called C<febootstrap-minimize> for this
+purpose, but it is no longer provided.  Instead you can post-process
+C<hostfiles> yourself to remove any files or directories that you
+don't want (by removing lines from the file).  Be careful what you
+remove because files may be necessary for correct operation of the
+appliance.
+
+For example:
+
+ < supermin.d/hostfiles
+ grep -v '^/usr/share/man/' |
+ grep -v '^/usr/share/doc/' |
+ grep -v '^/usr/share/info/' > supermin.d/hostfiles-t
+ mv supermin.d/hostfiles-t supermin.d/hostfiles
+
+=head2 KERNEL AND KERNEL MODULES
+
+Usually the kernel and kernel modules are I<not> included in the
+supermin appliance.  When the appliance is instantiated, the kernel
+modules from the host kernel are copied in, and it is booted using the
+host kernel.  febootstrap-supermin-helper is able to choose the best
+host kernel available to boot the appliance.
+
+=head2 BOOTING AND CACHING THE SUPERMIN APPLIANCE
+
+For fastest boot times you should cache the output of
+febootstrap-supermin-helper.  See the libguestfs source file
+C<src/appliance.c> for an example of how this is done.
+
+=head2 ENFORCING AVAILABILITY OF HOSTFILES
+
+febootstrap-supermin-helper builds the appliance by copying in host
+files as listed in C<hostfiles>.  For this to work those host files
+must be available.  We usually enforce this by adding requirements
+(eg. RPM C<Requires:> lines) on the package that uses the supermin
+appliance, so that package cannot be installed without pulling in the
+dependent packages and thus making sure the host files are available.
 
 =head1 SEE ALSO
 
