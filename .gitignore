@@ -1,4 +1,5 @@
 *~
+*.cdbs-orig
 *.cmi
 *.cmo
 *.cmx

@@ -106,5 +106,9 @@ AC_CHECK_HEADER([ext2fs/ext2fs.h],[],[
 ])
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([config.ml Makefile lib/Makefile helper/Makefile])
+AC_CONFIG_FILES([config.ml
+        debian/changelog
+        Makefile
+        lib/Makefile
+        helper/Makefile])
 AC_OUTPUT
