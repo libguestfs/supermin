@@ -109,7 +109,7 @@ let pacman_list_files pkg =
       (* No per-file metadata like in RPM, but we can synthesize it
        * from the path.
        *)
-      let config = statbuf.st_kind = S_REG && string_prefix path "/etc/" in
+      let config = statbuf.st_kind = S_REG && string_prefix "/etc/" path in
 
       let mode = statbuf.st_perm in
 
