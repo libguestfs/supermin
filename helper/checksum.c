@@ -65,11 +65,12 @@ checksum_end (void)
 static void
 checksum_file_stat (const char *filename, const struct stat *statbuf)
 {
-  /* Publically writable directories (ie. /tmp) don't have stable
-   * times.  Since we only care about some attributes of directories
-   * in any case, we vary the output accordingly.
+  /* Publically writable directories (ie. /tmp) and special files
+   * don't have stable times.  Since we only care about some
+   * attributes of directories and special files, we vary the output
+   * accordingly.
    */
-  if (!S_ISDIR (statbuf->st_mode))
+  if (S_ISREG (statbuf->st_mode))
     fprintf (pp, "%s %ld %ld %d %d %ld %o\n",
              filename,
              (long) statbuf->st_ctime, (long) statbuf->st_mtime,
