@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <fnmatch.h>
 #include <unistd.h>
 #include <errno.h>
@@ -77,6 +78,8 @@ has_modpath (const char *kernel_name)
   }
 }
 
+static char *create_kernel_archlinux (const char *hostcpu, const char *kernel);
+
 /* Create the kernel.  This chooses an appropriate kernel and makes a
  * symlink to it.
  *
@@ -95,6 +98,10 @@ const char *
 create_kernel (const char *hostcpu, const char *kernel)
 {
   char **all_files = read_dir (KERNELDIR);
+
+  /* In ArchLinux, kernel is always named /boot/vmlinuz26. */
+  if (access ("/boot/vmlinuz26", F_OK) == 0)
+    return create_kernel_archlinux (hostcpu, kernel);
 
   /* In original: ls -1dvr /boot/vmlinuz-*.$arch* 2>/dev/null | grep -v xen */
   const char *patt;
@@ -147,4 +154,57 @@ create_kernel (const char *hostcpu, const char *kernel)
            "installed, try installing a fullvirt kernel (only for\n"
            "febootstrap use, you shouldn't boot the Xen guest with it).\n");
   exit (EXIT_FAILURE);
+}
+
+/* In ArchLinux, kernel is always named /boot/vmlinuz26, and we have
+ * to use the 'file' command to work out what version it is.
+ */
+static char *
+create_kernel_archlinux (const char *hostcpu, const char *kernel)
+{
+  const char *file_cmd = "file /boot/vmlinuz26 | awk '{print $9}'";
+  FILE *pp;
+  char modversion[256];
+  char *modpath;
+  size_t len;
+
+  pp = popen (file_cmd, "r");
+  if (pp == NULL) {
+  error:
+    fprintf (stderr, "febootstrap-supermin-helper: %s: command failed\n",
+             file_cmd);
+    exit (EXIT_FAILURE);
+  }
+
+  if (fgets (modversion, sizeof modversion, pp) == NULL)
+    goto error;
+
+  if (pclose (pp) == -1)
+    goto error;
+
+  /* Chomp final \n */
+  len = strlen (modversion);
+  if (len > 0 && modversion[len-1] == '\n') {
+    modversion[len-1] = '\0';
+    len--;
+  }
+
+  /* Generate module path. */
+  modpath = xasprintf (MODULESDIR "/%s", modversion);
+
+  /* Check module path is a directory. */
+  if (!isdir (modpath)) {
+    fprintf (stderr, "febootstrap-supermin-helper: /boot/vmlinuz26 kernel exists but %s is not a valid module path\n",
+             modpath);
+    exit (EXIT_FAILURE);
+  }
+
+  if (kernel) {
+    /* Symlink from kernel to /boot/vmlinuz26. */
+    if (symlink ("/boot/vmlinuz26", kernel) == -1)
+      error (EXIT_FAILURE, errno, "symlink kernel");
+  }
+
+  /* Return module path. */
+  return modpath;
 }
