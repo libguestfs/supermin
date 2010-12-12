@@ -48,33 +48,26 @@ let pacman_resolve_dependencies_and_download names =
   (* Download the packages. I could use wget `pacman -Sp`, but this
    * narrows the pacman -Sy window
    *)
-  let cmd =
-    sprintf "cd %s && mkdir -p var/lib/pacman && fakeroot pacman -Syw --noconfirm --cachedir=$(pwd) --root=$(pwd) %s"
-      (Filename.quote tmpdir)
-      (String.concat " " (List.map Filename.quote pkgs)) in
-  run_command cmd;
-
-  (* Find out what pacman downloaded. *)
-  (*let files = Sys.readdir tmpdir in
-
-  let pkgs = List.map (
+  List.iter (
     fun pkg ->
-      (* Look for 'pkg*.pkg.tar.xz' in the list of files. *)
-      let pre = pkg in
-      let r = ref "" in
-      try
-	for i = 0 to Array.length files - 1 do
-	  if string_prefix pre files.(i) then (
-	    r := files.(i);
-	    files.(i) <- "";
-	    raise Exit
-	  )
-	done;
-	eprintf "febootstrap: pacman: error: no file was downloaded corresponding to package %s\n" pkg;
-	exit 1
-      with
-	  Exit -> !r
-  ) pkgs in *)
+      let cmd = 
+        sprintf "cd %s && mkdir -p var/lib/pacman && fakeroot pacman -Syw --noconfirm --cachedir=$(pwd) --root=$(pwd) %s"
+        (Filename.quote tmpdir)
+        pkg in
+      if Sys.command cmd <> 0 then (
+          (* The package is not in the main repos, check the aur *)
+          let cmd =
+            sprintf "cd %s && wget http://aur.archlinux.org/packages/%s/%s.tar.gz && tar xf %s.tar.gz && cd %s && makepkg && mv %s-*.pkg.tar.xz %s"
+            (Filename.quote tmpdir)
+            pkg
+            pkg
+            pkg
+            pkg
+            pkg
+            (Filename.quote tmpdir) in
+          run_command cmd;
+        )
+  ) pkgs;
 
   List.sort compare pkgs
 
@@ -87,9 +80,13 @@ let pacman_list_files pkg =
   let pkgdir = tmpdir // pkg ^ ".d" in
   mkdir pkgdir 0o755;
   let cmd =
-    sprintf "tar -xf %s-* -C %s"
-      (tmpdir // pkg ) pkgdir in
-  run_command cmd;
+    sprintf "pacman -Q %s | awk '{print $2}'"
+      pkg in
+   let ver = List.hd (run_command_get_lines cmd) in
+   let cmd =
+     sprintf "fakeroot tar -xf %s-%s* -C %s"
+     (Filename.quote tmpdir // pkg ) ver (Filename.quote pkgdir) in
+   run_command cmd;
 
   let cmd = sprintf "cd %s && find ." pkgdir in
   let lines = run_command_get_lines cmd in
