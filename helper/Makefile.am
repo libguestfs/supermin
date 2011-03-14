@@ -40,7 +40,7 @@ febootstrap_supermin_helper_LDADD = \
 noinst_PROGRAMS = init
 init_SOURCES = init.c
 init_CFLAGS = -static
-init_LDFLAGS = -all-static
+init_LDFLAGS = -static
 
 # http://www.doof.me.uk/2010/05/07/cute-objcopy-hack/
 ELF_DEFAULT_ARCH = $(shell $(srcdir)/elf-default-arch | gawk '{ print $$1 }')
