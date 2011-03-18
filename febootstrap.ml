@@ -79,16 +79,24 @@ let () =
     let combine (name1, ft1, pkg1) (name2, ft2, pkg2) =
       (* Rules for combining files. *)
       if ft1.ft_config || ft2.ft_config then (
-        eprintf "febootstrap: error: %s is a config file which is listed in two packages (%s, %s)\n"
-          name1 pkg1 pkg2;
-        exit 1
-      );
-      if (ft1.ft_dir || ft2.ft_dir) && (not (ft1.ft_dir && ft2.ft_dir)) then (
+	(* It's a fairly frequent bug in Fedora for two packages to
+	 * incorrectly list the same config file.  Allow this, provided
+	 * the size of both files is 0.
+	 *)
+	if ft1.ft_size = 0 && ft2.ft_size = 0 then
+	  (name1, ft1, pkg1)
+	else (
+          eprintf "febootstrap: error: %s is a config file which is listed in two packages (%s, %s)\n"
+            name1 pkg1 pkg2;
+          exit 1
+	)
+      )
+      else if (ft1.ft_dir || ft2.ft_dir) && (not (ft1.ft_dir && ft2.ft_dir)) then (
         eprintf "febootstrap: error: %s appears as both directory and ordinary file (%s, %s)\n"
           name1 pkg1 pkg2;
         exit 1
-      );
-      if ft1.ft_ghost then
+      )
+      else if ft1.ft_ghost then
         (name2, ft2, pkg2)
       else
         (name1, ft1, pkg1)
