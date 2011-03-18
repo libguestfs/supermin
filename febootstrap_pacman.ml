@@ -111,7 +111,7 @@ let pacman_list_files pkg =
       let mode = statbuf.st_perm in
 
       (path, { ft_dir = is_dir; ft_config = config; ft_mode = mode;
-	       ft_ghost = false })
+	       ft_ghost = false; ft_size = statbuf.st_size })
   ) lines in
 
   files

@@ -126,7 +126,8 @@ let () =
             else (
               insert_dir parent;
               let newdir = (parent, { ft_dir = true; ft_config = false;
-                                      ft_ghost = false; ft_mode = 0o40755 },
+                                      ft_ghost = false; ft_mode = 0o40755;
+				      ft_size = 0 },
                             "") in
               newdir :: loop parent
             )
@@ -140,12 +141,12 @@ let () =
   if false then (
     List.iter (
       fun (name, { ft_dir = dir; ft_ghost = ghost; ft_config = config;
-                   ft_mode = mode }, pkg) ->
-        printf "%s [%s%s%s%o] from %s\n" name
+                   ft_mode = mode; ft_size = size }, pkg) ->
+        printf "%s [%s%s%s%o %d] from %s\n" name
           (if dir then "dir " else "")
           (if ghost then "ghost " else "")
           (if config then "config " else "")
-          mode
+          mode size
           pkg
     ) files
   );

@@ -163,7 +163,7 @@ f.close ()
 let rec yum_rpm_list_files pkg =
   (* Run rpm -qlp with some extra magic. *)
   let cmd =
-    sprintf "rpm -q --qf '[%%{FILENAMES} %%{FILEFLAGS:fflags} %%{FILEMODES}\\n]' -p %s"
+    sprintf "rpm -q --qf '[%%{FILENAMES} %%{FILEFLAGS:fflags} %%{FILEMODES} %%{FILESIZES}\\n]' -p %s"
       pkg in
   let lines = run_command_get_lines cmd in
 
@@ -171,15 +171,16 @@ let rec yum_rpm_list_files pkg =
     filter_map (
       fun line ->
         match string_split " " line with
-        | [filename; flags; mode] ->
+        | [filename; flags; mode; size] ->
             let test_flag = String.contains flags in
             let mode = int_of_string mode in
+	    let size = int_of_string size in
             if test_flag 'd' then None  (* ignore documentation *)
             else
               Some (filename, {
                       ft_dir = mode land 0o40000 <> 0;
                       ft_ghost = test_flag 'g'; ft_config = test_flag 'c';
-                      ft_mode = mode;
+                      ft_mode = mode; ft_size = size;
                     })
         | _ ->
             eprintf "febootstrap: bad output from rpm command: '%s'" line;
@@ -199,7 +200,8 @@ let rec yum_rpm_list_files pkg =
       let dirs =
         List.map (fun name ->
                     name, { ft_dir = true; ft_ghost = false;
-                            ft_config = false; ft_mode = 0o40755 }) dirs in
+                            ft_config = false; ft_mode = 0o40755;
+			    ft_size = 0 }) dirs in
       let devs = [ "/dev/null"; "/dev/full"; "/dev/zero"; "/dev/random";
                    "/dev/urandom"; "/dev/tty"; "/dev/console";
                    "/dev/ptmx"; "/dev/stdin"; "/dev/stdout"; "/dev/stderr" ] in
@@ -207,7 +209,8 @@ let rec yum_rpm_list_files pkg =
       let devs =
         List.map (fun name ->
                     name, { ft_dir = false; ft_ghost = false;
-                            ft_config = false; ft_mode = 0o644 }) devs in
+                            ft_config = false; ft_mode = 0o644;
+			    ft_size = 0 }) devs in
       dirs @ devs @ files
     ) else files in
 

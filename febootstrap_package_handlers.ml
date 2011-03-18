@@ -33,6 +33,7 @@ and file_type = {
   ft_config : bool;
   ft_ghost : bool;
   ft_mode : int;
+  ft_size : int;
 }
 
 let tmpdir = tmpdir ()

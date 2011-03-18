@@ -50,6 +50,7 @@ and file_type = {
   ft_config : bool;            (** Is a configuration file. *)
   ft_ghost : bool;             (** Is a ghost (created empty) file. *)
   ft_mode : int;               (** File mode. *)
+  ft_size : int;	       (** File size. *)
 }
 
 val register_package_handler : string -> package_handler -> unit
