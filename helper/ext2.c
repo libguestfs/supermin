@@ -402,6 +402,20 @@ ext2_file_stat (const char *orig_filename, const struct stat *statbuf)
     dirname = strndup (orig_filename, p-orig_filename);
     basename = p+1;
 
+    /* If the parent directory is a symlink to another directory, then
+     * we want to look up the target directory. (RHBZ#698089).
+     */
+    struct stat stat1, stat2;
+    if (lstat (dirname, &stat1) == 0 && S_ISLNK (stat1.st_mode) &&
+        stat (dirname, &stat2) == 0 && S_ISDIR (stat2.st_mode)) {
+      char *new_dirname = malloc (PATH_MAX+1);
+      ssize_t r = readlink (dirname, new_dirname, PATH_MAX+1);
+      if (r == -1)
+        error (EXIT_FAILURE, errno, "readlink: %s", orig_filename);
+      new_dirname[r] = '\0';
+      dirname = new_dirname;
+    }
+
     /* Look up the parent directory. */
     err = ext2fs_namei (fs, EXT2_ROOT_INO, EXT2_ROOT_INO, dirname, &dir_ino);
     if (err != 0)
