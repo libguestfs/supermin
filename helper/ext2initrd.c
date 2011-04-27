@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <errno.h>
+#include <assert.h>
 
 #include "error.h"
 #include "full-write.h"
@@ -80,7 +81,18 @@ ext2_make_initrd (const char *modpath, const char *initrd)
   for (i = 0; kmods[i] != NULL; ++i)
     n += strlen (kmods[i]) + 16;
   cmd = malloc (n);
-  sprintf (cmd, "find '%s' ", modpath);
+  /* "cd /" here is for virt-v2v.  It's cwd might not be accessible by
+   * the current user (because it sometimes sets its own uid) and the
+   * "find" command works by changing directory then changing back to
+   * the cwd.  This results in a warning:
+   *
+   * find: failed to restore initial working directory: Permission denied
+   *
+   * Note this only works because "modpath" and temporary "dir" are
+   * currently guaranteed to be absolute paths, hence assertion.
+   */
+  assert (modpath[0] == '/');
+  sprintf (cmd, "cd / ; find '%s' ", modpath);
   for (i = 0; kmods[i] != NULL; ++i) {
     if (i > 0) strcat (cmd, "-o ");
     strcat (cmd, "-name '");
