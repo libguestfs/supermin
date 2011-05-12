@@ -30,6 +30,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <dirent.h>
 #include <sys/types.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
@@ -42,6 +43,7 @@
 
 static void print_uptime (void);
 static void insmod (const char *filename);
+static void show_directory (const char *dir);
 
 static char line[1024];
 
@@ -155,6 +157,17 @@ main ()
   print_uptime ();
   execl ("/init", "init", NULL);
   perror ("execl: /init");
+
+  /* /init failed to execute, but why?  Before we ditch, print some
+   * debug.  Although we have a full appliance, the fact that /init
+   * failed to run means we may not be able to run any commands.
+   */
+  show_directory ("/");
+  show_directory ("/bin");
+  show_directory ("/lib");
+  show_directory ("/lib64");
+  fflush (stderr);
+
   exit (EXIT_FAILURE);
 }
 
@@ -198,4 +211,65 @@ print_uptime (void)
   fclose (fp);
 
   fprintf (stderr, "febootstrap: uptime: %s", line);
+}
+
+/* Display a directory on stderr.  This is used for debugging only. */
+static char
+dirtype (int dt)
+{
+  switch (dt) {
+  case DT_BLK: return 'b';
+  case DT_CHR: return 'c';
+  case DT_DIR: return 'd';
+  case DT_FIFO: return 'p';
+  case DT_LNK: return 'l';
+  case DT_REG: return '-';
+  case DT_SOCK: return 's';
+  case DT_UNKNOWN: return 'u';
+  default: return '?';
+  }
+}
+
+static void
+show_directory (const char *dirname)
+{
+  DIR *dir;
+  struct dirent *d;
+  struct stat statbuf;
+  char link[PATH_MAX+1];
+  ssize_t n;
+
+  fprintf (stderr, "febootstrap: debug: listing directory %s\n", dirname);
+
+  if (chdir (dirname) == -1) {
+    perror (dirname);
+    return;
+  }
+
+  dir = opendir (".");
+  if (!dir) {
+    perror (dirname);
+    chdir ("/");
+    return;
+  }
+
+  while ((d = readdir (dir)) != NULL) {
+    fprintf (stderr, "%5d %c %-16s", d->d_ino, dirtype (d->d_type), d->d_name);
+    if (lstat (d->d_name, &statbuf) >= 0) {
+      fprintf (stderr, " %06o %d %d:%d",
+               statbuf.st_mode, statbuf.st_size,
+               statbuf.st_uid, statbuf.st_gid);
+      if (S_ISLNK (statbuf.st_mode)) {
+        n = readlink (d->d_name, link, PATH_MAX);
+        if (n >= 0) {
+          link[n] = '\0';
+          fprintf (stderr, " -> %s", link);
+        }
+      }
+    }
+    fprintf (stderr, "\n");
+  }
+
+  closedir (dir);
+  chdir ("/");
 }
