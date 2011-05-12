@@ -64,6 +64,12 @@ main ()
     exit (EXIT_FAILURE);
   }
 
+  /* A perennial problem is that /sbin/insmod.static is not
+   * executable.  Just make it executable.  It's easier than fixing
+   * everyone's distro.
+   */
+  chmod ("/sbin/insmod.static", 0755);
+
   FILE *fp = fopen ("/modules", "r");
   if (fp == NULL) {
     perror ("fopen: /modules");
