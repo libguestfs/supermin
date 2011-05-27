@@ -65,7 +65,7 @@ ext2_start (const char *hostcpu, const char *appliance,
   if (fd == -1)
     error (EXIT_FAILURE, errno, "open: %s", appliance);
 
-  if (lseek (fd, APPLIANCE_SIZE - 1, SEEK_SET) == -1)
+  if (lseek (fd, APPLIANCE_SIZE - 1, SEEK_SET) == (off_t) -1)
     error (EXIT_FAILURE, errno, "lseek");
 
   char c = 0;
