@@ -43,13 +43,13 @@ ext2_filsys fs;
  *
  * The downside of allocating a very large initial disk is that the
  * fixed overhead of ext2 is larger (since ext2 calculates it based on
- * the size of the disk).  For a 1GB disk the overhead is
- * approximately 16MB.
+ * the size of the disk).  For a 4GB disk the overhead is
+ * approximately 66MB.
  *
  * In future, make this configurable, or determine it from the input
  * files (XXX).
  */
-#define APPLIANCE_SIZE (1024*1024*1024)
+#define APPLIANCE_SIZE ((off_t)4*1024*1024*1024)
 
 static void
 ext2_start (const char *hostcpu, const char *appliance,
