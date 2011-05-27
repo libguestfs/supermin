@@ -32,7 +32,7 @@ extern ext2_filsys fs;
 
 extern void ext2_mkdir (ext2_ino_t dir_ino, const char *dirname, const char *basename, mode_t mode, uid_t uid, gid_t gid, time_t ctime, time_t atime, time_t mtime);
 extern void ext2_empty_inode (ext2_ino_t dir_ino, const char *dirname, const char *basename, mode_t mode, uid_t uid, gid_t gid, time_t ctime, time_t atime, time_t mtime, int major, int minor, int dir_ft, ext2_ino_t *ino_ret);
-extern void ext2_write_file (ext2_ino_t ino, const char *buf, size_t size);
+extern void ext2_write_file (ext2_ino_t ino, const char *buf, size_t size, const char *orig_filename);
 extern void ext2_link (ext2_ino_t dir_ino, const char *basename, ext2_ino_t ino, int dir_ft);
 extern void ext2_clean_path (ext2_ino_t dir_ino, const char *dirname, const char *basename, int isdir);
 

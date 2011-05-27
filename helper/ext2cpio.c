@@ -244,7 +244,7 @@ read_file (void)
 
     if (body_len) {
       char *buf = read_whole_body ();
-      ext2_write_file (ino, buf, body_len);
+      ext2_write_file (ino, buf, body_len, name);
       free (buf);
     }
   }
@@ -256,7 +256,7 @@ read_file (void)
                       0, 0, EXT2_FT_SYMLINK, &ino);
 
     char *buf = read_whole_body ();
-    ext2_write_file (ino, buf, body_len);
+    ext2_write_file (ino, buf, body_len, name);
     free (buf);
   }
   /* Create a directory. */

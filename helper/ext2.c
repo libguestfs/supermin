@@ -1,5 +1,5 @@
 /* febootstrap-supermin-helper reimplementation in C.
- * Copyright (C) 2009-2010 Red Hat Inc.
+ * Copyright (C) 2009-2011 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -206,13 +206,15 @@ ext2_empty_inode (ext2_ino_t dir_ino, const char *dirname, const char *basename,
 
 /* You must create the file first with ext2_empty_inode. */
 void
-ext2_write_file (ext2_ino_t ino, const char *buf, size_t size)
+ext2_write_file (ext2_ino_t ino, const char *buf, size_t size,
+                 const char *orig_filename)
 {
   errcode_t err;
   ext2_file_t file;
   err = ext2fs_file_open2 (fs, ino, NULL, EXT2_FILE_WRITE, &file);
   if (err != 0)
-    error (EXIT_FAILURE, 0, "ext2fs_file_open2: %s", error_message (err));
+    error (EXIT_FAILURE, 0, "ext2fs_file_open2: %s: %s",
+           orig_filename, error_message (err));
 
   /* ext2fs_file_write cannot deal with partial writes.  You have
    * to write the entire file in a single call.
@@ -220,28 +222,37 @@ ext2_write_file (ext2_ino_t ino, const char *buf, size_t size)
   unsigned int written;
   err = ext2fs_file_write (file, buf, size, &written);
   if (err != 0)
-    error (EXIT_FAILURE, 0, "ext2fs_file_write: %s", error_message (err));
+    error (EXIT_FAILURE, 0, "ext2fs_file_write: %s: %s\n"
+           "Block allocation failures can happen here for several reasons:\n"
+           " - /lib/modules contains modules with debug that makes the modules very large\n"
+           " - a file listed in 'hostfiles' is unexpectedly very large\n"
+           " - too many packages added to the supermin appliance",
+           orig_filename, error_message (err));
   if ((size_t) written != size)
     error (EXIT_FAILURE, 0,
-           "ext2fs_file_write: size = %zu != written = %u\n",
-           size, written);
+           "ext2fs_file_write: %s: size = %zu != written = %u\n",
+           orig_filename, size, written);
 
   err = ext2fs_file_flush (file);
   if (err != 0)
-    error (EXIT_FAILURE, 0, "ext2fs_file_flush: %s", error_message (err));
+    error (EXIT_FAILURE, 0, "ext2fs_file_flush: %s: %s",
+           orig_filename, error_message (err));
   err = ext2fs_file_close (file);
   if (err != 0)
-    error (EXIT_FAILURE, 0, "ext2fs_file_close: %s", error_message (err));
+    error (EXIT_FAILURE, 0, "ext2fs_file_close: %s: %s",
+           orig_filename, error_message (err));
 
   /* Update the true size in the inode. */
   struct ext2_inode inode;
   err = ext2fs_read_inode (fs, ino, &inode);
   if (err != 0)
-    error (EXIT_FAILURE, 0, "ext2fs_read_inode: %s", error_message (err));
+    error (EXIT_FAILURE, 0, "ext2fs_read_inode: %s: %s",
+           orig_filename, error_message (err));
   inode.i_size = size;
   err = ext2fs_write_inode (fs, ino, &inode);
   if (err != 0)
-    error (EXIT_FAILURE, 0, "ext2fs_write_inode: %s", error_message (err));
+    error (EXIT_FAILURE, 0, "ext2fs_write_inode: %s: %s",
+           orig_filename, error_message (err));
 }
 
 /* This is just a wrapper around ext2fs_link which calls
@@ -438,7 +449,7 @@ ext2_file_stat (const char *orig_filename, const struct stat *statbuf)
 
     if (statbuf->st_size > 0) {
       char *buf = read_whole_file (orig_filename, statbuf->st_size);
-      ext2_write_file (ino, buf, statbuf->st_size);
+      ext2_write_file (ino, buf, statbuf->st_size, orig_filename);
       free (buf);
     }
   }
@@ -454,7 +465,7 @@ ext2_file_stat (const char *orig_filename, const struct stat *statbuf)
     ssize_t r = readlink (orig_filename, buf, sizeof buf);
     if (r == -1)
       error (EXIT_FAILURE, errno, "readlink: %s", orig_filename);
-    ext2_write_file (ino, buf, r);
+    ext2_write_file (ino, buf, r, orig_filename);
   }
   /* Create directory. */
   else if (S_ISDIR (statbuf->st_mode))
