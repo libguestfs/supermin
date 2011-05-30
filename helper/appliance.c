@@ -77,6 +77,7 @@ create_appliance (const char *hostcpu,
 
   iterate_inputs (inputs, nr_inputs, writer);
 
+  writer->wr_file ("/lib/modules");
   /* Kernel modules (3). */
   add_kernel_modules (whitelist, modpath, writer);
 
