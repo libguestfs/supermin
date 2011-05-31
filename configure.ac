@@ -68,7 +68,8 @@ dnl For ArchLinux handler.
 AC_CHECK_PROG(PACMAN,[pacman],[pacman],[no])
 
 dnl Required programs, libraries.
-AC_PATH_PROG([INSMODSTATIC],[insmod.static],[no])
+AC_PATH_PROG([INSMODSTATIC],[insmod.static],[no],
+             [$PATH$PATH_SEPARATOR/sbin$PATH_SEPARATOR])
 if test "x$INSMODSTATIC" = "xno" ; then
   AC_MSG_FAILURE([insmod.static program not found
 
@@ -82,9 +83,10 @@ fi
 AC_DEFINE_UNQUOTED([INSMODSTATIC],["$INSMODSTATIC"],
   [Full path to the insmod.static program.])
 
-AC_PATH_PROG([MKE2FS],[mke2fs],[no])
+AC_PATH_PROG([MKE2FS],[mke2fs],[no],
+             [$PATH$PATH_SEPARATOR/sbin$PATH_SEPARATOR])
 if test "x$MKE2FS" = "xno" ; then
-  AC_MSG_FAILURE([mke2fs program not found (is /sbin in your current path?)])
+  AC_MSG_FAILURE([mke2fs program not found])
 fi
 AC_DEFINE_UNQUOTED([MKE2FS],["$MKE2FS"],
   [Full path to the mke2fs program.])
