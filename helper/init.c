@@ -19,8 +19,7 @@
 /* This very minimal init "script" goes in the mini-initrd used to
  * boot the ext2-based appliance.  Note we have no shell, so we cannot
  * use system(3) to run external commands.  In fact, we don't have
- * very much at all, except this program, insmod.static, and some
- * kernel modules.
+ * very much at all, except this program, and some kernel modules.
  */
 
 #include <config.h>
@@ -30,11 +29,16 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+
+#include <asm/unistd.h>
+
+extern long init_module (void *, unsigned long, const char *);
 
 /* Leave this enabled for now.  When we get more confident in the boot
  * process we can turn this off or make it configurable.
@@ -66,12 +70,6 @@ main ()
     exit (EXIT_FAILURE);
   }
 
-  /* A perennial problem is that /sbin/insmod.static is not
-   * executable.  Just make it executable.  It's easier than fixing
-   * everyone's distro.
-   */
-  chmod ("/sbin/insmod.static", 0755);
-
   FILE *fp = fopen ("/modules", "r");
   if (fp == NULL) {
     perror ("fopen: /modules");
@@ -81,7 +79,16 @@ main ()
     size_t n = strlen (line);
     if (n > 0 && line[n-1] == '\n')
       line[--n] = '\0';
-    insmod (line);
+
+    /* XXX Because of the way we construct the module list, the
+     * "modules" file can contain non-existent modules.  Ignore those
+     * for now.  Really we should add them as missing dependencies.
+     * See ext2initrd.c:ext2_make_initrd().
+     */
+    if (access (line, R_OK) == 0)
+      insmod (line);
+    else
+      fprintf (stderr, "skipped %s, module is missing\n", line);
   }
   fclose (fp);
 
@@ -175,26 +182,36 @@ static void
 insmod (const char *filename)
 {
   if (verbose)
-    fprintf (stderr, "febootstrap: insmod %s\n", filename);
+    fprintf (stderr, "febootstrap: internal insmod %s\n", filename);
 
-  pid_t pid = fork ();
-  if (pid == -1) {
-    perror ("insmod: fork");
+  int fd = open (filename, O_RDONLY);
+  if (fd == -1) {
+    fprintf (stderr, "insmod: open: %s: %m\n", filename);
     exit (EXIT_FAILURE);
   }
-
-  if (pid == 0) { /* Child. */
-    execl ("/insmod.static", "insmod.static", filename, NULL);
-    perror ("insmod: execl");
-    _exit (EXIT_FAILURE);
+  struct stat st;
+  if (fstat (fd, &st) == -1) {
+    perror ("insmod: fstat");
+    exit (EXIT_FAILURE);
   }
+  char buf[st.st_size];
+  long offset = 0;
+  do {
+    long rc = read (fd, buf + offset, st.st_size - offset);
+    if (rc == -1) {
+      perror ("insmod: read");
+      exit (EXIT_FAILURE);
+    }
+    offset += rc;
+  } while (offset < st.st_size);
+  close (fd);
 
-  /* Parent. */
-  int status;
-  if (wait (&status) == -1 ||
-      WEXITSTATUS (status) != 0)
-    perror ("insmod: wait");
-    /* but ignore the error, some will be because the device is not found */
+  if (init_module (buf, st.st_size, "") != 0) {
+    fprintf (stderr, "insmod: init_module: %s: %m\n", filename);
+    /* However ignore the error because this can just happen because
+     * of a missing device.
+     */
+  }
 }
 
 /* Print contents of /proc/uptime. */

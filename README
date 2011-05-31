@@ -39,11 +39,6 @@ Requirements
   /sbin/mke2fs
     - These are part of e2fsprogs.
 
-  /sbin/insmod.static
-    - This is part of module-init-tools.  Note that Debian does NOT
-      package this, you have to build it yourself (or copy the file
-      from a Fedora machine which also works ...)
-
 For Fedora/RHEL:
 
   rpm

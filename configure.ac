@@ -68,21 +68,6 @@ dnl For ArchLinux handler.
 AC_CHECK_PROG(PACMAN,[pacman],[pacman],[no])
 
 dnl Required programs, libraries.
-AC_PATH_PROG([INSMODSTATIC],[insmod.static],[no],
-             [$PATH$PATH_SEPARATOR/sbin$PATH_SEPARATOR])
-if test "x$INSMODSTATIC" = "xno" ; then
-  AC_MSG_FAILURE([insmod.static program not found
-
-Is /sbin in your current path?
-
-Note that Debian/Ubuntu do not package this file from module-init-tools.
-Sorry, please fix your distribution.  In the meantime you can copy
-/sbin/insmod.static from a Fedora machine.
-])
-fi
-AC_DEFINE_UNQUOTED([INSMODSTATIC],["$INSMODSTATIC"],
-  [Full path to the insmod.static program.])
-
 AC_PATH_PROG([MKE2FS],[mke2fs],[no],
              [$PATH$PATH_SEPARATOR/sbin$PATH_SEPARATOR])
 if test "x$MKE2FS" = "xno" ; then
