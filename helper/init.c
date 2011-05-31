@@ -45,6 +45,7 @@ extern long init_module (void *, unsigned long, const char *);
  */
 #define verbose 1
 
+static void mount_proc (void);
 static void print_uptime (void);
 static void insmod (const char *filename);
 static void show_directory (const char *dir);
@@ -54,6 +55,8 @@ static char line[1024];
 int
 main ()
 {
+  mount_proc ();
+
   print_uptime ();
   fprintf (stderr, "febootstrap: ext2 mini initrd starting up\n");
 
@@ -211,6 +214,23 @@ insmod (const char *filename)
     /* However ignore the error because this can just happen because
      * of a missing device.
      */
+  }
+}
+
+/* Mount /proc unless it's mounted already. */
+static void
+mount_proc (void)
+{
+  if (access ("/proc/uptime", R_OK) == -1) {
+    mkdir ("/proc", 0755);
+
+    if (verbose)
+      fprintf (stderr, "febootstrap: mounting /proc\n");
+
+    if (mount ("proc", "/proc", "proc", 0, "") == -1) {
+      perror ("mount: /proc");
+      /* Non-fatal. */
+    }
   }
 }
 
