@@ -291,9 +291,9 @@ show_directory (const char *dirname)
   }
 
   while ((d = readdir (dir)) != NULL) {
-    fprintf (stderr, "%5d %c %-16s", d->d_ino, dirtype (d->d_type), d->d_name);
+    fprintf (stderr, "%5lu %c %-16s", d->d_ino, dirtype (d->d_type), d->d_name);
     if (lstat (d->d_name, &statbuf) >= 0) {
-      fprintf (stderr, " %06o %d %d:%d",
+      fprintf (stderr, " %06o %ld %d:%d",
                statbuf.st_mode, statbuf.st_size,
                statbuf.st_uid, statbuf.st_gid);
       if (S_ISLNK (statbuf.st_mode)) {
