@@ -40,6 +40,23 @@
 
 extern long init_module (void *, unsigned long, const char *);
 
+/* translation taken from module-init-tools/insmod.c  */
+static const char *moderror(int err)
+{
+  switch (err) {
+  case ENOEXEC:
+    return "Invalid module format";
+  case ENOENT:
+    return "Unknown symbol in module";
+  case ESRCH:
+    return "Module has wrong symbol version";
+  case EINVAL:
+    return "Invalid parameters";
+  default:
+    return strerror(err);
+  }
+}
+
 /* Leave this enabled for now.  When we get more confident in the boot
  * process we can turn this off or make it configurable.
  */
@@ -210,7 +227,7 @@ insmod (const char *filename)
   close (fd);
 
   if (init_module (buf, st.st_size, "") != 0) {
-    fprintf (stderr, "insmod: init_module: %s: %m\n", filename);
+    fprintf (stderr, "insmod: init_module: %s: %s\n", filename, moderror (errno));
     /* However ignore the error because this can just happen because
      * of a missing device.
      */
