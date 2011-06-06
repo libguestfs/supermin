@@ -50,7 +50,7 @@ let pacman_resolve_dependencies_and_download names =
    *)
   List.iter (
     fun pkg ->
-      let cmd = 
+      let cmd =
         sprintf "cd %s && mkdir -p var/lib/pacman && fakeroot pacman -Syw --noconfirm --cachedir=$(pwd) --root=$(pwd) %s"
         (Filename.quote tmpdir)
         pkg in
