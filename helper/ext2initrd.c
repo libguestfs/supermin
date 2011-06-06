@@ -175,7 +175,7 @@ read_module_deps (const char *modpath)
   char *filename = xasprintf ("%s/modules.dep", modpath);
   FILE *fp = fopen (filename, "r");
   if (fp == NULL)
-    error (EXIT_FAILURE, errno, "open: %s", modpath);
+    error (EXIT_FAILURE, errno, "open: %s/modules.dep", modpath);
 
   char *line = NULL;
   size_t llen = 0;
