@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: Richard Jones <rjones@redhat.com>
 Uploaders: Richard Jones <rjones@redhat.com>, Guido Günther <agx@sigxcpu.org>
 Build-Depends: debhelper (>= 7), ocaml, ocaml-findlib, aptitude,
- module-init-tools, e2fslibs-dev, e2fsprogs
+ module-init-tools, e2fslibs-dev, e2fsprogs, gawk
 Homepage: http://people.redhat.com/~rjones/febootstrap
 Standards-Version: 3.8.2
 
