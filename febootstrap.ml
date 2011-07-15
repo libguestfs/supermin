@@ -72,6 +72,20 @@ let () =
       ) packages
     ) in
 
+  (* Canonicalize the name of directories, so that /a and /a/ are the same. *)
+  let files =
+    List.map (
+      fun (filename, ft, pkg) ->
+        let len = String.length filename in
+        let filename =
+          if len > 1 (* don't rewrite "/" *) && ft.ft_dir
+            && filename.[len-1] = '/' then
+              String.sub filename 0 (len-1)
+          else
+            filename in
+        (filename, ft, pkg)
+    ) files in
+
   (* Sort and combine duplicate files. *)
   let files =
     let files = List.sort compare files in
