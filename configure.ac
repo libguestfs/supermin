@@ -92,6 +92,11 @@ AC_CHECK_HEADER([ext2fs/ext2fs.h],[],[
   AC_MSG_FAILURE([Header <ext2fs/ext2fs.h> not found (part of e2fsprogs)])
 ])
 
+AC_CHECK_PROG(GAWK,[gawk],[gawk],[no])
+if test "x$GAWK" = "xno" ; then
+  AC_MSG_FAILURE([gawk (GNU awk) not found])
+fi
+
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([config.ml
         debian/changelog
