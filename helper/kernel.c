@@ -97,8 +97,6 @@ static char *create_kernel_archlinux (const char *hostcpu, const char *kernel);
 const char *
 create_kernel (const char *hostcpu, const char *kernel)
 {
-  char **all_files = read_dir (KERNELDIR);
-
   /* In ArchLinux, kernel is always named /boot/vmlinuz26. */
   if (access ("/boot/vmlinuz26", F_OK) == 0)
     return create_kernel_archlinux (hostcpu, kernel);
@@ -111,6 +109,7 @@ create_kernel (const char *hostcpu, const char *kernel)
   else
     patt = xasprintf ("vmlinuz-*.%s*", hostcpu);
 
+  char **all_files = read_dir (KERNELDIR);
   char **candidates;
   candidates = filter_fnmatch (all_files, patt, FNM_NOESCAPE);
   candidates = filter_notmatching_substring (candidates, "xen");
