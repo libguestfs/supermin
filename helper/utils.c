@@ -273,6 +273,20 @@ isdir (const char *path)
   return S_ISDIR (statbuf.st_mode);
 }
 
+/* Return true iff path exists and is a regular file.  This version
+ * follows symlinks.
+ */
+int
+isfile (const char *path)
+{
+  struct stat statbuf;
+
+  if (stat (path, &statbuf) == -1)
+    return 0;
+
+  return S_ISREG (statbuf.st_mode);
+}
+
 /* Load in a file, returning a list of lines. */
 char **
 load_file (const char *filename)

@@ -130,6 +130,34 @@ Minimize the appliance, removing as much extraneous junk as possible.
 
 =back
 
+=head1 ENVIRONMENT VARIABLES
+
+=over 4
+
+=item FEBOOTSTRAP_KERNEL
+
+If this environment variable is set, then automatic selection of the
+kernel is bypassed and this kernel is used.
+
+The environment variable should point to a kernel file,
+eg. C</boot/vmlinuz-3.0.x86_64>
+
+The corresponding module path is guessed from the kernel name, but you
+can override that by setting C<FEBOOTSTRAP_MODULES>.
+
+=item FEBOOTSTRAP_MODULES
+
+If C<FEBOOTSTRAP_KERNEL> and C<FEBOOTSTRAP_MODULES> are both set, then
+automatic selection of the kernel is bypassed and the kernel and
+module path are set to these values.
+
+The environment variable should point to a module directory,
+eg. C</lib/modules/3.0.x86_64/>
+
+This has no effect if C<FEBOOTSTRAP_KERNEL> is not set.
+
+=back
+
 =head1 SEE ALSO
 
 L<febootstrap(8)>.

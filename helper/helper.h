@@ -78,6 +78,7 @@ extern char **filter_fnmatch (char **strings, const char *patt, int flags);
 extern char **filter_notmatching_substring (char **strings, const char *sub);
 extern void sort (char **strings, int (*compare) (const void *, const void *));
 extern int isdir (const char *path);
+extern int isfile (const char *path);
 extern char **load_file (const char *filename);
 
 #endif /* FEBOOTSTRAP_SUPERMIN_HELPER_H */

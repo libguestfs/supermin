@@ -249,8 +249,11 @@ For example:
 Usually the kernel and kernel modules are I<not> included in the
 supermin appliance.  When the appliance is instantiated, the kernel
 modules from the host kernel are copied in, and it is booted using the
-host kernel.  febootstrap-supermin-helper is able to choose the best
-host kernel available to boot the appliance.
+host kernel.
+
+febootstrap-supermin-helper is able to choose the best host kernel
+available to boot the appliance.  Users can override this by setting
+environment variables (see L<febootstrap-supermin-helper(8)>).
 
 =head2 BOOTING AND CACHING THE SUPERMIN APPLIANCE
 

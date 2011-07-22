@@ -79,6 +79,7 @@ has_modpath (const char *kernel_name)
 }
 
 static const char *create_kernel_archlinux (const char *hostcpu, const char *kernel);
+static const char *create_kernel_from_env (const char *hostcpu, const char *kernel, const char *kernel_env, const char *modpath_env);
 
 /* Create the kernel.  This chooses an appropriate kernel and makes a
  * symlink to it.
@@ -97,6 +98,13 @@ static const char *create_kernel_archlinux (const char *hostcpu, const char *ker
 const char *
 create_kernel (const char *hostcpu, const char *kernel)
 {
+  /* Override kernel selection using environment variables? */
+  char *kernel_env = getenv ("FEBOOTSTRAP_KERNEL");
+  if (kernel_env) {
+    char *modpath_env = getenv ("FEBOOTSTRAP_MODULES");
+    return create_kernel_from_env (hostcpu, kernel, kernel_env, modpath_env);
+  }
+
   /* In ArchLinux, kernel is always named /boot/vmlinuz26. */
   if (access ("/boot/vmlinuz26", F_OK) == 0)
     return create_kernel_archlinux (hostcpu, kernel);
@@ -206,4 +214,65 @@ create_kernel_archlinux (const char *hostcpu, const char *kernel)
 
   /* Return module path. */
   return modpath;
+}
+
+/* Select the kernel from environment variables set by the user.
+ * modpath_env may be NULL, in which case we attempt to work it out
+ * from kernel_env.
+ */
+static const char *
+create_kernel_from_env (const char *hostcpu, const char *kernel,
+                        const char *kernel_env, const char *modpath_env)
+{
+  if (verbose) {
+    fprintf (stderr,
+             "febootstrap-supermin-helper: using environment variable(s) FEBOOTSTRAP_* to\n"
+             "select kernel %s", kernel_env);
+    if (modpath_env)
+      fprintf (stderr, " and module path %s", modpath_env);
+    fprintf (stderr, "\n");
+  }
+
+  if (!isfile (kernel_env)) {
+    fprintf (stderr,
+             "febootstrap-supermin-helper: %s: not a regular file\n"
+             "(what is $FEBOOTSTRAP_KERNEL set to?)\n", kernel_env);
+    exit (EXIT_FAILURE);
+  }
+
+  if (!modpath_env) {
+    /* Try to guess modpath from kernel path. */
+    const char *p = strrchr (kernel_env, '/');
+    if (p) p++; else p = kernel_env;
+
+    /* NB: We need the extra test to ensure calling get_modpath is safe. */
+    if (strncmp (p, "vmlinuz-", 8) != 0) {
+      fprintf (stderr,
+               "febootstrap-supermin-helper: cannot guess module path.\n"
+               "Set $FEBOOTSTRAP_MODULES to the modules directory corresponding to\n"
+               "kernel %s, or unset $FEBOOTSTRAP_KERNEL to autoselect a kernel.\n",
+               kernel_env);
+      exit (EXIT_FAILURE);
+    }
+
+    modpath_env = get_modpath (p);
+  }
+
+  if (!isdir (modpath_env)) {
+    fprintf (stderr,
+             "febootstrap-supermin-helper: %s: not a directory\n"
+             "(what is $FEBOOTSTRAP_MODULES set to?)\n", modpath_env);
+    exit (EXIT_FAILURE);
+  }
+
+  /* Create the symlink. */
+  if (kernel) {
+    if (verbose >= 2)
+      fprintf (stderr, "creating symlink %s -> %s\n", kernel_env, kernel);
+
+    if (symlink (kernel_env, kernel) == -1)
+      error (EXIT_FAILURE, errno, "symlink kernel");
+  }
+
+  return modpath_env;
 }
