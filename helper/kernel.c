@@ -78,7 +78,7 @@ has_modpath (const char *kernel_name)
   }
 }
 
-static char *create_kernel_archlinux (const char *hostcpu, const char *kernel);
+static const char *create_kernel_archlinux (const char *hostcpu, const char *kernel);
 
 /* Create the kernel.  This chooses an appropriate kernel and makes a
  * symlink to it.
@@ -158,7 +158,7 @@ create_kernel (const char *hostcpu, const char *kernel)
 /* In ArchLinux, kernel is always named /boot/vmlinuz26, and we have
  * to use the 'file' command to work out what version it is.
  */
-static char *
+static const char *
 create_kernel_archlinux (const char *hostcpu, const char *kernel)
 {
   const char *file_cmd = "file /boot/vmlinuz26 | awk '{print $9}'";
