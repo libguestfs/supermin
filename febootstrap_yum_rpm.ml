@@ -221,7 +221,7 @@ let yum_rpm_get_file_from_package pkg file =
 
   let outfile = tmpdir // file in
   let cmd =
-    sprintf "rpm2cpio %s | (cd %s && cpio --quiet -id .%s)"
+    sprintf "umask 0000; rpm2cpio %s | (cd %s && cpio --quiet -id .%s)"
       (Filename.quote pkg) (Filename.quote tmpdir) (Filename.quote file) in
   run_command cmd;
   outfile

@@ -51,13 +51,13 @@ let pacman_resolve_dependencies_and_download names =
   List.iter (
     fun pkg ->
       let cmd =
-        sprintf "cd %s && mkdir -p var/lib/pacman && fakeroot pacman -Syw --noconfirm --cachedir=$(pwd) --root=$(pwd) %s"
+        sprintf "umask 0000; cd %s && mkdir -p var/lib/pacman && fakeroot pacman -Syw --noconfirm --cachedir=$(pwd) --root=$(pwd) %s"
         (Filename.quote tmpdir)
         pkg in
       if Sys.command cmd <> 0 then (
           (* The package is not in the main repos, check the aur *)
           let cmd =
-            sprintf "cd %s && wget http://aur.archlinux.org/packages/%s/%s.tar.gz && tar xf %s.tar.gz && cd %s && makepkg && mv %s-*.pkg.tar.xz %s"
+            sprintf "umask 0000; cd %s && wget http://aur.archlinux.org/packages/%s/%s.tar.gz && tar xf %s.tar.gz && cd %s && makepkg && mv %s-*.pkg.tar.xz %s"
             (Filename.quote tmpdir)
             pkg
             pkg
@@ -84,7 +84,7 @@ let pacman_list_files pkg =
       pkg in
    let ver = List.hd (run_command_get_lines cmd) in
    let cmd =
-     sprintf "fakeroot tar -xf %s-%s* -C %s"
+     sprintf "umask 0000; fakeroot tar -xf %s-%s* -C %s"
      (Filename.quote tmpdir // pkg ) ver (Filename.quote pkgdir) in
    run_command cmd;
 

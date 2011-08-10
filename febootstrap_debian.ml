@@ -47,7 +47,7 @@ let debian_resolve_dependencies_and_download names =
 
   (* Download the packages. *)
   let cmd =
-    sprintf "cd %s && aptitude download %s"
+    sprintf "umask 0000; cd %s && aptitude download %s"
       (Filename.quote tmpdir)
       (String.concat " " (List.map Filename.quote pkgs)) in
   run_command cmd;
@@ -85,7 +85,7 @@ let debian_list_files pkg =
   let pkgdir = tmpdir // pkg ^ ".d" in
   mkdir pkgdir 0o755;
   let cmd =
-    sprintf "dpkg-deb --fsys-tarfile %s | (cd %s && tar xf -)"
+    sprintf "umask 0000; dpkg-deb --fsys-tarfile %s | (cd %s && tar xf -)"
       (tmpdir // pkg) pkgdir in
   run_command cmd;
 
