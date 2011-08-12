@@ -1,5 +1,5 @@
 /* febootstrap-supermin-helper reimplementation in C.
- * Copyright (C) 2009-2010 Red Hat Inc.
+ * Copyright (C) 2009-2011 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,6 +53,7 @@ extern char _binary_init_start, _binary_init_end, _binary_init_size;
  */
 static const char *kmods[] = {
   "ext2.ko",
+  "ext4.ko", /* CONFIG_EXT4_USE_FOR_EXT23=y option might be set */
   "virtio*.ko",
   "ide*.ko",
   "libata*.ko",
