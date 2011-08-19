@@ -24,10 +24,10 @@ SUBDIRS = lib helper
 # Note these must be in build dependency order.
 SOURCES = \
 	config.ml \
-	febootstrap_utils.mli \
-	febootstrap_utils.ml \
 	febootstrap_cmdline.mli \
 	febootstrap_cmdline.ml \
+	febootstrap_utils.mli \
+	febootstrap_utils.ml \
 	febootstrap_package_handlers.mli \
 	febootstrap_package_handlers.ml \
 	febootstrap_yum_rpm.ml \

@@ -22,6 +22,7 @@ let excludes = ref []
 let names_mode = ref false
 let outputdir = ref "."
 let packages = ref []
+let save_temps = ref false
 let verbose = ref false
 let warnings = ref true
 let yum_config = ref None
@@ -45,6 +46,10 @@ let argspec = Arg.align [
     " Suppress warnings";
   "-o", Arg.Set_string outputdir,
     "outputdir Set output directory (default: \".\")";
+  "--save-temp", Arg.Set save_temps,
+    " Don't delete temporary files and directories on exit.";
+  "--save-temps", Arg.Set save_temps,
+    " Don't delete temporary files and directories on exit.";
   "-v", Arg.Set verbose,
     " Enable verbose output";
   "--verbose", Arg.Set verbose,
@@ -83,6 +88,7 @@ let excludes = List.rev !excludes
 let names_mode = !names_mode
 let outputdir = !outputdir
 let packages = List.rev !packages
+let save_temps = !save_temps
 let verbose = !verbose
 let warnings = !warnings
 let yum_config = !yum_config

@@ -35,6 +35,9 @@ val outputdir : string
 val packages : string list
   (** List of packages or package names as supplied on the command line. *)
 
+val save_temps : bool
+  (** True if [--save-temps] was given on the command line. *)
+
 val verbose : bool
   (** True if [--verbose] was given on the command line.
       See also {!debug}. *)

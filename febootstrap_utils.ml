@@ -90,10 +90,14 @@ let tmpdir () =
    *)
   let tmpdir = Filename.temp_dir_name // sprintf "febootstrap%s.tmp" data in
   Unix.mkdir tmpdir 0o700;
-  at_exit
-    (fun () ->
-       let cmd = sprintf "rm -rf %s" (Filename.quote tmpdir) in
-       ignore (Sys.command cmd));
+
+  (* Only remove the directory if --save-temps was *not* specified. *)
+  if not Febootstrap_cmdline.save_temps then
+    at_exit
+      (fun () ->
+        let cmd = sprintf "rm -rf %s" (Filename.quote tmpdir) in
+        ignore (Sys.command cmd));
+
   tmpdir
 
 let rec find s sub =

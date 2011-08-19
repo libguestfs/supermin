@@ -91,6 +91,11 @@ written (C<hostfiles> and C<base.img>).  The default directory is the
 current directory.  Note that if this files exist already in the
 output directory then they will be overwritten.
 
+=item B<--save-temps>
+
+Don't remove temporary files and directories on exit.  This is useful
+for debugging.
+
 =item B<-v>
 
 =item B<--verbose>
