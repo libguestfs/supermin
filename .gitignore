@@ -27,6 +27,7 @@ febootstrap
 febootstrap*.8
 febootstrap*.txt
 febootstrap-*.tar.gz
+helper/ext2init.S
 helper/febootstrap-supermin-helper
 helper/init
 html/febootstrap-supermin-helper.8.html
