@@ -58,15 +58,17 @@ XOBJECTS = $(SOURCES_ML:.ml=.cmx)
 
 if !HAVE_OCAMLOPT
 OBJECTS = $(BOBJECTS)
+BEST    = c
 else
 OBJECTS = $(XOBJECTS)
+BEST    = opt
 endif
 
 OCAMLPACKAGES = -package unix,str
 OCAMLFLAGS = -warn-error CDEFLMPSUVXYZ
 
 febootstrap: $(OBJECTS)
-	$(OCAMLFIND) $(OCAMLBEST) $(OCAMLFLAGS) $(OCAMLPACKAGES) -linkpkg \
+	$(OCAMLFIND) $(BEST) $(OCAMLFLAGS) $(OCAMLPACKAGES) -linkpkg \
 	  $^ -o $@
 
 .mli.cmi:
