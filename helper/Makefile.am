@@ -42,10 +42,6 @@ init_SOURCES = init.c
 init_CFLAGS = -static
 init_LDFLAGS = -static
 
-# http://www.doof.me.uk/2010/05/07/cute-objcopy-hack/
-ELF_DEFAULT_ARCH = $(shell $(srcdir)/elf-default-arch | gawk '{ print $$1 }')
-DEFAULT_ARCH = $(shell $(srcdir)/elf-default-arch | gawk '{ print $$2 }')
-
 CLEANFILES = ext2init.S
 
 ext2init.o: ext2init.S
