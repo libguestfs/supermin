@@ -48,8 +48,9 @@ let debian_resolve_dependencies_and_download names =
 
   (* Download the packages. *)
   let cmd =
-    sprintf "umask 0000; cd %s && aptitude download %s"
+    sprintf "umask 0000; cd %s && %s download %s"
       (Filename.quote tmpdir)
+      Config.aptitude
       (String.concat " " (List.map Filename.quote pkgs)) in
   run_command cmd;
 
