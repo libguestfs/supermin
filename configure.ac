@@ -114,9 +114,10 @@ if test "x$GAWK" = "xno" ; then
 fi
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([config.ml
+AC_CONFIG_FILES([Makefile
         debian/changelog
-        Makefile
+        helper/Makefile
         lib/Makefile
-        helper/Makefile])
+        src/config.ml
+        src/Makefile])
 AC_OUTPUT

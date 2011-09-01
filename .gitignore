@@ -17,13 +17,11 @@ config.guess
 config.h.in
 config.h
 config.log
-config.ml
 config.status
 config.sub
 configure
 cscope.out
 depcomp
-febootstrap
 febootstrap*.8
 febootstrap*.txt
 febootstrap-*.tar.gz
@@ -50,6 +48,8 @@ INSTALL
 install-sh
 missing
 pod2htm?.tmp
+src/config.ml
+src/febootstrap
 stamp-h1
 /warn-on-use.h
 examples/guestfs
