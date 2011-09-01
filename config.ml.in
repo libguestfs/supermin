@@ -25,5 +25,6 @@ let yumdownloader = "@YUMDOWNLOADER@"
 let aptitude = "@APTITUDE@"
 let apt_cache = "@APT_CACHE@"
 let dpkg = "@DPKG@"
+let apt_cache_depends_recurse_broken = @APT_CACHE_DEPENDS_RECURSE_BROKEN@
 let pacman = "@PACMAN@"
 let host_cpu = "@host_cpu@"

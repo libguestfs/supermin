@@ -65,6 +65,19 @@ AC_CHECK_PROG(APTITUDE,[aptitude],[aptitude],[no])
 AC_CHECK_PROG(APT_CACHE,[apt-cache],[apt-cache],[no])
 AC_CHECK_PROG(DPKG,[dpkg],[dpkg],[no])
 
+dnl Include workaround for broken apt-cache depends --recurse (Ubuntu 10.04)?
+if test "x$APT_CACHE" != "xno"; then
+    AC_MSG_CHECKING([if apt-cache depends --recurse is broken])
+    if ! $APT_CACHE depends --recurse -i bash | grep -q '^libc6$'; then
+        AC_MSG_RESULT([yes])
+        APT_CACHE_DEPENDS_RECURSE_BROKEN=true
+    else
+        AC_MSG_RESULT([no])
+        APT_CACHE_DEPENDS_RECURSE_BROKEN=false
+    fi
+    AC_SUBST([APT_CACHE_DEPENDS_RECURSE_BROKEN])
+fi
+
 dnl For ArchLinux handler.
 AC_CHECK_PROG(PACMAN,[pacman],[pacman],[no])
 
