@@ -75,8 +75,10 @@ if test "x$APT_CACHE" != "xno"; then
         AC_MSG_RESULT([no])
         APT_CACHE_DEPENDS_RECURSE_BROKEN=false
     fi
-    AC_SUBST([APT_CACHE_DEPENDS_RECURSE_BROKEN])
+else
+    APT_CACHE_DEPENDS_RECURSE_BROKEN=false
 fi
+AC_SUBST([APT_CACHE_DEPENDS_RECURSE_BROKEN])
 
 dnl For ArchLinux handler.
 AC_CHECK_PROG(PACMAN,[pacman],[pacman],[no])
