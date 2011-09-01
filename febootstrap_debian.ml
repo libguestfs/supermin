@@ -30,11 +30,12 @@ let tmpdir = tmpdir ()
 
 let debian_detect () =
   file_exists "/etc/debian_version" &&
-    Config.aptitude <> "no" && Config.dpkg <> "no"
+    Config.aptitude <> "no" && Config.apt_cache <> "no" && Config.dpkg <> "no"
 
 let debian_resolve_dependencies_and_download names =
   let cmd =
-    sprintf "apt-cache depends --recurse -i %s | grep -v '^[<[:space:]]'"
+    sprintf "%s depends --recurse -i %s | grep -v '^[<[:space:]]'"
+      Config.apt_cache
       (String.concat " " (List.map Filename.quote names)) in
   let pkgs = run_command_get_lines cmd in
 

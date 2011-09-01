@@ -62,6 +62,7 @@ AC_CHECK_PROG(YUMDOWNLOADER,[yumdownloader],[yumdownloader],[no])
 
 dnl For Debian handler.
 AC_CHECK_PROG(APTITUDE,[aptitude],[aptitude],[no])
+AC_CHECK_PROG(APT_CACHE,[apt-cache],[apt-cache],[no])
 AC_CHECK_PROG(DPKG,[dpkg],[dpkg],[no])
 
 dnl For ArchLinux handler.
