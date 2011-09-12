@@ -23,6 +23,7 @@ let names_mode = ref false
 let outputdir = ref "."
 let packages = ref []
 let save_temps = ref false
+let use_installed = ref false
 let verbose = ref false
 let warnings = ref true
 let yum_config = ref None
@@ -50,6 +51,8 @@ let argspec = Arg.align [
     " Don't delete temporary files and directories on exit.";
   "--save-temps", Arg.Set save_temps,
     " Don't delete temporary files and directories on exit.";
+  "--use-installed", Arg.Set use_installed,
+    " Inspect already installed packages for determining contents.";
   "-v", Arg.Set verbose,
     " Enable verbose output";
   "--verbose", Arg.Set verbose,
@@ -89,6 +92,7 @@ let names_mode = !names_mode
 let outputdir = !outputdir
 let packages = List.rev !packages
 let save_temps = !save_temps
+let use_installed = !use_installed
 let verbose = !verbose
 let warnings = !warnings
 let yum_config = !yum_config

@@ -96,6 +96,18 @@ output directory then they will be overwritten.
 Don't remove temporary files and directories on exit.  This is useful
 for debugging.
 
+=item B<--use-installed>
+
+If packages are already installed, use the contents (from the local
+filesystem) instead of downloading them.
+
+Note that this can cause malformed appliances if local files have been
+changed from what was originally in the package.  This is particularly
+a problem for configuration files.
+
+However this option is useful in some controlled situations: for
+example when using febootstrap inside a freshly installed chroot.
+
 =item B<-v>
 
 =item B<--verbose>

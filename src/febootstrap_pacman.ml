@@ -71,7 +71,10 @@ let pacman_resolve_dependencies_and_download names =
 
   List.sort compare pkgs
 
-let pacman_list_files pkg =
+let pacman_list_files ?(use_installed=false) pkg =
+  if use_installed then
+    failwith "pacman driver doesn't support --use-installed";
+
   debug "unpacking %s ..." pkg;
 
   (* We actually need to extract the file in order to get the
@@ -117,7 +120,10 @@ let pacman_list_files pkg =
   files
 
 (* Easy because we already unpacked the archive above. *)
-let pacman_get_file_from_package pkg file =
+let pacman_get_file_from_package ?(use_installed=false) pkg file =
+  if use_installed then
+    failwith "pacman driver doesn't support --use-installed";
+
   tmpdir // pkg ^ ".d" // file
 
 let () =

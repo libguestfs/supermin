@@ -31,11 +31,11 @@ type package_handler = {
 
       Note this should also process the [excludes] list. *)
 
-  ph_list_files : string -> (string * file_type) list;
+  ph_list_files : ?use_installed:bool -> string -> (string * file_type) list;
   (** [ph_list_files pkg] lists the files and file metadata in the
       package called [pkg] (a package file). *)
 
-  ph_get_file_from_package : string -> string -> string;
+  ph_get_file_from_package : ?use_installed:bool -> string -> string -> string;
   (** [ph_get_file_from_package pkg file] extracts the
       single named file [file] from [pkg].  The path of the
       extracted file is returned. *)

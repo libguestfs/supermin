@@ -172,7 +172,10 @@ if verbose:
       sprintf "%s/%s-%s-%s.%s.rpm" tmpdir name version release arch
   ) pkgs
 
-let rec yum_rpm_list_files pkg =
+let rec yum_rpm_list_files ?(use_installed=false) pkg =
+  if use_installed then
+    failwith "yum_rpm driver doesn't support --use-installed";
+
   (* Run rpm -qlp with some extra magic. *)
   let cmd =
     sprintf "rpm -q --qf '[%%{FILENAMES} %%{FILEFLAGS:fflags} %%{FILEMODES} %%{FILESIZES}\\n]' -p %s"
@@ -228,7 +231,10 @@ let rec yum_rpm_list_files pkg =
 
   files
 
-let yum_rpm_get_file_from_package pkg file =
+let yum_rpm_get_file_from_package ?(use_installed=false) pkg file =
+  if use_installed then
+    failwith "yum_rpm driver doesn't support --use-installed";
+
   debug "extracting %s from %s ..." file (Filename.basename pkg);
 
   let outfile = tmpdir // file in
