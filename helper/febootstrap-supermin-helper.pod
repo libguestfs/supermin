@@ -39,7 +39,9 @@ the checksum output C<-f checksum>.
 
 =over 4
 
-=item B<-f fmt> | B<--format fmt>
+=item B<-f fmt>
+
+=item B<--format fmt>
 
 Select the output format for the appliance.  Possible formats are:
 
@@ -75,7 +77,9 @@ host_cpu and the UID of the current user are included in the checksum.
 
 =back
 
-=item B<-k file> | B<--kmods file>
+=item B<-k file>
+
+=item B<--kmods file>
 
 If this option is specified, then C<file> should be a list of
 wildcards matching kernel module names, eg:
@@ -93,7 +97,13 @@ If this option is not specified, then every kernel module from the
 host will be included.  This is safer, but can produce rather large
 appliances which need a lot more memory to boot.
 
-=item B<-u user> | B<--user user> | B<-g group> | B<--group group>
+=item B<-u user>
+
+=item B<--user user>
+
+=item B<-g group>
+
+=item B<--group group>
 
 Run febootstrap-supermin-helper as an alternate user and/or group.
 C<user> and C<group> can be specified as either a name, which will
