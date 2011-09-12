@@ -73,7 +73,10 @@ depend: .depend
 
 .depend: $(SOURCES)
 	rm -f $@ $@-t
-	$(OCAMLFIND) ocamldep $^ > $@-t
+	$(OCAMLFIND) ocamldep $^ | \
+	  $(SED) 's/ *$$//' | \
+	  $(SED) -e :a -e '/ *\\$$/N; s/ *\\\n */ /; ta' | \
+	  sort > $@-t
 	mv $@-t $@
 
 include .depend

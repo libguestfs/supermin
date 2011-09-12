@@ -37,6 +37,9 @@ AC_SYS_LARGEFILE
 
 gl_INIT
 
+# Define $(SED).
+AC_PROG_SED
+
 # OCaml and ocamlfind are required to compile.
 AC_PROG_OCAML
 if test "$OCAMLC" = "no"; then
