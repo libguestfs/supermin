@@ -40,20 +40,27 @@ import yum
 import yum.misc
 import sys
 
+verbose = %d
+
+if verbose:
+    print \"febootstrap_yum_rpm: running python code to query yum and resolve deps\"
+
 yb = yum.YumBase ()
-yb.preconf.debuglevel = %d
-yb.preconf.errorlevel = %d
+yb.preconf.debuglevel = verbose
+yb.preconf.errorlevel = verbose
 if %s:
     yb.preconf.fn = %S
 yb.setCacheDir ()
 
-# Look up the base packages from the command line.
+if verbose:
+    print \"febootstrap_yum_rpm: looking up the base packages from the command line\"
 deps = dict ()
 pkgs = yb.pkgSack.returnPackages (patterns=sys.argv[1:])
 for pkg in pkgs:
     deps[pkg] = False
 
-# Recursively find all the dependencies.
+if verbose:
+    print \"febootstrap_yum_rpm: recursively finding all the dependencies\"
 stable = False
 while not stable:
     stable = True
@@ -61,6 +68,9 @@ while not stable:
         if deps[pkg] == False:
             deps[pkg] = []
             stable = False
+            if verbose:
+                print (\"febootstrap_yum_rpm: examining deps of %%s\" %%
+                       pkg.name)
             for r in pkg.requires:
                 ps = yb.whatProvides (r[0], r[1], r[2])
                 best = yb._bestPackageFromList (ps.returnPackages ())
@@ -76,8 +86,10 @@ for pkg in deps.keys ():
     f.write (\"%%s %%s %%s %%s %%s\\n\" %%
              (pkg.name, pkg.epoch, pkg.version, pkg.release, pkg.arch))
 f.close ()
+
+if verbose:
+    print \"febootstrap_yum_rpm: finished python code\"
 "
-    (if verbose then 1 else 0)
     (if verbose then 1 else 0)
     (match yum_config with None -> "False" | Some _ -> "True")
     (match yum_config with None -> "" | Some filename -> filename)
