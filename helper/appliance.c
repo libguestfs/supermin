@@ -197,6 +197,9 @@ static void
 add_kernel_modules (const char *whitelist_file, const char *modpath,
                     struct writer *writer)
 {
+  if (verbose)
+    print_timestamped_message ("adding kernel modules");
+
   char **whitelist = NULL;
   if (whitelist_file != NULL)
     whitelist = load_file (whitelist_file);
