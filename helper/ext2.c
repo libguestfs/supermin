@@ -107,8 +107,16 @@ ext2_start (const char *hostcpu, const char *appliance,
 static void
 ext2_end (void)
 {
+  if (verbose)
+    print_timestamped_message ("closing ext2 filesystem");
+
   /* Write out changes and close. */
-  errcode_t err = ext2fs_close (fs);
+  errcode_t err;
+#ifdef HAVE_EXT2FS_CLOSE2
+  err = ext2fs_close2 (fs, EXT2_FLAG_FLUSH_NO_SYNC);
+#else
+  err = ext2fs_close (fs);
+#endif
   if (err != 0)
     error (EXIT_FAILURE, 0, "ext2fs_close: %s", error_message (err));
 }

@@ -105,6 +105,7 @@ old_LIBS="$LIBS"
 AC_CHECK_LIB([ext2fs],[ext2fs_file_open2],[],[
   AC_MSG_FAILURE([libext2fs library not found (part of e2fsprogs)])
 ])
+AC_CHECK_FUNCS([ext2fs_close2])
 LIBS="$old_LIBS"
 
 AC_CHECK_HEADER([ext2fs/ext2fs.h],[],[
