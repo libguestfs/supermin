@@ -24,6 +24,7 @@
 #include <fnmatch.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/utsname.h>
 
 #include "error.h"
 #include "xvasprintf.h"
@@ -36,6 +37,9 @@
 #define KERNELDIR "/boot"
 #define MODULESDIR "/lib/modules"
 
+static char* get_kernel_version (char* filename);
+static const char *create_kernel_from_env (const char *hostcpu, const char *kernel, const char *kernel_env, const char *modpath_env);
+
 static char *
 get_modpath (const char *kernel_name)
 {
@@ -47,6 +51,27 @@ get_modpath (const char *kernel_name)
   if (!modpath) {
     perror ("xasprintf");
     exit (EXIT_FAILURE);
+  }
+
+  if (! isdir (modpath)) {
+    char* path;
+    char* version;
+    path = xasprintf (KERNELDIR "/%s", kernel_name);
+    if (!path) {
+      perror ("xasprintf");
+      exit (EXIT_FAILURE);
+    }
+    version = get_kernel_version (path);
+    free (path);
+    if (version != NULL) {
+      free (modpath);
+      modpath = xasprintf (MODULESDIR "/%s", version);
+      free (version);
+      if (!path) {
+        perror ("xasprintf");
+        exit (EXIT_FAILURE);
+      }
+    }
   }
 
   return modpath;
@@ -78,9 +103,6 @@ has_modpath (const char *kernel_name)
   }
 }
 
-static const char *create_kernel_archlinux (const char *hostcpu, const char *kernel);
-static const char *create_kernel_from_env (const char *hostcpu, const char *kernel, const char *kernel_env, const char *modpath_env);
-
 /* Create the kernel.  This chooses an appropriate kernel and makes a
  * symlink to it.
  *
@@ -104,10 +126,6 @@ create_kernel (const char *hostcpu, const char *kernel)
     char *modpath_env = getenv ("FEBOOTSTRAP_MODULES");
     return create_kernel_from_env (hostcpu, kernel, kernel_env, modpath_env);
   }
-
-  /* In ArchLinux, kernel is always named /boot/vmlinuz26. */
-  if (access ("/boot/vmlinuz26", F_OK) == 0)
-    return create_kernel_archlinux (hostcpu, kernel);
 
   /* In original: ls -1dvr /boot/vmlinuz-*.$arch* 2>/dev/null | grep -v xen */
   const char *patt;
@@ -161,59 +179,6 @@ create_kernel (const char *hostcpu, const char *kernel)
            "installed, try installing a fullvirt kernel (only for\n"
            "febootstrap use, you shouldn't boot the Xen guest with it).\n");
   exit (EXIT_FAILURE);
-}
-
-/* In ArchLinux, kernel is always named /boot/vmlinuz26, and we have
- * to use the 'file' command to work out what version it is.
- */
-static const char *
-create_kernel_archlinux (const char *hostcpu, const char *kernel)
-{
-  const char *file_cmd = "file /boot/vmlinuz26 | awk '{print $9}'";
-  FILE *pp;
-  char modversion[256];
-  char *modpath;
-  size_t len;
-
-  pp = popen (file_cmd, "r");
-  if (pp == NULL) {
-  error:
-    fprintf (stderr, "febootstrap-supermin-helper: %s: command failed\n",
-             file_cmd);
-    exit (EXIT_FAILURE);
-  }
-
-  if (fgets (modversion, sizeof modversion, pp) == NULL)
-    goto error;
-
-  if (pclose (pp) == -1)
-    goto error;
-
-  /* Chomp final \n */
-  len = strlen (modversion);
-  if (len > 0 && modversion[len-1] == '\n') {
-    modversion[len-1] = '\0';
-    len--;
-  }
-
-  /* Generate module path. */
-  modpath = xasprintf (MODULESDIR "/%s", modversion);
-
-  /* Check module path is a directory. */
-  if (!isdir (modpath)) {
-    fprintf (stderr, "febootstrap-supermin-helper: /boot/vmlinuz26 kernel exists but %s is not a valid module path\n",
-             modpath);
-    exit (EXIT_FAILURE);
-  }
-
-  if (kernel) {
-    /* Symlink from kernel to /boot/vmlinuz26. */
-    if (symlink ("/boot/vmlinuz26", kernel) == -1)
-      error (EXIT_FAILURE, errno, "symlink kernel");
-  }
-
-  /* Return module path. */
-  return modpath;
 }
 
 /* Select the kernel from environment variables set by the user.
@@ -275,4 +240,75 @@ create_kernel_from_env (const char *hostcpu, const char *kernel,
   }
 
   return modpath_env;
+}
+
+/* Read an unsigned little endian short at a specified offset in a file.
+ * Returns a non-negative int on success or -1 on failure.
+ */
+static int
+read_leshort (FILE* fp, int offset)
+{
+  char buf[2];
+  if (fseek (fp, offset, SEEK_SET) != 0 ||
+      fread (buf, sizeof(char), 2, fp) != 2)
+  {
+    return -1;
+  }
+  return ((buf[1] & 0xFF) << 8) | (buf[0] & 0xFF);
+}
+
+/* Extract the kernel version from a Linux kernel file.
+ * Returns a malloc'd string containing the version or NULL if the
+ * file can't be read, is not a Linux kernel, or the version can't
+ * be found.
+ *
+ * See ftp://ftp.astron.com/pub/file/file-<ver>.tar.gz
+ * (file-<ver>/magic/Magdir/linux) for the rules used to find the
+ * version number:
+ *   514             string  HdrS     Linux kernel
+ *   >518            leshort >0x1ff
+ *   >>(526.s+0x200) string  >\0      version %s,
+ *
+ * Bugs: probably limited to x86 kernels.
+ */
+static char*
+get_kernel_version (char* filename)
+{
+  FILE* fp;
+  int size = 132;
+  char buf[size];
+  int offset;
+
+  fp = fopen (filename, "rb");
+
+  if (fseek (fp, 514, SEEK_SET) != 0 ||
+      fgets (buf, size, fp) == NULL ||
+      strncmp (buf, "HdrS", 4) != 0 ||
+      read_leshort (fp, 518) < 0x1FF)
+  {
+    /* not a Linux kernel */
+    fclose (fp);
+    return NULL;
+  }
+
+  offset = read_leshort (fp, 526);
+  if (offset == -1)
+  {
+    /* can't read version offset */
+    fclose (fp);
+    return NULL;
+  }
+
+  if (fseek (fp, offset + 0x200, SEEK_SET) != 0 ||
+      fgets (buf, size, fp) == NULL)
+  {
+    /* can't read version string */
+    fclose (fp);
+    return NULL;
+  }
+
+  fclose (fp);
+
+  buf[strcspn (buf, " \t\n")] = '\0';
+  return strdup (buf);
 }
