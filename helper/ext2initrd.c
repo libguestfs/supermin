@@ -52,21 +52,21 @@ extern char _binary_init_start, _binary_init_end, _binary_init_size;
  * ext2 filesystem on it.
  */
 static const char *kmods[] = {
-  "ext2.ko",
-  "ext4.ko", /* CONFIG_EXT4_USE_FOR_EXT23=y option might be set */
-  "virtio*.ko",
-  "ide*.ko",
-  "libata*.ko",
-  "piix*.ko",
-  "scsi_transport_spi.ko",
-  "scsi_mod.ko",
-  "sd_mod.ko",
-  "sym53c8xx.ko",
-  "ata_piix.ko",
-  "sr_mod.ko",
-  "mbcache.ko",
-  "crc*.ko",
-  "libcrc*.ko",
+  "ext2.ko*",
+  "ext4.ko*", /* CONFIG_EXT4_USE_FOR_EXT23=y option might be set */
+  "virtio*.ko*",
+  "ide*.ko*",
+  "libata*.ko*",
+  "piix*.ko*",
+  "scsi_transport_spi.ko*",
+  "scsi_mod.ko*",
+  "sd_mod.ko*",
+  "sym53c8xx.ko*",
+  "ata_piix.ko*",
+  "sr_mod.ko*",
+  "mbcache.ko*",
+  "crc*.ko*",
+  "libcrc*.ko*",
   NULL
 };
 

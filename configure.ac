@@ -86,6 +86,9 @@ AC_SUBST([APT_CACHE_DEPENDS_RECURSE_BROKEN])
 dnl For ArchLinux handler.
 AC_CHECK_PROG(PACMAN,[pacman],[pacman],[no])
 
+dnl Support for gzipped kernel modules.
+AC_CHECK_LIB([z],[gzopen])
+
 dnl Required programs, libraries.
 AC_PATH_PROG([MKE2FS],[mke2fs],[no],
              [$PATH$PATH_SEPARATOR/sbin$PATH_SEPARATOR])

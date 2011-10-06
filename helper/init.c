@@ -38,6 +38,10 @@
 
 #include <asm/unistd.h>
 
+#ifdef HAVE_LIBZ
+#include <zlib.h>
+#endif
+
 extern long init_module (void *, unsigned long, const char *);
 
 /* translation taken from module-init-tools/insmod.c  */
@@ -201,9 +205,40 @@ main ()
 static void
 insmod (const char *filename)
 {
+  size_t size;
+
   if (verbose)
     fprintf (stderr, "febootstrap: internal insmod %s\n", filename);
 
+#ifdef HAVE_LIBZ
+  gzFile gzfp = gzopen (filename, "rb");
+  int capacity = 64*1024;
+  char *buf = (char *) malloc (capacity);
+  int tmpsize = 8 * 1024;
+  char tmp[tmpsize];
+  int num;
+
+  size = 0;
+
+  if (gzfp == NULL) {
+    fprintf (stderr, "insmod: gzopen failed: %s", filename);
+    exit (EXIT_FAILURE);
+  }
+  while ((num = gzread (gzfp, tmp, tmpsize)) > 0) {
+    if (num > capacity) {
+      buf = (char*) realloc (buf, size*2);
+      capacity = size;
+    }
+    memcpy (buf+size, tmp, num);
+    capacity -= num;
+    size += num;
+  }
+  if (num == -1) {
+    perror ("insmod: gzread");
+    exit (EXIT_FAILURE);
+  }
+  gzclose (gzfp);
+#else
   int fd = open (filename, O_RDONLY);
   if (fd == -1) {
     fprintf (stderr, "insmod: open: %s: %m\n", filename);
@@ -214,24 +249,30 @@ insmod (const char *filename)
     perror ("insmod: fstat");
     exit (EXIT_FAILURE);
   }
-  char buf[st.st_size];
-  long offset = 0;
+  size = st.st_size;
+  char buf[size];
+  size_t offset = 0;
   do {
-    long rc = read (fd, buf + offset, st.st_size - offset);
+    ssize_t rc = read (fd, buf + offset, size - offset);
     if (rc == -1) {
       perror ("insmod: read");
       exit (EXIT_FAILURE);
     }
     offset += rc;
-  } while (offset < st.st_size);
+  } while (offset < size);
   close (fd);
+#endif
 
-  if (init_module (buf, st.st_size, "") != 0) {
+  if (init_module (buf, size, "") != 0) {
     fprintf (stderr, "insmod: init_module: %s: %s\n", filename, moderror (errno));
     /* However ignore the error because this can just happen because
      * of a missing device.
      */
   }
+
+#ifdef HAVE_LIBZ
+  free (buf);
+#endif
 }
 
 /* Mount /proc unless it's mounted already. */
