@@ -34,7 +34,7 @@ let pacman_detect () =
 
 let pacman_resolve_dependencies_and_download names =
   let cmd =
-    sprintf "pactree -u %s | sort -u"
+    sprintf "(for p in %s; do pactree -u $p; done) | awk '{print $1}' | sort -u"
       (String.concat " " (List.map Filename.quote names)) in
   let pkgs = run_command_get_lines cmd in
 
@@ -83,13 +83,12 @@ let pacman_list_files ?(use_installed=false) pkg =
   let pkgdir = tmpdir // pkg ^ ".d" in
   mkdir pkgdir 0o755;
   let cmd =
-    sprintf "pacman -Q %s | awk '{print $2}'"
-      pkg in
-   let ver = List.hd (run_command_get_lines cmd) in
-   let cmd =
-     sprintf "umask 0000; fakeroot tar -xf %s-%s* -C %s"
-     (Filename.quote tmpdir // pkg ) ver (Filename.quote pkgdir) in
-   run_command cmd;
+    sprintf "ls -1 %s/%s-*.pkg.* | awk '/\\/%s-[^/-]*-[^/-]*-[^/-]*$/ { print $0 }'"
+      tmpdir pkg pkg in
+  let pkgfile = List.hd (run_command_get_lines cmd) in
+    let cmd = sprintf "umask 0000; fakeroot tar -xf %s -C %s"
+              (Filename.quote pkgfile) (Filename.quote pkgdir) in
+  run_command cmd;
 
   let cmd = sprintf "cd %s && find ." pkgdir in
   let lines = run_command_get_lines cmd in
