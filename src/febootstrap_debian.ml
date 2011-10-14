@@ -1,5 +1,5 @@
 (* febootstrap 3
- * Copyright (C) 2009-2010 Red Hat Inc.
+ * Copyright (C) 2009-2011 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,8 +28,18 @@ open Febootstrap_cmdline
 (* Create a temporary directory for use by all the functions in this file. *)
 let tmpdir = tmpdir ()
 
-let installed_pkgs =
-  run_command_get_lines "dpkg-query --show --showformat='${Package}\\n'"
+let get_installed_pkgs =
+  let pkgs = ref None in
+  let rec f () =
+    match !pkgs with
+    | None ->
+      pkgs :=
+        Some (run_command_get_lines
+                "dpkg-query --show --showformat='${Package}\\n'");
+      f ()
+    | Some pkgs -> pkgs
+  in
+  f
 
 let debian_detect () =
   file_exists "/etc/debian_version" &&
@@ -55,7 +65,7 @@ let rec debian_resolve_dependencies_and_download names =
     ) pkgs in
 
   let present_pkgs, download_pkgs = List.partition (
-    fun pkg -> List.exists ((=) pkg) installed_pkgs
+    fun pkg -> List.exists ((=) pkg) (get_installed_pkgs ())
   ) pkgs in
 
   debug "wanted packages (present / download): %s / %s\n"
@@ -182,14 +192,15 @@ let debian_list_files_installed pkg =
   files
 
 let debian_list_files ?(use_installed=false) pkg =
-  if use_installed && List.exists ((=) pkg) installed_pkgs then
+  if use_installed && List.exists ((=) pkg) (get_installed_pkgs ()) then
     debian_list_files_installed pkg
   else
     debian_list_files_downloaded pkg
 
 (* Easy because we already unpacked the archive above. *)
 let debian_get_file_from_package ?(use_installed=false) pkg file =
-  if use_installed && List.exists (fun p -> p = pkg) installed_pkgs then
+  if use_installed && List.exists (fun p -> p = pkg) (get_installed_pkgs ())
+  then
     file
   else
     tmpdir // pkg ^ ".d" // file
