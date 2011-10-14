@@ -1,5 +1,5 @@
 /* febootstrap-supermin-helper reimplementation in C.
- * Copyright (C) 2009-2010 Red Hat Inc.
+ * Copyright (C) 2009-2011 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -79,7 +79,12 @@ main ()
   mount_proc ();
 
   print_uptime ();
-  fprintf (stderr, "febootstrap: ext2 mini initrd starting up\n");
+  fprintf (stderr, "febootstrap: ext2 mini initrd starting up: "
+           PACKAGE_VERSION
+#ifdef HAVE_LIBZ
+           " zlib"
+#endif
+           "\n");
 
   /* Create some fixed directories. */
   mkdir ("/dev", 0755);
