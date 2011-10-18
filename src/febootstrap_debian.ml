@@ -70,9 +70,8 @@ let rec debian_resolve_dependencies_and_download names =
 	fun pkg -> List.exists ((=) pkg) (get_installed_pkgs ())
       ) pkgs in
 
-  debug "wanted packages (present / download): %s / %s\n"
-    (String.concat " " present_pkgs)
-    (String.concat " " download_pkgs);
+  debug "packages already present: %s" (String.concat " " present_pkgs);
+  debug "wanted packages to download: %s" (String.concat " " download_pkgs);
 
   (* Download the packages. *)
   if (List.length download_pkgs > 0)
