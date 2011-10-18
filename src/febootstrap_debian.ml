@@ -62,9 +62,13 @@ let rec debian_resolve_dependencies_and_download names =
         not (List.exists (fun re -> Str.string_match re name 0) excludes)
     ) pkgs in
 
-  let present_pkgs, download_pkgs = List.partition (
-    fun pkg -> List.exists ((=) pkg) (get_installed_pkgs ())
-  ) pkgs in
+  let present_pkgs, download_pkgs =
+    if not use_installed then
+      [], pkgs
+    else
+      List.partition (
+	fun pkg -> List.exists ((=) pkg) (get_installed_pkgs ())
+      ) pkgs in
 
   debug "wanted packages (present / download): %s / %s\n"
     (String.concat " " present_pkgs)
