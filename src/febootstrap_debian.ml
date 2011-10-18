@@ -28,25 +28,20 @@ open Febootstrap_cmdline
 (* Create a temporary directory for use by all the functions in this file. *)
 let tmpdir = tmpdir ()
 
-let get_installed_pkgs =
-  let pkgs = ref None in
-  let rec f () =
-    match !pkgs with
-    | None ->
-      pkgs :=
-        Some (run_command_get_lines
-                "dpkg-query --show --showformat='${Package}\\n'");
-      f ()
-    | Some pkgs -> pkgs
-  in
-  f
-
 let debian_detect () =
   file_exists "/etc/debian_version" &&
     Config.aptitude <> "no" && Config.apt_cache <> "no" && Config.dpkg <> "no"
 
+let installed_pkgs = ref []
+
 let debian_init () =
-  ()
+  installed_pkgs :=
+    run_command_get_lines "dpkg-query --show --showformat='${Package}\\n'"
+
+let get_installed_pkgs () =
+  match !installed_pkgs with
+    | [] -> assert false
+    | pkgs -> pkgs
 
 let rec debian_resolve_dependencies_and_download names =
   let cmd =
