@@ -67,7 +67,7 @@ let () =
     List.flatten (
       List.map (
         fun pkg ->
-          let files = ph.ph_list_files ~use_installed pkg in
+          let files = ph.ph_list_files pkg in
           List.map (fun (filename, ft) -> filename, ft, pkg) files
       ) packages
     ) in
@@ -320,7 +320,7 @@ let () =
        * original file from the package.
        *)
       else if config then (
-        let outfile = ph.ph_get_file_from_package ~use_installed pkg path in
+        let outfile = ph.ph_get_file_from_package pkg path in
 
         (* Note that the output config file might not be a regular file. *)
         let statbuf = lstat outfile in

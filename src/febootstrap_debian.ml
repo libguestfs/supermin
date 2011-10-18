@@ -45,6 +45,9 @@ let debian_detect () =
   file_exists "/etc/debian_version" &&
     Config.aptitude <> "no" && Config.apt_cache <> "no" && Config.dpkg <> "no"
 
+let debian_init () =
+  ()
+
 let rec debian_resolve_dependencies_and_download names =
   let cmd =
     sprintf "%s depends --recurse -i %s | grep -v '^[<[:space:]]'"
@@ -191,14 +194,14 @@ let debian_list_files_installed pkg =
   ) lines in
   files
 
-let debian_list_files ?(use_installed=false) pkg =
+let debian_list_files pkg =
   if use_installed && List.exists ((=) pkg) (get_installed_pkgs ()) then
     debian_list_files_installed pkg
   else
     debian_list_files_downloaded pkg
 
 (* Easy because we already unpacked the archive above. *)
-let debian_get_file_from_package ?(use_installed=false) pkg file =
+let debian_get_file_from_package pkg file =
   if use_installed && List.exists (fun p -> p = pkg) (get_installed_pkgs ())
   then
     file
@@ -208,6 +211,7 @@ let debian_get_file_from_package ?(use_installed=false) pkg file =
 let () =
   let ph = {
     ph_detect = debian_detect;
+    ph_init = debian_init;
     ph_resolve_dependencies_and_download =
       debian_resolve_dependencies_and_download;
     ph_list_files = debian_list_files;

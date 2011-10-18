@@ -32,6 +32,10 @@ let pacman_detect () =
   file_exists "/etc/arch-release" &&
     Config.pacman <> "no"
 
+let pacman_init () =
+  if use_installed then
+    failwith "pacman driver doesn't support --use-installed"
+
 let pacman_resolve_dependencies_and_download names =
   let cmd =
     sprintf "(for p in %s; do pactree -u $p; done) | awk '{print $1}' | sort -u"
@@ -71,10 +75,7 @@ let pacman_resolve_dependencies_and_download names =
 
   List.sort compare pkgs
 
-let pacman_list_files ?(use_installed=false) pkg =
-  if use_installed then
-    failwith "pacman driver doesn't support --use-installed";
-
+let pacman_list_files pkg =
   debug "unpacking %s ..." pkg;
 
   (* We actually need to extract the file in order to get the
@@ -119,15 +120,13 @@ let pacman_list_files ?(use_installed=false) pkg =
   files
 
 (* Easy because we already unpacked the archive above. *)
-let pacman_get_file_from_package ?(use_installed=false) pkg file =
-  if use_installed then
-    failwith "pacman driver doesn't support --use-installed";
-
+let pacman_get_file_from_package pkg file =
   tmpdir // pkg ^ ".d" // file
 
 let () =
   let ph = {
     ph_detect = pacman_detect;
+    ph_init = pacman_init;
     ph_resolve_dependencies_and_download =
       pacman_resolve_dependencies_and_download;
     ph_list_files = pacman_list_files;

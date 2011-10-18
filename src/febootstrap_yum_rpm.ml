@@ -32,6 +32,10 @@ let yum_rpm_detect () =
   (file_exists "/etc/redhat-release" || file_exists "/etc/fedora-release") &&
     Config.yum <> "no" && Config.rpm <> "no"
 
+let yum_rpm_init () =
+  if use_installed then
+    failwith "yum_rpm driver doesn't support --use-installed"
+
 let yum_rpm_resolve_dependencies_and_download names =
   (* Liberate this data from python. *)
   let tmpfile = tmpdir // "names.tmp" in
@@ -172,10 +176,7 @@ if verbose:
       sprintf "%s/%s-%s-%s.%s.rpm" tmpdir name version release arch
   ) pkgs
 
-let rec yum_rpm_list_files ?(use_installed=false) pkg =
-  if use_installed then
-    failwith "yum_rpm driver doesn't support --use-installed";
-
+let rec yum_rpm_list_files pkg =
   (* Run rpm -qlp with some extra magic. *)
   let cmd =
     sprintf "rpm -q --qf '[%%{FILENAMES} %%{FILEFLAGS:fflags} %%{FILEMODES} %%{FILESIZES}\\n]' -p %s"
@@ -231,10 +232,7 @@ let rec yum_rpm_list_files ?(use_installed=false) pkg =
 
   files
 
-let yum_rpm_get_file_from_package ?(use_installed=false) pkg file =
-  if use_installed then
-    failwith "yum_rpm driver doesn't support --use-installed";
-
+let yum_rpm_get_file_from_package pkg file =
   debug "extracting %s from %s ..." file (Filename.basename pkg);
 
   let outfile = tmpdir // file in
@@ -247,6 +245,7 @@ let yum_rpm_get_file_from_package ?(use_installed=false) pkg file =
 let () =
   let ph = {
     ph_detect = yum_rpm_detect;
+    ph_init = yum_rpm_init;
     ph_resolve_dependencies_and_download =
       yum_rpm_resolve_dependencies_and_download;
     ph_list_files = yum_rpm_list_files;

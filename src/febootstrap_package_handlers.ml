@@ -24,9 +24,10 @@ open Febootstrap_cmdline
 
 type package_handler = {
   ph_detect : unit -> bool;
+  ph_init : unit -> unit;
   ph_resolve_dependencies_and_download : string list -> string list;
-  ph_list_files : ?use_installed:bool -> string -> (string * file_type) list;
-  ph_get_file_from_package : ?use_installed:bool -> string -> string -> string
+  ph_list_files : string -> (string * file_type) list;
+  ph_get_file_from_package : string -> string -> string
 }
 and file_type = {
   ft_dir : bool;
@@ -46,14 +47,15 @@ let register_package_handler name ph =
 
 let handler = ref None
 
-let check_system () =
+let rec check_system () =
   try
     handler := Some (
       List.find (
         fun (_, ph) ->
           ph.ph_detect ()
       ) !handlers
-    )
+    );
+    (get_package_handler ()).ph_init ()
   with Not_found ->
     eprintf "\
 febootstrap: could not detect package manager used by this system or distro.
@@ -65,14 +67,14 @@ then it may be that the package detection code is not working.
 ";
     exit 1
 
-let rec get_package_handler () =
+and get_package_handler () =
   match !handler with
   | Some (_, ph) -> ph
   | None ->
       check_system ();
       get_package_handler ()
 
-let rec get_package_handler_name () =
+and get_package_handler_name () =
   match !handler with
   | Some (name, _) -> name
   | None ->

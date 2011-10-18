@@ -20,7 +20,14 @@
 
 type package_handler = {
   ph_detect : unit -> bool;
-  (** Detect if the current system uses this package manager. *)
+  (** Detect if the current system uses this package manager.  This is
+      called in turn on each package handler, until one returns [true]. *)
+
+  ph_init : unit -> unit;
+  (** After a package handler is selected, this function is called
+      which can optionally do any initialization that is required.
+      This is only called on the package handler if it has returned
+      [true] from {!ph_detect}. *)
 
   ph_resolve_dependencies_and_download : string list -> string list;
   (** [ph_resolve_dependencies_and_download pkgs]
@@ -31,11 +38,11 @@ type package_handler = {
 
       Note this should also process the [excludes] list. *)
 
-  ph_list_files : ?use_installed:bool -> string -> (string * file_type) list;
+  ph_list_files : string -> (string * file_type) list;
   (** [ph_list_files pkg] lists the files and file metadata in the
       package called [pkg] (a package file). *)
 
-  ph_get_file_from_package : ?use_installed:bool -> string -> string -> string;
+  ph_get_file_from_package : string -> string -> string;
   (** [ph_get_file_from_package pkg file] extracts the
       single named file [file] from [pkg].  The path of the
       extracted file is returned. *)
