@@ -45,7 +45,7 @@ let get_installed_pkgs () =
 
 let rec debian_resolve_dependencies_and_download names =
   let cmd =
-    sprintf "%s depends --recurse -i %s | grep -v '^[<[:space:]]' | grep -Ev :\\w+\\b"
+    sprintf "%s depends --recurse -i %s | grep -v '^[<[:space:]]' | grep -Ev ':\\w+\\b'"
       Config.apt_cache
       (String.concat " " (List.map Filename.quote names)) in
   let pkgs = run_command_get_lines cmd in
