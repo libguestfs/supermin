@@ -1,0 +1,54 @@
+Ideas for a future version of febootstrap.
+
+
+The name
+--------
+
+The name 'febootstrap' confuses everyone.  I'd like to rename the
+program to 'supermin' and rename 'febootstrap-supermin-helper' to
+'supermin-reconstruct'.
+
+
+hostfiles
+---------
+
+'hostfiles' causes lots of trouble, because it bakes path dependencies
+into the supermin appliance.
+
+We propose to replace this with a list of root packages.  Lines in
+hostfiles beginning with a "+" sign are a root package, eg:
+
+  +bash
+  +coreutils
+
+We then query RPM or dpkg to get a list of hostfiles at appliance boot
+time.  eg. For rpm we'd do the rpmlib equivalents of:
+
+  rpm -ql bash    # list of files in bash
+  rpm -qR bash    # what bash requires
+  rpm -q --whatprovides <depN>    # recursively look up each requires
+
+(If this is too slow, aggressively cache the results)
+
+Some files still need to be stored at build time, basically %config
+files.
+
+Unclear what to do about kernels if we make this change.
+
+'hostfiles' may still be needed for a handful of files that we really
+want to copy in.  Notable ones: /etc/localtime and /etc/resolv.conf.
+
+
+Store %post scripts
+-------------------
+
+Can we get the %post scripts and store them in a directory in the
+appliance?
+
+
+Directories
+-----------
+
+Reconstruction is tied to having directories being created before they
+are used.  We should try to remove this limitation as it's really
+quite unnecessary.
