@@ -78,7 +78,7 @@ while not stable:
             for r in pkg.requires:
                 ps = yb.whatProvides (r[0], r[1], r[2])
                 best = yb._bestPackageFromList (ps.returnPackages ())
-                if best.name != pkg.name:
+                if best and best.name != pkg.name:
                     deps[pkg].append (best)
                     if not deps.has_key (best):
                         deps[best] = False
