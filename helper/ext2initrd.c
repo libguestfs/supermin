@@ -268,4 +268,7 @@ print_module_load_order (FILE *pipe, FILE *list, struct module *m)
   fputs (basename, list);
   fputc ('\n', list);
   m->visited = 1;
+
+  if (verbose >= 2)
+    fprintf (stderr, "print_module_load_order: %s %s\n", m->name, basename);
 }
