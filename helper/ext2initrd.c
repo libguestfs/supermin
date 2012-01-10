@@ -1,5 +1,5 @@
 /* febootstrap-supermin-helper reimplementation in C.
- * Copyright (C) 2009-2011 Red Hat Inc.
+ * Copyright (C) 2009-2012 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -115,6 +115,7 @@ ext2_make_initrd (const char *modpath, const char *initrd)
   FILE *f = fopen (outfile, "w");
   if (f == NULL)
     error (EXIT_FAILURE, errno, "failed to create modules list (%s)", outfile);
+  free (outfile);
   FILE *pp = popen (cmd, "w");
   if (pp == NULL)
     error (EXIT_FAILURE, errno, "failed to create pipe (%s)", cmd);
@@ -175,6 +176,7 @@ read_module_deps (const char *modpath)
 
   char *filename = xasprintf ("%s/modules.dep", modpath);
   FILE *fp = fopen (filename, "r");
+  free (filename);
   if (fp == NULL)
     error (EXIT_FAILURE, errno, "open: %s/modules.dep", modpath);
 
