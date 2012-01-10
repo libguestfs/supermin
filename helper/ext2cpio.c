@@ -1,5 +1,5 @@
 /* febootstrap-supermin-helper reimplementation in C.
- * Copyright (C) 2009-2010 Red Hat Inc.
+ * Copyright (C) 2009-2010, 2012 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -348,6 +348,8 @@ add_link (ext2_ino_t real_ino)
   p->minor = dev_minor;
   p->major = dev_major;
   p->real_ino = real_ino;
+  p->next = links_head;
+  links_head = p;
 }
 
 static void
