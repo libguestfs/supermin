@@ -48,6 +48,7 @@ INSTALL
 install-sh
 missing
 pod2htm?.tmp
+snippet/
 src/config.ml
 src/febootstrap
 stamp-h1
