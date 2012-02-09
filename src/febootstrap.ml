@@ -95,10 +95,15 @@ let () =
       if ft1.ft_config || ft2.ft_config then (
 	(* It's a fairly frequent bug in Fedora for two packages to
 	 * incorrectly list the same config file.  Allow this, provided
-	 * the size of both files is 0.
-	 *)
+	 * the size of both files is 0; or one is a ghost file and the
+	 * other is not.
+         *)
 	if ft1.ft_size = 0 && ft2.ft_size = 0 then
 	  (name1, ft1, pkg1)
+        else if not ft1.ft_ghost && ft2.ft_ghost then
+          (name1, ft1, pkg1)
+        else if ft1.ft_ghost && not ft2.ft_ghost then
+          (name2, ft2, pkg2)
 	else (
           eprintf "febootstrap: error: %s is a config file which is listed in two packages (%s, %s)\n"
             name1 pkg1 pkg2;
