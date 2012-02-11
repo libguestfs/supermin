@@ -53,7 +53,7 @@ let rec debian_resolve_dependencies_and_download names =
     if Config.apt_cache_depends_recurse_broken then
       workaround_broken_apt_cache_depends_recurse (sort_uniq pkgs)
     else
-      pkgs in
+      sort_uniq pkgs in
 
   (* Exclude packages matching [--exclude] regexps on the command line. *)
   let pkgs =
