@@ -168,15 +168,23 @@ iterate_input_directory (const char *dirname, int dirfd, struct writer *writer)
   sort (entries, string_compare);
 
   char path[PATH_MAX];
-  strcpy (path, dirname);
+  char *inputs[] = { path };
   size_t len = strlen (dirname);
+
+  if (len + 1 >= PATH_MAX)
+    error (EXIT_FAILURE, 0, "%s: directory name too long", __func__);
+
+  strcpy (path, dirname);
   path[len++] = '/';
 
-  char *inputs[] = { path };
+  for (size_t i = 0; entries[i] != NULL; ++i) {
+    size_t len2 = strlen (entries[i]);
 
-  size_t i;
-  for (i = 0; entries[i] != NULL; ++i) {
+    if (len + 1 + len2 >= PATH_MAX)
+      error (EXIT_FAILURE, 0, "%s: path name too long", __func__);
+
     strcpy (&path[len], entries[i]);
+
     iterate_inputs (inputs, 1, writer);
   }
 }
