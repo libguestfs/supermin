@@ -98,8 +98,12 @@ parse_next_entry (void)
     error (EXIT_FAILURE, errno, "read failure reading cpio file");
   curr += sizeof header - 4;
 
-  if (verbose >= 2)
-    fprintf (stderr, "cpio header %s\n", header);
+  if (verbose >= 2) {
+    char header2[sizeof header + 1];
+    memcpy (header2, header, sizeof header);
+    header2[sizeof header] = '\0';
+    fprintf (stderr, "cpio header %s\n", header2);
+  }
 
   if (memcmp (header, "070707", 6) == 0)
     error (EXIT_FAILURE, 0, "incorrect cpio method: use -H newc option");
