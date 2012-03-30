@@ -42,7 +42,6 @@ let tmpdir = tmpdir ()
 let handlers = ref []
 
 let register_package_handler name ph =
-  debug "registering package handler: %s" name;
   handlers := (name, ph) :: !handlers
 
 let handler = ref None
