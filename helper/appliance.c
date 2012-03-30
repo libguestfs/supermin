@@ -177,7 +177,8 @@ iterate_input_directory (const char *dirname, int dirfd, struct writer *writer)
   strcpy (path, dirname);
   path[len++] = '/';
 
-  for (size_t i = 0; entries[i] != NULL; ++i) {
+  size_t i;
+  for (i = 0; entries[i] != NULL; ++i) {
     size_t len2 = strlen (entries[i]);
 
     if (len + 1 + len2 >= PATH_MAX)

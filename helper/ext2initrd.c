@@ -93,8 +93,10 @@ ext2_make_initrd (const char *modpath, const char *initrd)
 
   read_module_deps (modpath);
   add_module ("");
-  for (int i = 0; kmods[i] != NULL; ++i) {
-    for (struct module *m = modules; m; m = m->next) {
+  int i;
+  struct module *m;
+  for (i = 0; kmods[i] != NULL; ++i) {
+    for (m = modules; m; m = m->next) {
       char *n = strrchr (m->name, '/');
       if (n)
         n += 1;
@@ -253,7 +255,8 @@ print_module_load_order (FILE *pipe, FILE *list, struct module *m)
   if (m->visited)
     return;
 
-  for (struct moddep *d = m->deps; d; d = d->next)
+  struct moddep *d;
+  for (d = m->deps; d; d = d->next)
     print_module_load_order (pipe, list, d->dep);
 
   if (m->name[0] == 0)
