@@ -38,7 +38,12 @@ AC_SYS_LARGEFILE
 gl_INIT
 
 # Define $(SED).
-AC_PROG_SED
+m4_ifdef([AC_PROG_SED],[
+    AC_PROG_SED
+],[
+    dnl ... else hope for the best
+    AC_SUBST([SED], "sed")
+])
 
 # OCaml and ocamlfind are required to compile.
 AC_PROG_OCAML
