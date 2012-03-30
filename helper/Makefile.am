@@ -32,9 +32,11 @@ febootstrap_supermin_helper_SOURCES = \
 	kernel.c \
 	main.c \
 	utils.c
-febootstrap_supermin_helper_CFLAGS = -Wall -I../lib
+febootstrap_supermin_helper_CFLAGS = \
+	-Wall $(EXT2FS_CFLAGS) $(COM_ERR_CFLAGS) -I../lib
 febootstrap_supermin_helper_LDADD = \
-	ext2init.o -lext2fs -lcom_err $(LTLIBINTL) -L../lib -lgnu
+	ext2init.o $(EXT2FS_LIBS) $(COM_ERR_LIBS) \
+	$(LTLIBINTL) -L../lib -lgnu
 
 # init "script" used by ext2 initrd.
 noinst_PROGRAMS = init

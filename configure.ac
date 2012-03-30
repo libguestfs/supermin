@@ -89,7 +89,7 @@ AC_CHECK_PROG(PACMAN,[pacman],[pacman],[no])
 dnl Support for gzipped kernel modules.
 AC_CHECK_LIB([z],[gzopen])
 
-dnl Required programs, libraries.
+dnl mke2fs.
 AC_PATH_PROG([MKE2FS],[mke2fs],[no],
              [$PATH$PATH_SEPARATOR/sbin$PATH_SEPARATOR])
 if test "x$MKE2FS" = "xno" ; then
@@ -98,23 +98,17 @@ fi
 AC_DEFINE_UNQUOTED([MKE2FS],["$MKE2FS"],
   [Full path to the mke2fs program.])
 
-old_LIBS="$LIBS"
-AC_CHECK_LIB([com_err],[error_message],[],[
-  AC_MSG_FAILURE([com_err library not found (part of e2fsprogs)])
-])
-LIBS="$old_LIBS"
+dnl ext2fs, com_err.
+PKG_CHECK_MODULES([EXT2FS], [ext2fs])
+PKG_CHECK_MODULES([COM_ERR], [com_err])
 
+dnl Optional ext2fs_close2 function.
 old_LIBS="$LIBS"
-AC_CHECK_LIB([ext2fs],[ext2fs_file_open2],[],[
-  AC_MSG_FAILURE([libext2fs library not found (part of e2fsprogs)])
-])
+LIBS="$EXT2FS_LIBS $COM_ERR_LIBS"
 AC_CHECK_FUNCS([ext2fs_close2])
 LIBS="$old_LIBS"
 
-AC_CHECK_HEADER([ext2fs/ext2fs.h],[],[
-  AC_MSG_FAILURE([Header <ext2fs/ext2fs.h> not found (part of e2fsprogs)])
-])
-
+dnl GNU awk.
 AC_CHECK_PROG(GAWK,[gawk],[gawk],[no])
 if test "x$GAWK" = "xno" ; then
   AC_MSG_FAILURE([gawk (GNU awk) not found])
