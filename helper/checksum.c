@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 #include <unistd.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -71,10 +72,10 @@ checksum_file_stat (const char *filename, const struct stat *statbuf)
    * accordingly.
    */
   if (S_ISREG (statbuf->st_mode))
-    fprintf (pp, "%s %ld %ld %d %d %ld %o\n",
+    fprintf (pp, "%s %ld %ld %d %d %" PRIu64 " %o\n",
              filename,
              (long) statbuf->st_ctime, (long) statbuf->st_mtime,
-             statbuf->st_uid, statbuf->st_gid, statbuf->st_size,
+             statbuf->st_uid, statbuf->st_gid, (uint64_t) statbuf->st_size,
              statbuf->st_mode);
   else
     fprintf (pp, "%s %d %d %o\n",
