@@ -142,6 +142,7 @@
 /string.in.h
 /stripslash.c
 /sys_stat.in.h
+/sys_types.in.h
 /sys_wait.in.h
 /time.in.h
 /unistd--.h
