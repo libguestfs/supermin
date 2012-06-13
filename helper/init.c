@@ -226,7 +226,6 @@ main ()
   chdir ("/");
 
   /* Run /init from ext2 filesystem. */
-  print_uptime ();
   execl ("/init", "init", NULL);
   perror ("execl: /init");
 
