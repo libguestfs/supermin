@@ -26,7 +26,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
+#include <inttypes.h>
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -144,8 +146,8 @@ main ()
 
     asprintf (&path, "/sys/block/%s/dev", root);
 
-    long delay_ns = 250000;
-    while (delay_ns <= 2000000000) {
+    uint64_t delay_ns = 250000;
+    while (delay_ns <= UINT64_C(30000000000)) {
       fp = fopen (path, "r");
       if (fp != NULL)
         goto found;
