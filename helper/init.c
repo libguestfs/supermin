@@ -45,6 +45,17 @@
 #include <zlib.h>
 #endif
 
+/* Maximum time to wait for the root device to appear (seconds).
+ *
+ * On slow machines with lots of disks (Koji running the 255 disk test
+ * in libguestfs) this really can take several minutes.
+ *
+ * Note that the actual wait time is approximately double the number
+ * given here because there is a delay which doubles until it reaches
+ * this value.
+ */
+#define MAX_ROOT_WAIT 300
+
 extern long init_module (void *, unsigned long, const char *);
 
 /* translation taken from module-init-tools/insmod.c  */
@@ -147,7 +158,7 @@ main ()
     asprintf (&path, "/sys/block/%s/dev", root);
 
     uint64_t delay_ns = 250000;
-    while (delay_ns <= UINT64_C(30000000000)) {
+    while (delay_ns <= MAX_ROOT_WAIT * UINT64_C(1000000000)) {
       fp = fopen (path, "r");
       if (fp != NULL)
         goto found;
