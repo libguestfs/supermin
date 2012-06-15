@@ -67,6 +67,7 @@ static const char *kmods[] = {
   "mbcache.ko*",
   "crc*.ko*",
   "libcrc*.ko*",
+  "ibmvscsic.ko*",
   NULL
 };
 
