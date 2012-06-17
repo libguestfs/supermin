@@ -54,7 +54,10 @@ yb.preconf.debuglevel = verbose
 yb.preconf.errorlevel = verbose
 if %s:
     yb.preconf.fn = %S
-yb.setCacheDir ()
+try:
+    yb.setCacheDir ()
+except AttributeError:
+    pass
 
 if verbose:
     print \"febootstrap_yum_rpm: looking up the base packages from the command line\"
