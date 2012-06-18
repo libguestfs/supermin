@@ -78,8 +78,8 @@ ext2_start (const char *hostcpu, const char *appliance,
   /* Run mke2fs on the file.
    * XXX Quoting, but this string doesn't come from an untrusted source.
    */
-  char *cmd = xasprintf ("%s -t ext2 -F%s '%s'",
-                         MKE2FS,
+  char *cmd = xasprintf ("%s %s ext2 -F%s '%s'",
+                         MKE2FS, MKE2FS_T_OPTION,
                          verbose >= 2 ? "" : "q",
                          appliance);
   int r = system (cmd);

@@ -103,6 +103,23 @@ fi
 AC_DEFINE_UNQUOTED([MKE2FS],["$MKE2FS"],
   [Full path to the mke2fs program.])
 
+dnl RHEL 5 mke2fs needed -T <fs> instead of -t <fs>.  Unhelpfully
+dnl the --help output doesn't mention this, so we have to test it.
+AC_MSG_CHECKING([$MKE2FS -t or -T])
+rm -f conftest.img
+dd if=/dev/zero of=conftest.img bs=1024 count=1024 >&AS_MESSAGE_LOG_FD 2>&1
+if $MKE2FS -t ext2 -F -q conftest.img >&AS_MESSAGE_LOG_FD 2>&1 ; then
+  MKE2FS_T_OPTION=-t
+elif $MKE2FS -T ext2 -F -q conftest.img >&AS_MESSAGE_LOG_FD 2>&1 ; then
+  MKE2FS_T_OPTION=-T
+else
+  AC_MSG_ERROR([$MKE2FS cannot create filesystems])
+fi
+rm conftest.img
+AC_MSG_RESULT([$MKE2FS_T_OPTION])
+AC_DEFINE_UNQUOTED([MKE2FS_T_OPTION],["$MKE2FS_T_OPTION"],
+  [mke2fs option used to specify filesystem type (usually "-t")])
+
 dnl ext2fs, com_err.
 PKG_CHECK_MODULES([EXT2FS], [ext2fs])
 PKG_CHECK_MODULES([COM_ERR], [com_err])
