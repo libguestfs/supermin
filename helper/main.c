@@ -116,7 +116,6 @@ parseuser (const char *id, const char *progname)
     if (saved_errno != 0)
       fprintf (stderr, " (getpwnam error: %s)", strerror (saved_errno));
     fprintf (stderr, "\n");
-    usage (stderr, progname);
     exit (EXIT_FAILURE);
   }
 
@@ -145,7 +144,6 @@ parsegroup (const char *id, const char *progname)
     if (saved_errno != 0)
       fprintf (stderr, " (getgrnam error: %s)", strerror (saved_errno));
     fprintf (stderr, "\n");
-    usage (stderr, progname);
     exit (EXIT_FAILURE);
   }
 
