@@ -76,6 +76,7 @@ depend: .depend
 	$(OCAMLFIND) ocamldep $^ | \
 	  $(SED) 's/ *$$//' | \
 	  $(SED) -e :a -e '/ *\\$$/N; s/ *\\\n */ /; ta' | \
+	  $(SED) 's/ :/:/' | \
 	  sort > $@-t
 	mv $@-t $@
 
