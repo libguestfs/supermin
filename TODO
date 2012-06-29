@@ -52,3 +52,15 @@ Directories
 Reconstruction is tied to having directories being created before they
 are used.  We should try to remove this limitation as it's really
 quite unnecessary.
+
+
+Use libsolv or hawkey for dependency resolution
+-----------------------------------------------
+
+Using Python + yum to resolve RPM dependencies is sucky and slow.  We
+should look at the combination of DNF, libsolv and hawkey to replace
+them:
+
+https://fedoraproject.org/wiki/Features/DNF
+https://github.com/openSUSE/libsolv
+https://github.com/akozumpl/hawkey
