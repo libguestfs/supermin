@@ -128,10 +128,6 @@ if verbose:
     )
     else pkgs in
 
-  (* Drop the kernel package to save time. *)
-  let pkgs =
-    List.filter (function ("kernel",_,_,_,_) -> false | _ -> true) pkgs in
-
   (* Exclude packages matching [--exclude] regexps on the command line. *)
   let pkgs =
     List.filter (
