@@ -52,6 +52,10 @@ if verbose:
 yb = yum.YumBase ()
 yb.preconf.debuglevel = verbose
 yb.preconf.errorlevel = verbose
+try:
+    yb.prerepoconf.multi_progressbar = None
+except:
+    pass
 if %s:
     yb.preconf.fn = %S
 try:
