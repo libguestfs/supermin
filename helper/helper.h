@@ -50,6 +50,7 @@ struct writer {
 /* main.c */
 extern struct timeval start_t;
 extern int verbose;
+extern int copy_kernel;
 
 /* appliance.c */
 extern void create_appliance (const char *hostcpu, char **inputs, int nr_inputs, const char *whitelist, const char *modpath, const char *initrd, const char *appliance, struct writer *writer);

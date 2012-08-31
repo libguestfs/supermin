@@ -77,6 +77,13 @@ host_cpu and the UID of the current user are included in the checksum.
 
 =back
 
+=item B<--copy-kernel>
+
+Copy the kernel instead of symlinking to the kernel in C</boot>.
+
+This is fractionally slower, but is necessary if you want to change
+the permissions or SELinux label on the kernel.
+
 =item B<-k file>
 
 =item B<--kmods file>

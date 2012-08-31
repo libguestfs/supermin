@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
 #include <fnmatch.h>
 #include <unistd.h>
 #include <errno.h>
@@ -28,8 +29,13 @@
 
 #include "error.h"
 #include "xvasprintf.h"
+#include "full-write.h"
 
 #include "helper.h"
+
+#ifndef O_CLOEXEC
+#define O_CLOEXEC 0
+#endif
 
 /* Directory containing candidate kernels.  We could make this
  * configurable at some point.
@@ -39,6 +45,7 @@
 
 static char* get_kernel_version (char* filename);
 static const char *create_kernel_from_env (const char *hostcpu, const char *kernel, const char *kernel_env, const char *modpath_env);
+static void copy_or_symlink_kernel (const char *from, const char *to);
 
 static char *
 get_modpath (const char *kernel_name)
@@ -104,7 +111,7 @@ has_modpath (const char *kernel_name)
 }
 
 /* Create the kernel.  This chooses an appropriate kernel and makes a
- * symlink to it.
+ * symlink to it (or copies it if --copy-kernel was passed).
  *
  * Look for the most recent kernel named vmlinuz-*.<arch>* which has a
  * corresponding directory in /lib/modules/. If the architecture is
@@ -157,13 +164,7 @@ create_kernel (const char *hostcpu, const char *kernel)
   if (kernel) {
     /* Choose the first candidate. */
     char *tmp = xasprintf (KERNELDIR "/%s", candidates[0]);
-
-    if (verbose >= 2)
-      fprintf (stderr, "creating symlink %s -> %s\n", kernel, tmp);
-
-    if (symlink (tmp, kernel) == -1)
-      error (EXIT_FAILURE, errno, "symlink kernel");
-
+    copy_or_symlink_kernel (tmp, kernel);
     free (tmp);
   }
 
@@ -231,15 +232,50 @@ create_kernel_from_env (const char *hostcpu, const char *kernel,
   }
 
   /* Create the symlink. */
-  if (kernel) {
-    if (verbose >= 2)
-      fprintf (stderr, "creating symlink %s -> %s\n", kernel_env, kernel);
-
-    if (symlink (kernel_env, kernel) == -1)
-      error (EXIT_FAILURE, errno, "symlink kernel");
-  }
+  if (kernel)
+    copy_or_symlink_kernel (kernel_env, kernel);
 
   return modpath_env;
+}
+
+static void
+copy_or_symlink_kernel (const char *from, const char *to)
+{
+  int fd1, fd2;
+  char buf[BUFSIZ];
+  ssize_t r;
+
+  if (verbose >= 2)
+    fprintf (stderr, "%s kernel %s -> %s\n",
+             !copy_kernel ? "symlink" : "copy", from, to);
+
+  if (!copy_kernel) {
+    if (symlink (from, to) == -1)
+      error (EXIT_FAILURE, errno, "creating kernel symlink %s %s", from, to);
+  }
+  else {
+    fd1 = open (from, O_RDONLY | O_CLOEXEC);
+    if (fd1 == -1)
+      error (EXIT_FAILURE, errno, "open: %s", from);
+
+    fd2 = open (to, O_WRONLY|O_CREAT|O_NOCTTY|O_CLOEXEC, 0644);
+    if (fd2 == -1)
+      error (EXIT_FAILURE, errno, "open: %s", to);
+
+    while ((r = read (fd1, buf, sizeof buf)) > 0) {
+      if (full_write (fd2, buf, r) != r)
+        error (EXIT_FAILURE, errno, "write: %s", to);
+    }
+
+    if (r == -1)
+      error (EXIT_FAILURE, errno, "read: %s", from);
+
+    if (close (fd1) == -1)
+      error (EXIT_FAILURE, errno, "close: %s", from);
+
+    if (close (fd2) == -1)
+      error (EXIT_FAILURE, errno, "close: %s", to);
+  }
 }
 
 /* Read an unsigned little endian short at a specified offset in a file.
