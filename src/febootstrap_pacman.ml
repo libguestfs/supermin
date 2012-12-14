@@ -61,8 +61,9 @@ let pacman_resolve_dependencies_and_download names =
       if Sys.command cmd <> 0 then (
           (* The package is not in the main repos, check the aur *)
           let cmd =
-            sprintf "umask 0000; cd %s && wget http://aur.archlinux.org/packages/%s/%s.tar.gz && tar xf %s.tar.gz && cd %s && makepkg && mv %s-*.pkg.tar.xz %s"
+            sprintf "umask 0000; cd %s && wget https://aur.archlinux.org/packages/%s/%s/%s.tar.gz && tar xf %s.tar.gz && cd %s && makepkg && mv %s-*.pkg.tar.xz %s"
             (Filename.quote tmpdir)
+            (String.sub pkg 0 2)
             pkg
             pkg
             pkg
