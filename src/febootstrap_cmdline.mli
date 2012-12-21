@@ -50,3 +50,6 @@ val warnings : bool
 
 val yum_config : string option
   (** Yum configuration file. *)
+
+val pacman_config : string option
+  (**pacman configuration file. *)

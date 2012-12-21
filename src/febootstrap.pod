@@ -91,6 +91,14 @@ written (C<hostfiles> and C<base.img>).  The default directory is the
 current directory.  Note that if this files exist already in the
 output directory then they will be overwritten.
 
+=item B<--pacman-config CONFIGFILE>
+
+(ArchLinux package handler only).  Use an alternate configuration file
+instead of C</etc/pacman.conf>.  If you also want to specify alternate
+repositories then you can put them in this file directly or add a
+C<reposdir> option to this file.  For more information on the file
+format see L<pacman.conf(5)>.
+
 =item B<--save-temps>
 
 Don't remove temporary files and directories on exit.  This is useful
