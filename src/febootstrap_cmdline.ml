@@ -26,8 +26,7 @@ let save_temps = ref false
 let use_installed = ref false
 let verbose = ref false
 let warnings = ref true
-let yum_config = ref None
-let pacman_config = ref None
+let packager_config = ref None
 
 let print_version () =
   printf "%s %s\n" Config.package_name Config.package_version;
@@ -36,11 +35,8 @@ let print_version () =
 let add_exclude re =
   excludes := Str.regexp re :: !excludes
 
-let set_yum_config str =
-  yum_config := Some str
-
-let set_pacman_config str =
-  pacman_config := Some str
+let set_packager_config str =
+  packager_config := Some str
 
 let argspec = Arg.align [
   "--exclude", Arg.String add_exclude,
@@ -51,8 +47,8 @@ let argspec = Arg.align [
     " Suppress warnings";
   "-o", Arg.Set_string outputdir,
     "outputdir Set output directory (default: \".\")";
-  "--pacman-config", Arg.String set_pacman_config,
-    "file Set alternate pacman configuration file";
+  "--packager-config", Arg.String set_packager_config,
+    "file Set alternate package manager configuration file";
   "--save-temp", Arg.Set save_temps,
     " Don't delete temporary files and directories on exit.";
   "--save-temps", Arg.Set save_temps,
@@ -67,8 +63,8 @@ let argspec = Arg.align [
     " Print package name and version, and exit";
   "--version", Arg.Unit print_version,
     " Print package name and version, and exit";
-  "--yum-config", Arg.String set_yum_config,
-    "file Set alternate yum configuration file";
+  "--yum-config", Arg.String set_packager_config,
+    "file Deprecated alias for `--packager-config file'";
 ]
 let anon_fn str =
   packages := str :: !packages
@@ -101,7 +97,6 @@ let save_temps = !save_temps
 let use_installed = !use_installed
 let verbose = !verbose
 let warnings = !warnings
-let yum_config = !yum_config
-let pacman_config = !pacman_config
+let packager_config = !packager_config
 
 let debug fs = ksprintf (fun str -> if verbose then print_endline str) fs

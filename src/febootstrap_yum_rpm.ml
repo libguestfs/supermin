@@ -102,8 +102,8 @@ if verbose:
     print \"febootstrap_yum_rpm: finished python code\"
 "
     (if verbose then 1 else 0)
-    (match yum_config with None -> "False" | Some _ -> "True")
-    (match yum_config with None -> "" | Some filename -> filename)
+    (match packager_config with None -> "False" | Some _ -> "True")
+    (match packager_config with None -> "" | Some filename -> filename)
     tmpfile in
   run_python py names;
   let chan = open_in tmpfile in
@@ -166,7 +166,7 @@ if verbose:
 
   let cmd = sprintf "yumdownloader%s%s --destdir %s %s"
     (if verbose then "" else " --quiet")
-    (match yum_config with None -> ""
+    (match packager_config with None -> ""
      | Some filename -> sprintf " -c %s" filename)
     (Filename.quote tmpdir)
     (String.concat " " (List.map Filename.quote pkgnames)) in

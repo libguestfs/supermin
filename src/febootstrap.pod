@@ -91,13 +91,16 @@ written (C<hostfiles> and C<base.img>).  The default directory is the
 current directory.  Note that if this files exist already in the
 output directory then they will be overwritten.
 
-=item B<--pacman-config CONFIGFILE>
+=item B<--packager-config CONFIGFILE>
 
-(ArchLinux package handler only).  Use an alternate configuration file
-instead of C</etc/pacman.conf>.  If you also want to specify alternate
-repositories then you can put them in this file directly or add a
-C<reposdir> option to this file.  For more information on the file
-format see L<pacman.conf(5)>.
+Set the configuration file for the package manager.  This allows you
+to specify alternate software repositories.
+
+For ArchLinux, this sets the pacman configuration file (default
+C</etc/pacman.conf>).  See L<pacman.conf(5)>.
+
+For Yum/RPM distributions, this sets the yum configuration file
+(default C</etc/yum.conf>).  See L<yum.conf(5)>.
 
 =item B<--save-temps>
 
@@ -130,11 +133,7 @@ Print the package name and version number, and exit.
 
 =item B<--yum-config CONFIGFILE>
 
-(Yum/RPM package handler only).  Use an alternate configuration file
-instead of C</etc/yum.conf>.  If you also want to specify alternate
-repositories then you can put them in this file directly or add a
-C<reposdir> option to this file.  For more information on the file
-format see L<yum.conf(5)>.
+This is a deprecated alias for I<--packager-config CONFIGFILE>.
 
 =back
 

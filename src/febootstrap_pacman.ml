@@ -58,7 +58,7 @@ let pacman_resolve_dependencies_and_download names =
       let cmd =
         sprintf "umask 0000; cd %s && mkdir -p var/lib/pacman && fakeroot pacman%s -Syw --noconfirm --cachedir=$(pwd) --root=$(pwd) %s"
         (Filename.quote tmpdir)
-	(match pacman_config with
+	(match packager_config with
          | None -> ""
          | Some filename -> " --config " ^ filename)
         pkg in
