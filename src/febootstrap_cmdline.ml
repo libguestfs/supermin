@@ -50,11 +50,11 @@ let argspec = Arg.align [
   "--packager-config", Arg.String set_packager_config,
     "file Set alternate package manager configuration file";
   "--save-temp", Arg.Set save_temps,
-    " Don't delete temporary files and directories on exit.";
+    " Don't delete temporary files and directories on exit";
   "--save-temps", Arg.Set save_temps,
-    " Don't delete temporary files and directories on exit.";
+    " Don't delete temporary files and directories on exit";
   "--use-installed", Arg.Set use_installed,
-    " Inspect already installed packages for determining contents.";
+    " Use already installed packages for package contents";
   "-v", Arg.Set verbose,
     " Enable verbose output";
   "--verbose", Arg.Set verbose,
@@ -72,7 +72,7 @@ let anon_fn str =
 let usage_msg =
   "\
 febootstrap - bootstrapping tool for creating supermin appliances
-Copyright (C) 2009-2010 Red Hat Inc.
+Copyright (C) 2009-2013 Red Hat Inc.
 
 Usage:
  febootstrap [-o OUTPUTDIR] --names LIST OF PKGS ...
