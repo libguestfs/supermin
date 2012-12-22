@@ -35,8 +35,19 @@ let print_version () =
 let add_exclude re =
   excludes := Str.regexp re :: !excludes
 
-let set_packager_config str =
-  packager_config := Some str
+let set_packager_config filename =
+  (* Need to check that the file exists, and make the path absolute. *)
+  let filename =
+    if Filename.is_relative filename then
+      Filename.concat (Sys.getcwd ()) filename
+    else filename in
+  if not (Sys.file_exists filename) then (
+    eprintf "febootstrap: --packager-config: %s: file does not exist\n"
+      filename;
+    exit 1
+  );
+
+  packager_config := Some filename
 
 let argspec = Arg.align [
   "--exclude", Arg.String add_exclude,
