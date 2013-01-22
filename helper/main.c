@@ -242,6 +242,13 @@ main (int argc, char *argv[])
       perror ("setgid");
       exit (EXIT_FAILURE);
     }
+
+    /* Kill supplemental groups from parent process (RHBZ#902476). */
+    if (setgroups (1, &egid) == -1) {
+      perror ("setgroups");
+      exit (EXIT_FAILURE);
+    }
+
     if (setuid (euid) == -1) {
       perror ("setuid");
       exit (EXIT_FAILURE);
