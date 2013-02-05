@@ -1,5 +1,5 @@
-/* febootstrap-supermin-helper reimplementation in C.
- * Copyright (C) 2009-2010 Red Hat Inc.
+/* supermin-helper reimplementation in C.
+ * Copyright (C) 2009-2013 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -128,9 +128,9 @@ const char *
 create_kernel (const char *hostcpu, const char *kernel)
 {
   /* Override kernel selection using environment variables? */
-  char *kernel_env = getenv ("FEBOOTSTRAP_KERNEL");
+  char *kernel_env = getenv ("SUPERMIN_KERNEL");
   if (kernel_env) {
-    char *modpath_env = getenv ("FEBOOTSTRAP_MODULES");
+    char *modpath_env = getenv ("SUPERMIN_MODULES");
     return create_kernel_from_env (hostcpu, kernel, kernel_env, modpath_env);
   }
 
@@ -173,12 +173,12 @@ create_kernel (const char *hostcpu, const char *kernel)
   /* Print more diagnostics here than the old script did. */
  no_kernels:
   fprintf (stderr,
-           "febootstrap-supermin-helper: failed to find a suitable kernel.\n"
+           "supermin-helper: failed to find a suitable kernel.\n"
            "I looked for kernels in " KERNELDIR " and modules in " MODULESDIR
            ".\n"
            "If this is a Xen guest, and you only have Xen domU kernels\n"
            "installed, try installing a fullvirt kernel (only for\n"
-           "febootstrap use, you shouldn't boot the Xen guest with it).\n");
+           "supermin use, you shouldn't boot the Xen guest with it).\n");
   exit (EXIT_FAILURE);
 }
 
@@ -192,7 +192,7 @@ create_kernel_from_env (const char *hostcpu, const char *kernel,
 {
   if (verbose) {
     fprintf (stderr,
-             "febootstrap-supermin-helper: using environment variable(s) FEBOOTSTRAP_* to\n"
+             "supermin-helper: using environment variable(s) SUPERMIN_* to\n"
              "select kernel %s", kernel_env);
     if (modpath_env)
       fprintf (stderr, " and module path %s", modpath_env);
@@ -201,8 +201,8 @@ create_kernel_from_env (const char *hostcpu, const char *kernel,
 
   if (!isfile (kernel_env)) {
     fprintf (stderr,
-             "febootstrap-supermin-helper: %s: not a regular file\n"
-             "(what is $FEBOOTSTRAP_KERNEL set to?)\n", kernel_env);
+             "supermin-helper: %s: not a regular file\n"
+             "(what is $SUPERMIN_KERNEL set to?)\n", kernel_env);
     exit (EXIT_FAILURE);
   }
 
@@ -214,9 +214,9 @@ create_kernel_from_env (const char *hostcpu, const char *kernel,
     /* NB: We need the extra test to ensure calling get_modpath is safe. */
     if (strncmp (p, "vmlinuz-", 8) != 0) {
       fprintf (stderr,
-               "febootstrap-supermin-helper: cannot guess module path.\n"
-               "Set $FEBOOTSTRAP_MODULES to the modules directory corresponding to\n"
-               "kernel %s, or unset $FEBOOTSTRAP_KERNEL to autoselect a kernel.\n",
+               "supermin-helper: cannot guess module path.\n"
+               "Set $SUPERMIN_MODULES to the modules directory corresponding to\n"
+               "kernel %s, or unset $SUPERMIN_KERNEL to autoselect a kernel.\n",
                kernel_env);
       exit (EXIT_FAILURE);
     }
@@ -226,8 +226,8 @@ create_kernel_from_env (const char *hostcpu, const char *kernel,
 
   if (!isdir (modpath_env)) {
     fprintf (stderr,
-             "febootstrap-supermin-helper: %s: not a directory\n"
-             "(what is $FEBOOTSTRAP_MODULES set to?)\n", modpath_env);
+             "supermin-helper: %s: not a directory\n"
+             "(what is $SUPERMIN_MODULES set to?)\n", modpath_env);
     exit (EXIT_FAILURE);
   }
 

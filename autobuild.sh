@@ -1,6 +1,6 @@
 #!/bin/bash -
 
-PROJECT=febootstrap
+PROJECT=supermin
 MAILTO=libguestfs@redhat.com
 HOSTNAME="$(hostname -s)"
 
@@ -38,7 +38,7 @@ EOF
 exec >> local-log 2>&1
 
 # Pull from the public repo so that we don't need ssh-agent.
-git pull --rebase git://git.annexia.org/git/febootstrap.git master
+git pull --rebase git://github.com/libguestfs/supermin.git
 git clean -d -f
 
 # The git version we are building.

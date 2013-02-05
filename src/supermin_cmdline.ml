@@ -1,5 +1,5 @@
-(* febootstrap 3
- * Copyright (C) 2009-2010 Red Hat Inc.
+(* supermin 4
+ * Copyright (C) 2009-2013 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ let set_packager_config filename =
       Filename.concat (Sys.getcwd ()) filename
     else filename in
   if not (Sys.file_exists filename) then (
-    eprintf "febootstrap: --packager-config: %s: file does not exist\n"
+    eprintf "supermin: --packager-config: %s: file does not exist\n"
       filename;
     exit 1
   );
@@ -82,21 +82,21 @@ let anon_fn str =
 
 let usage_msg =
   "\
-febootstrap - bootstrapping tool for creating supermin appliances
+supermin - tool for creating supermin appliances
 Copyright (C) 2009-2013 Red Hat Inc.
 
 Usage:
- febootstrap [-o OUTPUTDIR] --names LIST OF PKGS ...
- febootstrap [-o OUTPUTDIR] PKG FILE NAMES ...
+ supermin [-o OUTPUTDIR] --names LIST OF PKGS ...
+ supermin [-o OUTPUTDIR] PKG FILE NAMES ...
 
-For full instructions see the febootstrap(8) man page.
+For full instructions see the supermin(8) man page.
 
 Options:\n"
 
 let () =
   Arg.parse argspec anon_fn usage_msg;
   if !packages = [] then (
-    eprintf "febootstrap: no packages listed on the command line\n";
+    eprintf "supermin: no packages listed on the command line\n";
     exit 1
   )
 

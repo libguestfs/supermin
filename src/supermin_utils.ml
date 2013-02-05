@@ -1,5 +1,5 @@
-(* febootstrap 3
- * Copyright (C) 2009-2010 Red Hat Inc.
+(* supermin 4
+ * Copyright (C) 2009-2013 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,20 +53,20 @@ let run_command_get_lines cmd =
   (match stat with
    | WEXITED 0 -> ()
    | WEXITED i ->
-       eprintf "febootstrap: command '%s' failed (returned %d), see earlier error messages\n" cmd i;
+       eprintf "supermin: command '%s' failed (returned %d), see earlier error messages\n" cmd i;
        exit i
    | WSIGNALED i ->
-       eprintf "febootstrap: command '%s' killed by signal %d" cmd i;
+       eprintf "supermin: command '%s' killed by signal %d" cmd i;
        exit 1
    | WSTOPPED i ->
-       eprintf "febootstrap: command '%s' stopped by signal %d" cmd i;
+       eprintf "supermin: command '%s' stopped by signal %d" cmd i;
        exit 1
   );
   lines
 
 let run_command cmd =
   if Sys.command cmd <> 0 then (
-    eprintf "febootstrap: %s: command failed, see earlier errors\n" cmd;
+    eprintf "supermin: %s: command failed, see earlier errors\n" cmd;
     exit 1
   )
 
@@ -75,7 +75,7 @@ let run_python code args =
     (Filename.quote code)
     (String.concat " " (List.map Filename.quote args)) in
   if Sys.command cmd <> 0 then (
-    eprintf "febootstrap: external python program failed, see earlier error messages\n";
+    eprintf "supermin: external python program failed, see earlier error messages\n";
     exit 1
   )
 
@@ -88,11 +88,11 @@ let tmpdir () =
   (* Note this is secure, because if the name already exists, even as a
    * symlink, mkdir(2) will fail.
    *)
-  let tmpdir = Filename.temp_dir_name // sprintf "febootstrap%s.tmp" data in
+  let tmpdir = Filename.temp_dir_name // sprintf "supermin%s.tmp" data in
   Unix.mkdir tmpdir 0o700;
 
   (* Only remove the directory if --save-temps was *not* specified. *)
-  if not Febootstrap_cmdline.save_temps then
+  if not Supermin_cmdline.save_temps then
     at_exit
       (fun () ->
         let cmd = sprintf "rm -rf %s" (Filename.quote tmpdir) in

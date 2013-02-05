@@ -1,5 +1,5 @@
-/* febootstrap-supermin-helper reimplementation in C.
- * Copyright (C) 2009-2010 Red Hat Inc.
+/* supermin-helper reimplementation in C.
+ * Copyright (C) 2009-2013 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -125,7 +125,7 @@ write_file_len_to_fd (const char *filename, size_t len)
     error (EXIT_FAILURE, errno, "close: %s", filename);
 
   if (count != len)
-    error (EXIT_FAILURE, 0, "febootstrap-supermin-helper: write_file_len_to_fd: %s: file has changed size\n", filename);
+    error (EXIT_FAILURE, 0, "supermin-helper: write_file_len_to_fd: %s: file has changed size\n", filename);
 }
 
 /* Append the file pointed to by FTSENT to the cpio output. */

@@ -1,5 +1,5 @@
-/* febootstrap-supermin-helper reimplementation in C.
- * Copyright (C) 2009-2012 Red Hat Inc.
+/* supermin-helper reimplementation in C.
+ * Copyright (C) 2009-2013 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -95,7 +95,7 @@ main ()
   mount_proc ();
 
   print_uptime ();
-  fprintf (stderr, "febootstrap: ext2 mini initrd starting up: "
+  fprintf (stderr, "supermin: ext2 mini initrd starting up: "
            PACKAGE_VERSION
 #ifdef HAVE_LIBZ
            " zlib"
@@ -111,7 +111,7 @@ main ()
 
   /* Mount /sys. */
   if (verbose)
-    fprintf (stderr, "febootstrap: mounting /sys\n");
+    fprintf (stderr, "supermin: mounting /sys\n");
   if (mount ("sysfs", "/sys", "sysfs", 0, "") == -1) {
     perror ("mount: /sys");
     exit (EXIT_FAILURE);
@@ -188,13 +188,13 @@ main ()
   }
 
   fprintf (stderr,
-           "febootstrap: no ext2 root device found\n"
+           "supermin: no ext2 root device found\n"
            "Please include FULL verbose output in your bug report.\n");
   exit (EXIT_FAILURE);
 
  found:
   if (verbose)
-    fprintf (stderr, "febootstrap: picked %s as root device\n", path);
+    fprintf (stderr, "supermin: picked %s as root device\n", path);
 
   fgets (line, sizeof line, fp);
   int major = atoi (line);
@@ -208,7 +208,7 @@ main ()
   }
 
   if (verbose)
-    fprintf (stderr, "febootstrap: creating /dev/root as block special %d:%d\n",
+    fprintf (stderr, "supermin: creating /dev/root as block special %d:%d\n",
              major, minor);
 
   if (mknod ("/dev/root", S_IFBLK|0700, makedev (major, minor)) == -1) {
@@ -218,7 +218,7 @@ main ()
 
   /* Mount new root and chroot to it. */
   if (verbose)
-    fprintf (stderr, "febootstrap: mounting new root on /root\n");
+    fprintf (stderr, "supermin: mounting new root on /root\n");
   if (mount ("/dev/root", "/root", "ext2", MS_NOATIME, "") == -1) {
     perror ("mount: /root");
     exit (EXIT_FAILURE);
@@ -229,7 +229,7 @@ main ()
    * We could remove the old initramfs files, but let's not bother.
    */
   if (verbose)
-    fprintf (stderr, "febootstrap: chroot\n");
+    fprintf (stderr, "supermin: chroot\n");
 
   if (chroot ("/root") == -1) {
     perror ("chroot: /root");
@@ -261,7 +261,7 @@ insmod (const char *filename)
   size_t size;
 
   if (verbose)
-    fprintf (stderr, "febootstrap: internal insmod %s\n", filename);
+    fprintf (stderr, "supermin: internal insmod %s\n", filename);
 
 #ifdef HAVE_LIBZ
   gzFile gzfp = gzopen (filename, "rb");
@@ -336,7 +336,7 @@ mount_proc (void)
     mkdir ("/proc", 0755);
 
     if (verbose)
-      fprintf (stderr, "febootstrap: mounting /proc\n");
+      fprintf (stderr, "supermin: mounting /proc\n");
 
     if (mount ("proc", "/proc", "proc", 0, "") == -1) {
       perror ("mount: /proc");
@@ -358,7 +358,7 @@ print_uptime (void)
   fgets (line, sizeof line, fp);
   fclose (fp);
 
-  fprintf (stderr, "febootstrap: uptime: %s", line);
+  fprintf (stderr, "supermin: uptime: %s", line);
 }
 
 /* Read /proc/cmdline into cmdline global (or at least the first 1024
@@ -376,7 +376,7 @@ read_cmdline (void)
   fgets (cmdline, sizeof cmdline, fp);
   fclose (fp);
 
-  fprintf (stderr, "febootstrap: cmdline: %s", cmdline);
+  fprintf (stderr, "supermin: cmdline: %s", cmdline);
 }
 
 /* Display a directory on stderr.  This is used for debugging only. */
@@ -405,7 +405,7 @@ show_directory (const char *dirname)
   char link[PATH_MAX+1];
   ssize_t n;
 
-  fprintf (stderr, "febootstrap: debug: listing directory %s\n", dirname);
+  fprintf (stderr, "supermin: debug: listing directory %s\n", dirname);
 
   if (chdir (dirname) == -1) {
     perror (dirname);

@@ -1,5 +1,5 @@
-(* febootstrap 3
- * Copyright (C) 2009-2010 Red Hat Inc.
+(* supermin 4
+ * Copyright (C) 2009-2013 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,9 @@
 open Unix
 open Printf
 
-open Febootstrap_package_handlers
-open Febootstrap_utils
-open Febootstrap_cmdline
+open Supermin_package_handlers
+open Supermin_utils
+open Supermin_cmdline
 
 (* Create a temporary directory for use by all the functions in this file. *)
 let tmpdir = tmpdir ()

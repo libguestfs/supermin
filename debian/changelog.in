@@ -1,5 +1,0 @@
-febootstrap (@VERSION@-1) unstable; urgency=low
-
-  * release: New upstream version @VERSION@.
-
- -- Richard W.M. Jones <rjones@redhat.com>  Thu,  9 Dec 2010 12:00:00 +0000

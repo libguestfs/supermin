@@ -1,5 +1,5 @@
-/* febootstrap-supermin-helper reimplementation in C.
- * Copyright (C) 2009-2010 Red Hat Inc.
+/* supermin-helper reimplementation in C.
+ * Copyright (C) 2009-2013 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,7 +68,7 @@ usage (FILE *f, const char *progname)
           "  %s --help\n"
           "  %s --version\n"
           "\n"
-          "This script is used by febootstrap to build the supermin appliance\n"
+          "This program is used by supermin to build the supermin appliance\n"
           "(kernel and initrd output files).  You should NOT need to run this\n"
           "program directly except if you are debugging tricky supermin\n"
           "appliance problems.\n"
@@ -219,7 +219,7 @@ main (int argc, char *argv[])
 
   /* We need to set the real, not effective, uid here to work round a
    * misfeature in bash. bash will automatically reset euid to uid when
-   * invoked. As shell is used in places by febootstrap-supermin-helper, this
+   * invoked. As shell is used in places by supermin-helper, this
    * results in code running with varying privilege. */
   uid_t uid = getuid ();
   gid_t gid = getgid ();

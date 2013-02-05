@@ -1,8 +1,0 @@
-*.debhelper.log
-*.substvars
-changelog
-files
-stamp-autotools
-stamp-autotools-files
-stamp-makefile-build
-stamp-makefile-install

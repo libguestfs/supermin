@@ -2,43 +2,43 @@
 
 =head1 NAME
 
-febootstrap - Bootstrapping tool for creating supermin appliances
+supermin - Tool for creating supermin appliances
 
 =head1 SYNOPSIS
 
- febootstrap [-o OUTPUTDIR] --names LIST OF PKGS ...
- febootstrap [-o OUTPUTDIR] PKG FILE NAMES ...
+ supermin [-o OUTPUTDIR] --names LIST OF PKGS ...
+ supermin [-o OUTPUTDIR] PKG FILE NAMES ...
 
 =head1 DESCRIPTION
 
-febootstrap is a tool for building supermin appliances.  These are
+Supermin is a tool for building supermin appliances.  These are
 tiny appliances (similar to virtual machines), usually around 100KB in
 size, which get fully instantiated on-the-fly in a fraction of a
 second when you need to boot one of them.
 
-Originally "fe" in febootstrap stood for "Fedora", but this tool is
+Originally "fe" in "febootstrap" stood for "Fedora", but this tool is
 now distro-independent and can build supermin appliances for several
 popular Linux distros, and adding support for others is reasonably
-easy.
+easy.  For this reason, starting with version 4, we have renamed the
+tool "supermin".
 
-Note that this manual page documents febootstrap 3.x which is a
-complete rewrite and quite different from version 2.x.  If you are
-looking for the febootstrap 2.x tools, then this is not the right
-place.
+Note that this manual page documents supermin 4.x which is a complete
+rewrite and quite different from febootstrap 2.x.  If you are looking
+for the febootstrap 2.x tools, then this is not the right place.
 
 =head2 BASIC OPERATION
 
-There are two modes for using febootstrap.  With the I<--names>
-parameter, febootstrap takes a list of package names and creates a
+There are two modes for using supermin.  With the I<--names>
+parameter, supermin takes a list of package names and creates a
 supermin appliance containing those packages and all dependencies that
-those packages require.  In this mode febootstrap usually needs
+those packages require.  In this mode supermin usually needs
 network access because it may need to consult package repositories in
 order to work out dependencies and download packages.
 
-Without I<--names>, febootstrap takes a list of packages (ie.
+Without I<--names>, supermin takes a list of packages (ie.
 filenames of locally available packages).  This package set must be
 complete and consistent with no dependencies outside the set of
-packages you provide.  In this mode febootstrap does not require any
+packages you provide.  In this mode supermin does not require any
 network access.  It works by looking at the package files themselves.
 
 By "package" we mean the RPM, DEB, (etc.) package.  A package name
@@ -47,14 +47,14 @@ or some abbreviation (eg. C<coreutils>).  The precise format of the
 name and what abbreviations are allowed depends on the package
 manager.
 
-The supermin appliance that febootstrap writes consists of two files
+The supermin appliance that supermin writes consists of two files
 called C<hostfiles> and C<base.img> (see L</SUPERMIN APPLIANCES>
 below).  By default these are written to the current directory.  If
 you specify the I<-o OUTPUTDIR> option then these files are written to
 the named directory instead (traditionally this directory is named
 C<supermin.d> but you can call it whatever you want).
 
-In all cases febootstrap can only build a supermin appliance which is
+In all cases supermin can only build a supermin appliance which is
 identical in distro, version and architecture to the host.  It does
 I<not> do cross-builds.
 
@@ -77,7 +77,7 @@ times on the command line.
 =item B<--names>
 
 Provide a list of package names, instead of providing packages
-directly.  In this mode febootstrap may require network access.  See
+directly.  In this mode supermin may require network access.  See
 L</BASIC OPERATION> above.
 
 =item B<--no-warnings>
@@ -117,7 +117,7 @@ changed from what was originally in the package.  This is particularly
 a problem for configuration files.
 
 However this option is useful in some controlled situations: for
-example when using febootstrap inside a freshly installed chroot.
+example when using supermin inside a freshly installed chroot.
 
 =item B<-v>
 
@@ -192,7 +192,7 @@ don't need to have any relationship to the host filesystem.
 
 =head2 RECONSTRUCTING THE APPLIANCE
 
-The separate tool L<febootstrap-supermin-helper(8)> is used to
+The separate tool L<supermin-helper(8)> is used to
 reconstruct an appliance from the hostfiles and base image files.
 
 This program in fact iterates recursively over the files and
@@ -203,7 +203,7 @@ directories passed to it.  A common layout is:
  supermin.d/extra.img
  supermin.d/hostfiles
 
-and then invoking febootstrap-supermin-helper with just the
+and then invoking supermin-helper with just the
 C<supermin.d> directory path as an argument.
 
 In this way extra files can be added to the appliance just by creating
@@ -213,7 +213,7 @@ files will appear in the appliance.
 
 =head3 DIRECTORIES BEFORE FILES
 
-In order for febootstrap-supermin-helper to run quickly, it does not
+In order for supermin-helper to run quickly, it does not
 know how to create directories automatically.  Inside hostfiles and
 the cpio files, directories must be specified before any files that
 they contain.  For example:
@@ -226,7 +226,7 @@ It is fine to list the same directory name multiple times.
 
 =head3 LEXICOGRAPHICAL ORDER
 
-febootstrap-supermin-helper visits the supermin control files in
+supermin-helper visits the supermin control files in
 lexicographical order.  Thus in the example above, in the order
 C<base.img> -E<gt> C<extra.img> -E<gt> C<hostfiles>.
 
@@ -275,19 +275,19 @@ supermin appliance.  When the appliance is instantiated, the kernel
 modules from the host kernel are copied in, and it is booted using the
 host kernel.
 
-febootstrap-supermin-helper is able to choose the best host kernel
+supermin-helper is able to choose the best host kernel
 available to boot the appliance.  Users can override this by setting
-environment variables (see L<febootstrap-supermin-helper(8)>).
+environment variables (see L<supermin-helper(8)>).
 
 =head2 BOOTING AND CACHING THE SUPERMIN APPLIANCE
 
 For fastest boot times you should cache the output of
-febootstrap-supermin-helper.  See the libguestfs source file
+supermin-helper.  See the libguestfs source file
 C<src/appliance.c> for an example of how this is done.
 
 =head2 ENFORCING AVAILABILITY OF HOSTFILES
 
-febootstrap-supermin-helper builds the appliance by copying in host
+supermin-helper builds the appliance by copying in host
 files as listed in C<hostfiles>.  For this to work those host files
 must be available.  We usually enforce this by adding requirements
 (eg. RPM C<Requires:> lines) on the package that uses the supermin
@@ -296,8 +296,8 @@ dependent packages and thus making sure the host files are available.
 
 =head1 SEE ALSO
 
-L<febootstrap-supermin-helper(8)>,
-L<http://people.redhat.com/~rjones/febootstrap/>,
+L<supermin-helper(8)>,
+L<http://people.redhat.com/~rjones/supermin/>,
 L<guestfs(3)>,
 L<http://libguestfs.org/>.
 

@@ -1,4 +1,4 @@
-dnl febootstrap configure.ac
+dnl supermin configure.ac
 dnl (C) Copyright 2009-2013 Red Hat Inc.
 dnl
 dnl This program is free software; you can redistribute it and/or modify
@@ -17,7 +17,7 @@ dnl Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 dnl
 dnl Written by Richard W.M. Jones <rjones@redhat.com>
 
-AC_INIT([febootstrap],[3.21])
+AC_INIT([supermin],[4.1.0])
 AM_INIT_AUTOMAKE
 
 dnl Check for basic C environment.
@@ -138,7 +138,6 @@ fi
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile
-        debian/changelog
         helper/Makefile
         lib/Makefile
         src/config.ml

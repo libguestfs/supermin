@@ -1,5 +1,5 @@
-/* febootstrap-supermin-helper reimplementation in C.
- * Copyright (C) 2009-2010 Red Hat Inc.
+/* supermin-helper reimplementation in C.
+ * Copyright (C) 2009-2013 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 
 /* This is a private interface used between the parts of the ext2 plugin. */
 
-#ifndef FEBOOTSTRAP_SUPERMIN_EXT2INTERNAL_H
-#define FEBOOTSTRAP_SUPERMIN_EXT2INTERNAL_H
+#ifndef SUPERMIN_EXT2INTERNAL_H
+#define SUPERMIN_EXT2INTERNAL_H
 
 /* Inlining is broken in the ext2fs header file.  Disable it by
  * defining the following:
@@ -42,4 +42,4 @@ extern void ext2_cpio_file (const char *cpio_file);
 /* ext2initrd.c */
 extern void ext2_make_initrd (const char *modpath, const char *initrd);
 
-#endif /* FEBOOTSTRAP_SUPERMIN_EXT2INTERNAL_H */
+#endif /* SUPERMIN_EXT2INTERNAL_H */

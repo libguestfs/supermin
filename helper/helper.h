@@ -1,5 +1,5 @@
-/* febootstrap-supermin-helper reimplementation in C.
- * Copyright (C) 2009-2010 Red Hat Inc.
+/* supermin-helper reimplementation in C.
+ * Copyright (C) 2009-2013 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef FEBOOTSTRAP_SUPERMIN_HELPER_H
-#define FEBOOTSTRAP_SUPERMIN_HELPER_H
+#ifndef SUPERMIN_HELPER_H
+#define SUPERMIN_HELPER_H
 
 #include <sys/stat.h>
 #include "fts_.h"
@@ -82,4 +82,4 @@ extern int isdir (const char *path);
 extern int isfile (const char *path);
 extern char **load_file (const char *filename);
 
-#endif /* FEBOOTSTRAP_SUPERMIN_HELPER_H */
+#endif /* SUPERMIN_HELPER_H */

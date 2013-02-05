@@ -1,5 +1,5 @@
-(* febootstrap 3
- * Copyright (C) 2009-2010 Red Hat Inc.
+(* supermin 4
+ * Copyright (C) 2009-2013 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,9 @@
 open Unix
 open Printf
 
-open Febootstrap_package_handlers
-open Febootstrap_utils
-open Febootstrap_cmdline
+open Supermin_package_handlers
+open Supermin_utils
+open Supermin_cmdline
 
 (* Create a temporary directory for use by all the functions in this file. *)
 let tmpdir = tmpdir ()
@@ -45,7 +45,7 @@ let () =
     List.iter (
       fun pkg ->
         if not (file_exists pkg) then (
-          eprintf "febootstrap: %s: no such file (did you miss out the --names option?)\n" pkg;
+          eprintf "supermin: %s: no such file (did you miss out the --names option?)\n" pkg;
           exit 1
         )
     ) packages
@@ -105,13 +105,13 @@ let () =
         else if ft1.ft_ghost && not ft2.ft_ghost then
           (name2, ft2, pkg2)
 	else (
-          eprintf "febootstrap: error: %s is a config file which is listed in two packages (%s, %s)\n"
+          eprintf "supermin: error: %s is a config file which is listed in two packages (%s, %s)\n"
             name1 pkg1 pkg2;
           exit 1
 	)
       )
       else if (ft1.ft_dir || ft2.ft_dir) && (not (ft1.ft_dir && ft2.ft_dir)) then (
-        eprintf "febootstrap: error: %s appears as both directory and ordinary file (%s, %s)\n"
+        eprintf "supermin: error: %s appears as both directory and ordinary file (%s, %s)\n"
           name1 pkg1 pkg2;
         exit 1
       )
@@ -189,7 +189,7 @@ let () =
 
       (* Ignore boot files, kernel, kernel modules.  Supermin appliances
        * are booted from external kernel and initrd, and
-       * febootstrap-supermin-helper copies the host kernel modules.
+       * supermin-helper copies the host kernel modules.
        * Note we want to keep the /boot and /lib/modules directory entries.
        *)
       if string_prefix "/boot/" path then ()
@@ -350,7 +350,7 @@ let () =
         | S_BLK
         | S_FIFO
         | S_SOCK ->
-            eprintf "febootstrap: error: %s: don't know how to handle this type of file\n" path;
+            eprintf "supermin: error: %s: don't know how to handle this type of file\n" path;
             exit 1
       )
 
@@ -381,13 +381,13 @@ let () =
   (match stat with
    | WEXITED 0 -> ()
    | WEXITED i ->
-       eprintf "febootstrap: command '%s' failed (returned %d), see earlier error messages\n" cmd i;
+       eprintf "supermin: command '%s' failed (returned %d), see earlier error messages\n" cmd i;
        exit i
    | WSIGNALED i ->
-       eprintf "febootstrap: command '%s' killed by signal %d" cmd i;
+       eprintf "supermin: command '%s' killed by signal %d" cmd i;
        exit 1
    | WSTOPPED i ->
-       eprintf "febootstrap: command '%s' stopped by signal %d" cmd i;
+       eprintf "supermin: command '%s' stopped by signal %d" cmd i;
        exit 1
   );
 
@@ -404,8 +404,8 @@ let () =
     (match !warn_unreadable with
      | [] -> ()
      | paths ->
-         eprintf "febootstrap: warning: some host files are unreadable by non-root\n";
-         eprintf "febootstrap: warning: get your distro to fix these files:\n";
+         eprintf "supermin: warning: some host files are unreadable by non-root\n";
+         eprintf "supermin: warning: get your distro to fix these files:\n";
          List.iter
            (fun path -> eprintf "\t%s\n%!" path)
            (List.sort compare paths)

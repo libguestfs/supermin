@@ -1,5 +1,5 @@
-(* febootstrap 3
- * Copyright (C) 2009-2010 Red Hat Inc.
+(* supermin 4
+ * Copyright (C) 2009-2013 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
 open Unix
 open Printf
 
-open Febootstrap_utils
-open Febootstrap_cmdline
+open Supermin_utils
+open Supermin_cmdline
 
 type package_handler = {
   ph_detect : unit -> bool;
@@ -57,11 +57,11 @@ let rec check_system () =
     (get_package_handler ()).ph_init ()
   with Not_found ->
     eprintf "\
-febootstrap: could not detect package manager used by this system or distro.
+supermin: could not detect package manager used by this system or distro.
 
 If this is a new Linux distro, or not Linux, or a Linux distro that uses
-an unusual packaging format then you may need to port febootstrap.  If
-you are expecting that febootstrap should work on this system or distro
+an unusual packaging format then you may need to port supermin.  If
+you are expecting that supermin should work on this system or distro
 then it may be that the package detection code is not working.
 ";
     exit 1

@@ -1,5 +1,5 @@
-# febootstrap Makefile.am
-# (C) Copyright 2009-2011 Red Hat Inc.
+# supermin Makefile.am
+# (C) Copyright 2009-2013 Red Hat Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,8 +31,8 @@ EXTRA_DIST = \
 
 # Maintainer website update.
 HTMLFILES = \
-	html/febootstrap.8.html \
-	html/febootstrap-supermin-helper.8.html
+	html/supermin.8.html \
+	html/supermin-helper.8.html
 
 WEBSITEDIR = $(HOME)/d/redhat/websites/libguestfs
 

@@ -1,5 +1,5 @@
-# febootstrap Makefile.am
-# (C) Copyright 2009-2011 Red Hat Inc.
+# supermin Makefile.am
+# (C) Copyright 2009-2013 Red Hat Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,28 +20,28 @@
 # Note these must be in build dependency order.
 SOURCES = \
 	config.ml \
-	febootstrap_cmdline.mli \
-	febootstrap_cmdline.ml \
-	febootstrap_utils.mli \
-	febootstrap_utils.ml \
-	febootstrap_package_handlers.mli \
-	febootstrap_package_handlers.ml \
-	febootstrap_yum_rpm.ml \
-	febootstrap_debian.ml \
-	febootstrap_pacman.ml \
-	febootstrap.ml
+	supermin_cmdline.mli \
+	supermin_cmdline.ml \
+	supermin_utils.mli \
+	supermin_utils.ml \
+	supermin_package_handlers.mli \
+	supermin_package_handlers.ml \
+	supermin_yum_rpm.ml \
+	supermin_debian.ml \
+	supermin_pacman.ml \
+	supermin.ml
 
-CLEANFILES = *~ *.cmi *.cmo *.cmx *.o febootstrap
+CLEANFILES = *~ *.cmi *.cmo *.cmx *.o supermin
 
 EXTRA_DIST = \
-	febootstrap.8 \
-	febootstrap.pod \
+	supermin.8 \
+	supermin.pod \
 	$(SOURCES)
 
 man_MANS = \
-	febootstrap.8
+	supermin.8
 
-bin_SCRIPTS = febootstrap
+bin_SCRIPTS = supermin
 
 SOURCES_ML = $(filter %.ml,$(SOURCES))
 BOBJECTS = $(SOURCES_ML:.ml=.cmo)
@@ -58,7 +58,7 @@ endif
 OCAMLPACKAGES = -package unix,str
 OCAMLFLAGS = -warn-error CDEFLMPSUVXYZ
 
-febootstrap: $(OBJECTS)
+supermin: $(OBJECTS)
 	$(OCAMLFIND) $(BEST) $(OCAMLFLAGS) $(OCAMLPACKAGES) -linkpkg \
 	  $^ -o $@
 
@@ -86,7 +86,7 @@ SUFFIXES = .cmo .cmi .cmx .ml .mli .mll .mly
 
 if HAVE_PERLDOC
 
-febootstrap.8: febootstrap.pod
+supermin.8: supermin.pod
 	pod2man \
 	  --section 8 \
 	  -c "Virtualization Support" \
@@ -94,14 +94,14 @@ febootstrap.8: febootstrap.pod
 	  $< > $@
 
 noinst_DATA = \
-	../html/febootstrap.8.html
+	../html/supermin.8.html
 
-../html/febootstrap.8.html: febootstrap.pod
+../html/supermin.8.html: supermin.pod
 	mkdir -p ../html
 	pod2html \
 	  --css 'pod.css' \
 	  --htmldir ../html \
-	  --outfile ../html/febootstrap.8.html \
-	  febootstrap.pod
+	  --outfile ../html/supermin.8.html \
+	  supermin.pod
 
 endif

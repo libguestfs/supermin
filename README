@@ -1,14 +1,21 @@
-febootstrap - Bootstrapping tool for creating supermin appliances
+supermin - Tool for creating supermin appliances
 by Richard W.M. Jones (rjones@redhat.com)
-http://people.redhat.com/~rjones/febootstrap
+http://people.redhat.com/~rjones/supermin
 ----------------------------------------------------------------------
 
-febootstrap is a tool for building supermin appliances.  These are
-tiny appliances [similar to virtual machines], usually around 100KB in
+Supermin is a tool for building supermin appliances.  These are tiny
+appliances [similar to virtual machines], usually around 100KB in
 size, which get fully instantiated on-the-fly in a fraction of a
 second when you need to boot one of them.
 
-A complete description is in the febootstrap(8) man page.
+A complete description is in the supermin(8) man page.
+
+IMPORTANT NOTE FOR USERS OF FEBOOTSTRAP 3.x:
+  supermin 4.x is just an evolution of febootstrap 3.x (really we just
+  renamed it). The previous febootstrap program is now called
+  supermin. The previous febootstrap-supermin-helper program is now
+  called supermin-helper. Apart from that they are identical, although
+  they will evolve and add features over time.
 
 IMPORTANT NOTE FOR USERS OF FEBOOTSTRAP 2.x:
   febootstrap 3.x is a complete rewrite.  febootstrap 2.x could only
@@ -72,5 +79,5 @@ Feedback and bugs
 -----------------
 
 Send feedback to libguestfs@redhat.com.  You can file bugs in
-https://bugzilla.redhat.com/ (under "Fedora", "febootstrap")
+https://bugzilla.redhat.com/ (under "Fedora", "supermin")
 

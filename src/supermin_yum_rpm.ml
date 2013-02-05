@@ -1,5 +1,5 @@
-(* febootstrap 3
- * Copyright (C) 2009-2010 Red Hat Inc.
+(* supermin 4
+ * Copyright (C) 2009-2013 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,9 @@
 open Unix
 open Printf
 
-open Febootstrap_package_handlers
-open Febootstrap_utils
-open Febootstrap_cmdline
+open Supermin_package_handlers
+open Supermin_utils
+open Supermin_cmdline
 
 (* Create a temporary directory for use by all the functions in this file. *)
 let tmpdir = tmpdir ()
@@ -47,7 +47,7 @@ import sys
 verbose = %d
 
 if verbose:
-    print \"febootstrap_yum_rpm: running python code to query yum and resolve deps\"
+    print \"supermin_yum_rpm: running python code to query yum and resolve deps\"
 
 yb = yum.YumBase ()
 yb.preconf.debuglevel = verbose
@@ -64,14 +64,14 @@ except AttributeError:
     pass
 
 if verbose:
-    print \"febootstrap_yum_rpm: looking up the base packages from the command line\"
+    print \"supermin_yum_rpm: looking up the base packages from the command line\"
 deps = dict ()
 pkgs = yb.pkgSack.returnPackages (patterns=sys.argv[1:])
 for pkg in pkgs:
     deps[pkg] = False
 
 if verbose:
-    print \"febootstrap_yum_rpm: recursively finding all the dependencies\"
+    print \"supermin_yum_rpm: recursively finding all the dependencies\"
 stable = False
 while not stable:
     stable = True
@@ -80,7 +80,7 @@ while not stable:
             deps[pkg] = []
             stable = False
             if verbose:
-                print (\"febootstrap_yum_rpm: examining deps of %%s\" %%
+                print (\"supermin_yum_rpm: examining deps of %%s\" %%
                        pkg.name)
             for r in pkg.requires:
                 ps = yb.whatProvides (r[0], r[1], r[2])
@@ -99,7 +99,7 @@ for pkg in deps.keys ():
 f.close ()
 
 if verbose:
-    print \"febootstrap_yum_rpm: finished python code\"
+    print \"supermin_yum_rpm: finished python code\"
 "
     (if verbose then 1 else 0)
     (match packager_config with None -> "False" | Some _ -> "True")
@@ -118,7 +118,7 @@ if verbose:
         | [name; epoch; version; release; arch] ->
             name, int_of_string epoch, version, release, arch
         | _ ->
-            eprintf "febootstrap: bad output from python script: '%s'" line;
+            eprintf "supermin: bad output from python script: '%s'" line;
             exit 1
     ) lines in
 
@@ -160,7 +160,7 @@ if verbose:
   ) pkgs in
 
   if pkgnames = [] then (
-    eprintf "febootstrap: yum-rpm: error: no packages to download\n";
+    eprintf "supermin: yum-rpm: error: no packages to download\n";
     exit 1
   );
 
@@ -202,7 +202,7 @@ let rec yum_rpm_list_files pkg =
                       ft_mode = mode; ft_size = size;
                     })
         | _ ->
-            eprintf "febootstrap: bad output from rpm command: '%s'" line;
+            eprintf "supermin: bad output from rpm command: '%s'" line;
             exit 1
     ) lines in
 

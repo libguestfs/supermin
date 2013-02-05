@@ -1,21 +1,20 @@
 =head1 NAME
 
-febootstrap-supermin-helper - Reconstruct initramfs from supermin appliance.
+supermin-helper - Reconstruct initramfs from supermin appliance.
 
 =head1 SYNOPSIS
 
- febootstrap-supermin-helper supermin.img hostfiles.txt host_cpu kernel initrd
- febootstrap-supermin-helper input [...] host_cpu kernel initrd
+ supermin-helper supermin.img hostfiles.txt host_cpu kernel initrd
+ supermin-helper input [...] host_cpu kernel initrd
 
- febootstrap-supermin-helper -f ext2 input [...] host_cpu kernel initrd appliance
+ supermin-helper -f ext2 input [...] host_cpu kernel initrd appliance
 
- febootstrap-supermin-helper -f checksum input [...] host_cpu
+ supermin-helper -f checksum input [...] host_cpu
 
 =head1 DESCRIPTION
 
-I<febootstrap-supermin-helper> reconstructs a bootable kernel and
-initramfs from a supermin appliance.  First you should be familiar
-with L<febootstrap(8)>.
+I<supermin-helper> reconstructs a bootable kernel and initramfs from a
+supermin appliance.  First you should be familiar with L<supermin(8)>.
 
 =head1 PARAMETERS
 
@@ -112,16 +111,16 @@ appliances which need a lot more memory to boot.
 
 =item B<--group group>
 
-Run febootstrap-supermin-helper as an alternate user and/or group.
-C<user> and C<group> can be specified as either a name, which will
-be resolved using the system name service, or a uid/gid.  Use of these
-options requires root privileges.
+Run supermin-helper as an alternate user and/or group.  C<user> and
+C<group> can be specified as either a name, which will be resolved
+using the system name service, or a uid/gid.  Use of these options
+requires root privileges.
 
-Use of these options is required if running febootstrap-supermin-helper
-as root with the effective uid/gid set to non-root.  Bash will reset
-the effective uid/gid to the real uid/gid when invoked.  As
-febootstrap-supermin-helper uses bash in parts, this will result in the
-creation of an appliance with a mixture of ownerships.
+Use of these options is required if running supermin-helper as root
+with the effective uid/gid set to non-root.  Bash will reset the
+effective uid/gid to the real uid/gid when invoked.  As
+supermin-helper uses bash in parts, this will result in the creation
+of an appliance with a mixture of ownerships.
 
 =back
 
@@ -151,7 +150,7 @@ Minimize the appliance, removing as much extraneous junk as possible.
 
 =over 4
 
-=item FEBOOTSTRAP_KERNEL
+=item SUPERMIN_KERNEL
 
 If this environment variable is set, then automatic selection of the
 kernel is bypassed and this kernel is used.
@@ -160,24 +159,24 @@ The environment variable should point to a kernel file,
 eg. C</boot/vmlinuz-3.0.x86_64>
 
 The corresponding module path is guessed from the kernel name, but you
-can override that by setting C<FEBOOTSTRAP_MODULES>.
+can override that by setting C<SUPERMIN_MODULES>.
 
-=item FEBOOTSTRAP_MODULES
+=item SUPERMIN_MODULES
 
-If C<FEBOOTSTRAP_KERNEL> and C<FEBOOTSTRAP_MODULES> are both set, then
+If C<SUPERMIN_KERNEL> and C<SUPERMIN_MODULES> are both set, then
 automatic selection of the kernel is bypassed and the kernel and
 module path are set to these values.
 
 The environment variable should point to a module directory,
 eg. C</lib/modules/3.0.x86_64/>
 
-This has no effect if C<FEBOOTSTRAP_KERNEL> is not set.
+This has no effect if C<SUPERMIN_KERNEL> is not set.
 
 =back
 
 =head1 SEE ALSO
 
-L<febootstrap(8)>.
+L<supermin(8)>.
 
 =head1 AUTHORS
 
@@ -185,8 +184,8 @@ Richard W.M. Jones <rjones @ redhat . com>
 
 =head1 COPYRIGHT
 
-(C) Copyright 2009-2011 Red Hat Inc.,
-L<http://people.redhat.com/~rjones/febootstrap>.
+(C) Copyright 2009-2013 Red Hat Inc.,
+L<http://people.redhat.com/~rjones/supermin>.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

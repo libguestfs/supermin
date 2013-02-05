@@ -1,5 +1,5 @@
-# febootstrap Makefile.am
-# (C) Copyright 2010 Red Hat Inc.
+# supermin Makefile.am
+# (C) Copyright 2010-2013 Red Hat Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,9 +18,9 @@
 # Written by Richard W.M. Jones <rjones@redhat.com>
 
 bin_PROGRAMS = \
-	febootstrap-supermin-helper
+	supermin-helper
 
-febootstrap_supermin_helper_SOURCES = \
+supermin_helper_SOURCES = \
 	helper.h \
 	appliance.c \
 	checksum.c \
@@ -32,9 +32,9 @@ febootstrap_supermin_helper_SOURCES = \
 	kernel.c \
 	main.c \
 	utils.c
-febootstrap_supermin_helper_CFLAGS = \
+supermin_helper_CFLAGS = \
 	-Wall $(EXT2FS_CFLAGS) $(COM_ERR_CFLAGS) -I../lib
-febootstrap_supermin_helper_LDADD = \
+supermin_helper_LDADD = \
 	ext2init.o $(EXT2FS_LIBS) $(COM_ERR_LIBS) \
 	$(LTLIBINTL) -L../lib -lgnu
 
@@ -56,11 +56,11 @@ ext2init.S: init
 	./bin2s.pl $< $@
 
 man_MANS = \
-	febootstrap-supermin-helper.8
+	supermin-helper.8
 
 if HAVE_PERLDOC
 
-febootstrap-supermin-helper.8: febootstrap-supermin-helper.pod
+supermin-helper.8: supermin-helper.pod
 	pod2man \
 	  --section 8 \
 	  -c "Virtualization Support" \
@@ -68,19 +68,19 @@ febootstrap-supermin-helper.8: febootstrap-supermin-helper.pod
 	  $< > $@
 
 noinst_DATA = \
-	$(top_builddir)/html/febootstrap-supermin-helper.8.html
+	$(top_builddir)/html/supermin-helper.8.html
 
-$(top_builddir)/html/febootstrap-supermin-helper.8.html: febootstrap-supermin-helper.pod
+$(top_builddir)/html/supermin-helper.8.html: supermin-helper.pod
 	mkdir -p $(top_builddir)/html
 	cd $(top_builddir) && pod2html \
 	  --css 'pod.css' \
 	  --htmldir html \
-	  --outfile html/febootstrap-supermin-helper.8.html \
-	  helper/febootstrap-supermin-helper.pod
+	  --outfile html/supermin-helper.8.html \
+	  helper/supermin-helper.pod
 
 endif
 
 EXTRA_DIST = \
-	febootstrap-supermin-helper.8 \
-	febootstrap-supermin-helper.pod \
+	supermin-helper.8 \
+	supermin-helper.pod \
 	bin2s.pl
