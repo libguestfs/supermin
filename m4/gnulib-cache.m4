@@ -1,4 +1,4 @@
-# Copyright (C) 2002-2012 Free Software Foundation, Inc.
+# Copyright (C) 2002-2013 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -52,4 +52,4 @@ gl_LIB([libgnu])
 gl_MAKEFILE_NAME([])
 gl_MACRO_PREFIX([gl])
 gl_PO_DOMAIN([])
-gl_WITNESS_C_DOMAIN([])
+gl_WITNESS_C_MACRO([])

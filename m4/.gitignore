@@ -42,7 +42,6 @@
 /gnulib-tool.m4
 /hash.m4
 /include_next.m4
-/inline.m4
 /intmax_t.m4
 /inttypes_h.m4
 /inttypes.m4
@@ -112,3 +111,4 @@
 /xsize.m4
 /xstrtol.m4
 /xvasprintf.m4
+/extern-inline.m4

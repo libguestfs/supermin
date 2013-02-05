@@ -170,3 +170,6 @@
 /xstrtoul.c
 /xvasprintf.c
 /xvasprintf.h
+/bitrotate.c
+/unistd.c
+/xsize.c
