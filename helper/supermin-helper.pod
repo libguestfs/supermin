@@ -38,6 +38,10 @@ the checksum output C<-f checksum>.
 
 =over 4
 
+=item B<--help>
+
+Display brief command line usage, and exit.
+
 =item B<-f fmt>
 
 =item B<--format fmt>
@@ -121,6 +125,18 @@ with the effective uid/gid set to non-root.  Bash will reset the
 effective uid/gid to the real uid/gid when invoked.  As
 supermin-helper uses bash in parts, this will result in the creation
 of an appliance with a mixture of ownerships.
+
+=item B<-v>
+
+=item B<--verbose>
+
+Enable verbose messages (give multiple times for more verbosity).
+
+=item B<-V>
+
+=item B<--version>
+
+Display version number and exit.
 
 =back
 
