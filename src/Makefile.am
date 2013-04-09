@@ -26,6 +26,7 @@ SOURCES = \
 	supermin_utils.ml \
 	supermin_package_handlers.mli \
 	supermin_package_handlers.ml \
+	supermin_zypp_rpm.ml \
 	supermin_yum_rpm.ml \
 	supermin_debian.ml \
 	supermin_pacman.ml \

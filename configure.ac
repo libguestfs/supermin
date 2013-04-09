@@ -64,6 +64,7 @@ fi
 AM_CONDITIONAL(HAVE_PERLDOC,[test "$perldoc" != "no"])
 
 dnl For yum-rpm handler.
+AC_CHECK_PROG(ZYPPER,[zypper],[zypper],[no])
 AC_CHECK_PROG(YUM,[yum],[yum],[no])
 AC_CHECK_PROG(RPM,[rpm],[rpm],[no])
 AC_CHECK_PROG(YUMDOWNLOADER,[yumdownloader],[yumdownloader],[no])
