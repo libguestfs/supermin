@@ -41,6 +41,11 @@ val run_command : string -> unit
       when constructing the command to properly quote any arguments
       (using {!Filename.quote}). *)
 
+val run_shell : string -> string list -> unit
+  (** [run_shell code args] runs shell [code] with arguments [args].
+      This does not return anything, but exits with an error message
+      if the shell code returns an error. *)
+
 val run_python : string -> string list -> unit
   (** [run_python code args] runs Python [code] with arguments [args].
       This does not return anything, but exits with an error message

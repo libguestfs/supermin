@@ -70,6 +70,15 @@ let run_command cmd =
     exit 1
   )
 
+let run_shell code args =
+  let cmd = sprintf "sh -c %s arg0 %s"
+    (Filename.quote code)
+    (String.concat " " (List.map Filename.quote args)) in
+  if Sys.command cmd <> 0 then (
+    eprintf "supermin: external shell program failed, see earlier error messages\n";
+    exit 1
+  )
+
 let run_python code args =
   let cmd = sprintf "python -c %s %s"
     (Filename.quote code)
