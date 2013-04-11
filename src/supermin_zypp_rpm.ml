@@ -129,7 +129,7 @@ unset LANG ${!LC_*}
 zypper \
 	%s \
 	%s \
-	--root %S --reposd-dir /dev/shm/supermin/zypp/repos.d \
+	--root %S --reposd-dir /etc/zypp/repos.d \
 	--cache-dir %S \
 	--gpg-auto-import-keys \
 	--non-interactive \
