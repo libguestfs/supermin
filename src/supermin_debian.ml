@@ -43,10 +43,20 @@ let get_installed_pkgs () =
     | [] -> assert false
     | pkgs -> pkgs
 
+(* Select which dependencies will be installed.  See apt-cache(8) for
+ * complete details.  Using "-i" means only Depends and Pre-depends
+ * are installed, which is stricter (fewer packages) than ordinary
+ * 'apt-get install'.  Otherwise, enable everything, then selectively
+ * disable what you don't want, to make it behave more like
+ * 'apt-get install'.
+ *)
+let which_dependencies = "-i"
+(*let which_dependencies = "--no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances"*)
+
 let rec debian_resolve_dependencies_and_download names =
   let cmd =
-    sprintf "%s depends --recurse -i %s | grep -v '^[<[:space:]]' | grep -Ev ':\\w+\\b'"
-      Config.apt_cache
+    sprintf "%s depends --recurse %s %s | grep -v '^[<[:space:]]' | grep -Ev ':\\w+\\b'"
+      Config.apt_cache which_dependencies
       (String.concat " " (List.map Filename.quote names)) in
   let pkgs = run_command_get_lines cmd in
   let pkgs =
