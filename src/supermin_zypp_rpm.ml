@@ -175,12 +175,18 @@ let rec zypp_rpm_list_files pkg =
             let mode = int_of_string mode in
 	    let size = int_of_string size in
             if test_flag 'd' then None  (* ignore documentation *)
-            else
+            else (
+              (* Skip unreadable files when called as non-root *)
+              if Unix.getuid() > 0 &&
+                (try Unix.access filename [Unix.R_OK]; false with
+                   Unix_error _ -> eprintf "supermin: EPERM %s\n%!" filename; true) then None
+              else
               Some (filename, {
                       ft_dir = mode land 0o40000 <> 0;
                       ft_ghost = test_flag 'g'; ft_config = test_flag 'c';
                       ft_mode = mode; ft_size = size;
                     })
+            )
         | _ ->
             eprintf "supermin: bad output from rpm command: '%s'" line;
             exit 1
