@@ -173,7 +173,7 @@ let rec zypp_rpm_list_files pkg =
         | [filename; flags; mode; size] ->
             let test_flag = String.contains flags in
             let mode = int_of_string mode in
-	    let size = int_of_string size in
+            let size = int_of_string size in
             if test_flag 'd' then None  (* ignore documentation *)
             else (
               (* Skip unreadable files when called as non-root *)
@@ -206,7 +206,7 @@ let rec zypp_rpm_list_files pkg =
         List.map (fun name ->
                     name, { ft_dir = true; ft_ghost = false;
                             ft_config = false; ft_mode = 0o40755;
-			    ft_size = 0 }) dirs in
+                            ft_size = 0 }) dirs in
       let devs = [ "/dev/null"; "/dev/full"; "/dev/zero"; "/dev/random";
                    "/dev/urandom"; "/dev/tty"; "/dev/console";
                    "/dev/ptmx"; "/dev/stdin"; "/dev/stdout"; "/dev/stderr" ] in
@@ -215,7 +215,7 @@ let rec zypp_rpm_list_files pkg =
         List.map (fun name ->
                     name, { ft_dir = false; ft_ghost = false;
                             ft_config = false; ft_mode = 0o644;
-			    ft_size = 0 }) devs in
+                            ft_size = 0 }) devs in
       dirs @ devs @ files
     ) else files in
 
