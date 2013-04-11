@@ -18,6 +18,31 @@
 
 (* Zypper and RPM support. *)
 
+(*
+ * Theory of operation:
+ * called as root:
+ *  - without --use-installed:
+ *    ->ph_resolve_dependencies_and_download() returns a list of filenames
+ *    Need to download all packages into an empty --root directory so that
+ *    zypper places all dependencies into --pkg-cache-dir
+ *  - with --use-installed:
+ *    ->ph_resolve_dependencies_and_download() returns a list of package names
+ *    Need to work with an empty --root directory so that zypper can list
+ *    all dependencies of "names". This mode assumes that all required packages
+ *    are installed and the system is consistent. Downloading just the missing
+ *    packages is not implemented.
+ * called as non-root:
+ *    (Due to the usage of --root zypper does not require root permissions.)
+ *  - without --use-installed:
+ *    Same as above.
+ *  - with --use-installed:
+ *    Same as above.
+ *
+ * The usage of --packager-config is tricky: If --root is used zypper assumes
+ * that every config file is below <rootdir>. So the config has to be parsed
+ * and relevant files/dirs should be copied into <rootdir> so that zypper can
+ * use the specified config.
+ *)
 open Unix
 open Printf
 
@@ -34,15 +59,15 @@ let zypp_rpm_detect () =
     Config.zypper <> "no" && Config.rpm <> "no"
 
 let zypp_rpm_init () =
-  if use_installed && Unix.getuid() > 0 then
-    failwith "zypp_rpm driver doesn't support --use-installed when called as non-root user"
+  if use_installed then
+    eprintf "supermin: zypp_rpm driver assumes all packages are already installed when called with option --use-installed.\n%!"
 
-let zypp_rpm_resolve_dependencies_and_download names =
+let zypp_rpm_resolve_dependencies_and_download_no_installed names =
   (* Liberate this data from shell. *)
   let tmp_pkg_cache_dir = tmpdir // "pkg_cache_dir" in
   let tmp_root = tmpdir // "root" in
   let sh = sprintf "
-set -ex
+%s
 unset LANG ${!LC_*}
 tmpdir=%S
 cache_dir=\"${tmpdir}/cache-dir\"
@@ -60,6 +85,7 @@ time zypper \
 	--download-only \
 	$@
 "
+    (if verbose then "set -x" else "")
     tmpdir
     tmp_pkg_cache_dir
     (if verbose then "--verbose --verbose" else "--quiet")
@@ -96,10 +122,47 @@ time zypper \
   (* Return list of package filenames. *)
   pkgs
 
+let zypp_rpm_resolve_dependencies_and_download_use_installed names =
+  let cmd = sprintf "
+%s
+unset LANG ${!LC_*}
+zypper \
+	%s \
+	%s \
+	--root %S --reposd-dir /dev/shm/supermin/zypp/repos.d \
+	--cache-dir %S \
+	--gpg-auto-import-keys \
+	--non-interactive \
+	--xml \
+	install \
+	--auto-agree-with-licenses \
+	--dry-run \
+	%s | \
+	xml sel -t \
+	-m \"stream/install-summary/to-install/solvable[%@type='package']\" \
+	-c \"string(%@name)\" -n
+"
+    (if verbose then "set -x" else "")
+    (if verbose then "--verbose --verbose" else "--quiet")
+    (match packager_config with None -> ""
+     | Some filename -> sprintf "--config %s" filename)
+    tmpdir tmpdir (String.concat " " (List.map Filename.quote names)) in
+  let pkg_names = run_command_get_lines cmd in
+
+  (* Return list of package names, remove empty lines. *)
+  List.filter (fun s -> s <> "") pkg_names
+
+let zypp_rpm_resolve_dependencies_and_download names =
+  if use_installed then
+    zypp_rpm_resolve_dependencies_and_download_use_installed names
+  else
+    zypp_rpm_resolve_dependencies_and_download_no_installed names
+
 let rec zypp_rpm_list_files pkg =
   (* Run rpm -qlp with some extra magic. *)
   let cmd =
-    sprintf "rpm -q --qf '[%%{FILENAMES} %%{FILEFLAGS:fflags} %%{FILEMODES} %%{FILESIZES}\\n]' -p %S"
+    sprintf "rpm -q --qf '[%%{FILENAMES} %%{FILEFLAGS:fflags} %%{FILEMODES} %%{FILESIZES}\\n]' %s %S"
+      (if use_installed then "" else "-p")
       pkg in
   let lines = run_command_get_lines cmd in
 
@@ -153,14 +216,18 @@ let rec zypp_rpm_list_files pkg =
   files
 
 let zypp_rpm_get_file_from_package pkg file =
-  debug "extracting %s from %s ..." file (Filename.basename pkg);
+  if use_installed then
+    file
+  else (
+    debug "extracting %s from %s ..." file (Filename.basename pkg);
 
-  let outfile = tmpdir // file in
-  let cmd =
-    sprintf "umask 0000; rpm2cpio %s | (cd %s && cpio --quiet -id .%s)"
-      (Filename.quote pkg) (Filename.quote tmpdir) (Filename.quote file) in
-  run_command cmd;
-  outfile
+    let outfile = tmpdir // file in
+    let cmd =
+      sprintf "umask 0000; rpm2cpio %s | (cd %s && cpio --quiet -id .%s)"
+        (Filename.quote pkg) (Filename.quote tmpdir) (Filename.quote file) in
+    run_command cmd;
+    outfile
+    )
 
 let () =
   let ph = {
