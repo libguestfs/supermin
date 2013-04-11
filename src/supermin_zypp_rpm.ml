@@ -50,7 +50,7 @@ pkg_cache_dir=%S
 time zypper \
 	%s \
 	%s \
-	%s \
+	--root %S --reposd-dir /etc/zypp/repos.d \
 	--cache-dir \"${cache_dir}\" \
 	--pkg-cache-dir \"${pkg_cache_dir}\" \
 	--gpg-auto-import-keys \
@@ -65,7 +65,7 @@ time zypper \
     (if verbose then "--verbose --verbose" else "--quiet")
     (match packager_config with None -> ""
      | Some filename -> sprintf "--config %s" filename)
-    (if Unix.getuid() > 0 then sprintf "--root %S --reposd-dir /etc/zypp/repos.d" tmp_root else "")
+    tmp_root
     in
   run_shell sh names;
 
