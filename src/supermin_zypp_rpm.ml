@@ -139,8 +139,8 @@ zypper \
 	--dry-run \
 	%s | \
 	xml sel -t \
-	-m \"stream/install-summary/to-install/solvable[%%@type='package']\" \
-	-c \"string(%%@name)\" -n
+	-m \"stream/install-summary/to-install/solvable[@type='package']\" \
+	-c \"string(@name)\" -n
 "
     (if verbose then "set -x" else "")
     (if verbose then "--verbose --verbose" else "--quiet")
