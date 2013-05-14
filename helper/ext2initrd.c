@@ -68,6 +68,7 @@ static const char *kmods[] = {
   "crc*.ko*",
   "libcrc*.ko*",
   "ibmvscsic.ko*",
+  "megaraid*.ko*",
   NULL
 };
 
