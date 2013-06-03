@@ -57,6 +57,9 @@ A Linux initramfs.  This is the default.
 In this case you have to supply names for the C<kernel>
 and C<initrd>, where the C<initrd> is the appliance.
 
+Note that L<cpio(1)> might not be able to extract this file fully.
+The format used by the Linux kernel is not quite a true cpio file.
+
 =item ext2
 
 An ext2 filesystem.
