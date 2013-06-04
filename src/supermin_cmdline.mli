@@ -22,12 +22,16 @@ val debug : ('a, unit, string, unit) format4 -> 'a
   (** Print string (like printf), but only if --verbose was given on
       the command line. *)
 
+type mode =
+  |PkgFiles
+  |PkgNames
+  |PkgNamesOnly
+
 val excludes : Str.regexp list
   (** List of package regexps to exclude. *)
 
-val names_mode : bool
-  (** True if [--names] was given on the command line (otherwise
-      {!packages} is a list of filenames). *)
+val mode : mode
+  (** How to interpret {!packages} *)
 
 val outputdir : string
   (** Output directory. *)
