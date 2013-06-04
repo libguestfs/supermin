@@ -147,11 +147,11 @@ let debian_list_files_downloaded pkg =
   (* We actually need to extract the file in order to get the
    * information about modes etc.
    *)
-  let pkgdir = tmpdir // pkg ^ ".d" in
+  let pkgdir = tmpdir // Filename.basename pkg ^ ".d" in
   mkdir pkgdir 0o755;
   let cmd =
     sprintf "umask 0000; dpkg-deb --fsys-tarfile %s | (cd %s && tar xf -)"
-      (tmpdir // pkg) pkgdir in
+      pkg pkgdir in
   run_command cmd;
 
   let cmd = sprintf "cd %s && find ." pkgdir in
@@ -214,7 +214,7 @@ let debian_get_file_from_package pkg file =
   then
     file
   else
-    tmpdir // pkg ^ ".d" // file
+    tmpdir // Filename.basename pkg ^ ".d" // file
 
 let () =
   let ph = {
