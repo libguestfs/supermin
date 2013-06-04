@@ -45,6 +45,7 @@
  *)
 open Unix
 open Printf
+open Inifiles
 
 open Supermin_package_handlers
 open Supermin_utils
@@ -53,6 +54,19 @@ open Supermin_cmdline
 
 (* Create a temporary directory for use by all the functions in this file. *)
 let tmpdir = tmpdir ()
+
+let get_repos_dir () =
+  let zypper_default = "/etc/zypp/repos.d" in
+  let parse_repos_dir path = 
+    let cfg = new inifile path in
+    let dir = (try cfg#getval "main" "reposdir" with _ -> zypper_default) in
+    dir
+  in
+  let dir = (match packager_config with None -> zypper_default |
+      Some filename -> (try parse_repos_dir filename with _ -> zypper_default) ) in
+  dir
+
+let repos_dir = get_repos_dir ()
 
 let zypp_rpm_detect () =
   (file_exists "/etc/SuSE-release") &&
@@ -75,10 +89,11 @@ pkg_cache_dir=%S
 time zypper \
 	%s \
 	%s \
-	--root %S --reposd-dir /etc/zypp/repos.d \
+	--root %S --reposd-dir %S \
 	--cache-dir \"${cache_dir}\" \
 	--pkg-cache-dir \"${pkg_cache_dir}\" \
 	--gpg-auto-import-keys \
+	--no-gpg-checks \
 	--non-interactive \
 	install \
 	--auto-agree-with-licenses \
@@ -92,6 +107,7 @@ time zypper \
     (match packager_config with None -> ""
      | Some filename -> sprintf "--config %s" filename)
     tmp_root
+    repos_dir
     in
   run_shell sh names;
 
@@ -129,9 +145,10 @@ unset LANG ${!LC_*}
 zypper \
 	%s \
 	%s \
-	--root %S --reposd-dir /etc/zypp/repos.d \
+	--root %S --reposd-dir %S \
 	--cache-dir %S \
 	--gpg-auto-import-keys \
+	--no-gpg-checks \
 	--non-interactive \
 	--xml \
 	install \
@@ -146,7 +163,7 @@ zypper \
     (if verbose then "--verbose --verbose" else "--quiet")
     (match packager_config with None -> ""
      | Some filename -> sprintf "--config %s" filename)
-    tmpdir tmpdir (String.concat " " (List.map Filename.quote names)) in
+    tmpdir repos_dir tmpdir (String.concat " " (List.map Filename.quote names)) in
   let pkg_names = run_command_get_lines cmd in
 
   (* Return list of package names, remove empty lines. *)

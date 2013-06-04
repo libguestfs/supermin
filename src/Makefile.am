@@ -56,7 +56,7 @@ OBJECTS = $(XOBJECTS)
 BEST    = opt
 endif
 
-OCAMLPACKAGES = -package unix,str
+OCAMLPACKAGES = -package unix,str,inifiles
 OCAMLFLAGS = -warn-error CDEFLMPSUVXYZ
 
 supermin: $(OBJECTS)
