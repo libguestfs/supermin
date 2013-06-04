@@ -56,6 +56,10 @@ if test "$OCAMLFIND" = "no"; then
     AC_MSG_ERROR([You must install OCaml findlib (the ocamlfind command)])
 fi
 
+dnl Optional OCaml packages.
+AC_CHECK_OCAML_PKG([inifiles])
+AM_CONDITIONAL([HAVE_OCAML_INIFILES], [test "x$OCAML_PKG_inifiles" != "xno"])
+
 dnl Optional programs.
 AC_CHECK_PROG(PERLDOC,[perldoc],[perldoc],[no])
 if test "x$PERLDOC" = "xno" ; then

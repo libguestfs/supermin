@@ -17,6 +17,22 @@
 #
 # Written by Richard W.M. Jones <rjones@redhat.com>
 
+EXTRA_DIST = \
+	config.ml \
+	supermin.8 \
+	supermin.pod \
+	supermin.ml \
+	supermin_cmdline.mli \
+	supermin_cmdline.ml \
+	supermin_debian.ml \
+	supermin_package_handlers.mli \
+	supermin_package_handlers.ml \
+	supermin_pacman.ml \
+	supermin_utils.mli \
+	supermin_utils.ml \
+	supermin_yum_rpm.ml \
+	supermin_zypp_rpm.ml
+
 # Note these must be in build dependency order.
 SOURCES = \
 	config.ml \
@@ -25,19 +41,20 @@ SOURCES = \
 	supermin_utils.mli \
 	supermin_utils.ml \
 	supermin_package_handlers.mli \
-	supermin_package_handlers.ml \
-	supermin_zypp_rpm.ml \
+	supermin_package_handlers.ml
+
+if HAVE_OCAML_INIFILES
+SOURCES += \
+	supermin_zypp_rpm.ml
+endif
+
+SOURCES += \
 	supermin_yum_rpm.ml \
 	supermin_debian.ml \
 	supermin_pacman.ml \
 	supermin.ml
 
 CLEANFILES = *~ *.cmi *.cmo *.cmx *.o supermin
-
-EXTRA_DIST = \
-	supermin.8 \
-	supermin.pod \
-	$(SOURCES)
 
 man_MANS = \
 	supermin.8
@@ -56,7 +73,10 @@ OBJECTS = $(XOBJECTS)
 BEST    = opt
 endif
 
-OCAMLPACKAGES = -package unix,str,inifiles
+OCAMLPACKAGES = -package unix,str
+if HAVE_OCAML_INIFILES
+OCAMLPACKAGES += -package inifiles
+endif
 OCAMLFLAGS = -warn-error CDEFLMPSUVXYZ
 
 supermin: $(OBJECTS)

@@ -17,5 +17,3 @@ supermin_utils.cmo: supermin_cmdline.cmi supermin_utils.cmi
 supermin_utils.cmx: supermin_cmdline.cmx supermin_utils.cmi
 supermin_yum_rpm.cmo: supermin_utils.cmi supermin_package_handlers.cmi supermin_cmdline.cmi config.cmo
 supermin_yum_rpm.cmx: supermin_utils.cmx supermin_package_handlers.cmx supermin_cmdline.cmx config.cmx
-supermin_zypp_rpm.cmo: supermin_utils.cmi supermin_package_handlers.cmi supermin_cmdline.cmi config.cmo
-supermin_zypp_rpm.cmx: supermin_utils.cmx supermin_package_handlers.cmx supermin_cmdline.cmx config.cmx
