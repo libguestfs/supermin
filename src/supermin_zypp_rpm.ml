@@ -57,7 +57,7 @@ let tmpdir = tmpdir ()
 
 let get_repos_dir () =
   let zypper_default = "/etc/zypp/repos.d" in
-  let parse_repos_dir path = 
+  let parse_repos_dir path =
     let cfg = new inifile path in
     let dir = (try cfg#getval "main" "reposdir" with _ -> zypper_default) in
     dir
