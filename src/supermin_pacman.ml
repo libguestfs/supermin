@@ -36,7 +36,7 @@ let pacman_init () =
   if use_installed then
     failwith "pacman driver doesn't support --use-installed"
 
-let pacman_resolve_dependencies_and_download names =
+let pacman_resolve_dependencies_and_download names mode =
   let cmd =
     sprintf "(for p in %s; do pactree -u $p; done) | awk '{print $1}' | sort -u"
       (String.concat " " (List.map Filename.quote names)) in

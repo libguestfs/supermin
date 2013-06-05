@@ -7,7 +7,7 @@ supermin.cmo: supermin_utils.cmi supermin_package_handlers.cmi supermin_cmdline.
 supermin.cmx: supermin_utils.cmx supermin_package_handlers.cmx supermin_cmdline.cmx config.cmx
 supermin_debian.cmo: supermin_utils.cmi supermin_package_handlers.cmi supermin_cmdline.cmi config.cmo
 supermin_debian.cmx: supermin_utils.cmx supermin_package_handlers.cmx supermin_cmdline.cmx config.cmx
-supermin_package_handlers.cmi:
+supermin_package_handlers.cmi: supermin_cmdline.cmi
 supermin_package_handlers.cmo: supermin_utils.cmi supermin_cmdline.cmi supermin_package_handlers.cmi
 supermin_package_handlers.cmx: supermin_utils.cmx supermin_cmdline.cmx supermin_package_handlers.cmi
 supermin_pacman.cmo: supermin_utils.cmi supermin_package_handlers.cmi supermin_cmdline.cmi config.cmo

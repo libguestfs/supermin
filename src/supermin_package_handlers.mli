@@ -29,8 +29,8 @@ type package_handler = {
       This is only called on the package handler if it has returned
       [true] from {!ph_detect}. *)
 
-  ph_resolve_dependencies_and_download : string list -> string list;
-  (** [ph_resolve_dependencies_and_download pkgs]
+  ph_resolve_dependencies_and_download : string list -> Supermin_cmdline.mode -> string list;
+  (** [ph_resolve_dependencies_and_download pkgs mode]
       Take a list of package names, and using the package manager
       resolve those to a list of all the packages that are required
       including dependencies.  Download the full list of packages and

@@ -53,9 +53,12 @@ let get_installed_pkgs () =
 let which_dependencies = "-i"
 (*let which_dependencies = "--no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances"*)
 
-let rec debian_resolve_dependencies_and_download names =
+let rec debian_resolve_dependencies_and_download names mode =
+  let which_dependencies =
+    if mode == PkgNames then which_dependencies ^ " --recurse"
+    else which_dependencies in
   let cmd =
-    sprintf "%s depends --recurse %s %s | grep -v '^[<[:space:]]' | grep -Ev ':\\w+\\b'"
+    sprintf "%s depends %s %s | grep -v '^[<[:space:]]' | grep -Ev ':\\w+\\b'"
       Config.apt_cache which_dependencies
       (String.concat " " (List.map Filename.quote names)) in
   let pkgs = run_command_get_lines cmd in

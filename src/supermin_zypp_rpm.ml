@@ -76,7 +76,7 @@ let zypp_rpm_init () =
   if use_installed then
     eprintf "supermin: zypp_rpm driver assumes all packages are already installed when called with option --use-installed.\n%!"
 
-let zypp_rpm_resolve_dependencies_and_download_no_installed names =
+let zypp_rpm_resolve_dependencies_and_download_no_installed names mode =
   (* Liberate this data from shell. *)
   let tmp_pkg_cache_dir = tmpdir // "pkg_cache_dir" in
   let tmp_root = tmpdir // "root" in
@@ -138,7 +138,7 @@ time zypper \
   (* Return list of package filenames. *)
   pkgs
 
-let zypp_rpm_resolve_dependencies_and_download_use_installed names =
+let zypp_rpm_resolve_dependencies_and_download_use_installed names mode =
   let cmd = sprintf "
 %s
 unset LANG ${!LC_*}
@@ -169,11 +169,11 @@ zypper \
   (* Return list of package names, remove empty lines. *)
   List.filter (fun s -> s <> "") pkg_names
 
-let zypp_rpm_resolve_dependencies_and_download names =
+let zypp_rpm_resolve_dependencies_and_download names mode =
   if use_installed then
-    zypp_rpm_resolve_dependencies_and_download_use_installed names
+    zypp_rpm_resolve_dependencies_and_download_use_installed names mode
   else
-    zypp_rpm_resolve_dependencies_and_download_no_installed names
+    zypp_rpm_resolve_dependencies_and_download_no_installed names mode
 
 let rec zypp_rpm_list_files pkg =
   (* Run rpm -qlp with some extra magic. *)
