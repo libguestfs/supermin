@@ -113,7 +113,7 @@ let rec debian_resolve_dependencies_and_download names =
 	eprintf "supermin: aptitude: error: no file was downloaded corresponding to package %s\n" pkg;
 	exit 1
       with
-	  Exit -> !r
+	  Exit -> tmpdir // !r
   ) download_pkgs in
 
   List.sort compare (List.append present_pkgs download_pkgs)
