@@ -169,7 +169,12 @@ zypper \
   (* Return list of package names, remove empty lines. *)
   List.filter (fun s -> s <> "") pkg_names
 
-let zypp_rpm_resolve_dependencies_and_download names =
+let zypp_rpm_resolve_dependencies_and_download names mode =
+  if mode = PkgNamesOnly then (
+    eprintf "supermin: zypp-rpm: --names-only flag is not implemented\n";
+    exit 1
+  );
+
   if use_installed then
     zypp_rpm_resolve_dependencies_and_download_use_installed names
   else

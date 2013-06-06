@@ -25,7 +25,7 @@ open Supermin_cmdline
 type package_handler = {
   ph_detect : unit -> bool;
   ph_init : unit -> unit;
-  ph_resolve_dependencies_and_download : string list -> string list;
+  ph_resolve_dependencies_and_download : string list -> mode -> string list;
   ph_list_files : string -> (string * file_type) list;
   ph_get_file_from_package : string -> string -> string
 }

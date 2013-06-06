@@ -36,7 +36,12 @@ let yum_rpm_init () =
   if use_installed then
     failwith "yum_rpm driver doesn't support --use-installed"
 
-let yum_rpm_resolve_dependencies_and_download names =
+let yum_rpm_resolve_dependencies_and_download names mode =
+  if mode = PkgNamesOnly then (
+    eprintf "supermin: yum-rpm: --names-only flag is not implemented\n";
+    exit 1
+  );
+
   (* Liberate this data from python. *)
   let tmpfile = tmpdir // "names.tmp" in
   let py = sprintf "

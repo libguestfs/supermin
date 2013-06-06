@@ -41,7 +41,7 @@ let () =
   debug "selected package handler: %s" (get_package_handler_name ());
 
   (* Not --names: check files exist. *)
-  if not names_mode then (
+  if mode = PkgFiles then (
     List.iter (
       fun pkg ->
         if not (file_exists pkg) then (
@@ -55,8 +55,8 @@ let () =
    * (including dependencies).
    *)
   let packages =
-    if names_mode then (
-      let packages = ph.ph_resolve_dependencies_and_download packages in
+    if mode <> PkgFiles then (
+      let packages = ph.ph_resolve_dependencies_and_download packages mode in
       debug "resolved packages: %s" (String.concat " " packages);
       packages
     )

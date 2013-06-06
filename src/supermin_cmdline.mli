@@ -22,12 +22,20 @@ val debug : ('a, unit, string, unit) format4 -> 'a
   (** Print string (like printf), but only if --verbose was given on
       the command line. *)
 
+type mode =                             (** --names/--names-only flag *)
+  | PkgFiles                            (** no flag *)
+  | PkgNames                            (** --names *)
+  | PkgNamesOnly                        (** --names-only *)
+
 val excludes : Str.regexp list
   (** List of package regexps to exclude. *)
 
-val names_mode : bool
-  (** True if [--names] was given on the command line (otherwise
-      {!packages} is a list of filenames). *)
+val mode : mode
+  (** How to interpret {!packages}:
+      If [mode = PkgFiles] then it's a list of filenames.
+      If [mode = PkgNames] then it's a list of package names.
+      If [mode = PkgNamesOnly] then it's a list of package names
+      and no dependencies are to be loaded. *)
 
 val outputdir : string
   (** Output directory. *)

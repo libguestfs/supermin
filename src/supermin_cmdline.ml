@@ -18,8 +18,13 @@
 
 open Printf
 
+type mode =                             (* --names/--names-only flag *)
+  | PkgFiles                            (* no flag *)
+  | PkgNames                            (* --names *)
+  | PkgNamesOnly                        (* --names-only *)
+
 let excludes = ref []
-let names_mode = ref false
+let mode = ref PkgFiles
 let outputdir = ref "."
 let packages = ref []
 let save_temps = ref false
@@ -52,8 +57,10 @@ let set_packager_config filename =
 let argspec = Arg.align [
   "--exclude", Arg.String add_exclude,
     "regexp Exclude packages matching regexp";
-  "--names", Arg.Set names_mode,
+  "--names", Arg.Unit (fun () -> mode := PkgNames),
     " Specify set of root package names on command line";
+  "--names-only", Arg.Unit (fun () -> mode := PkgNamesOnly),
+    " Specify exact set of package names on command line";
   "--no-warnings", Arg.Clear warnings,
     " Suppress warnings";
   "-o", Arg.Set_string outputdir,
@@ -101,7 +108,7 @@ let () =
   )
 
 let excludes = List.rev !excludes
-let names_mode = !names_mode
+let mode = !mode
 let outputdir = !outputdir
 let packages = List.rev !packages
 let save_temps = !save_temps
