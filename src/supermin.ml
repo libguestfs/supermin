@@ -129,6 +129,22 @@ let () =
     in
     loop files in
 
+  (* Ignore %ghost non-regular files.  RPMs in Fedora 20 contain these.
+   * It's not clear what they are meant to signify.  XXX
+   *)
+  let files = List.filter (
+    function
+    | name, { ft_dir = false; ft_ghost = true; ft_mode = mode }, pkg ->
+        if (mode land 0o170_000) = 0o100_000 then
+          true
+        else (
+          debug "ignoring ghost non-regular file %s (mode 0%o) from package %s"
+	    name mode pkg;
+          false
+        )
+    | _ -> true
+  ) files in
+
   (* Because we may have excluded some packages, and also because of
    * distribution packaging errors, it's not necessarily true that a
    * directory is created before each file in that directory.
