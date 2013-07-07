@@ -47,9 +47,9 @@ static const struct option long_options[] = {
   { "help", 0, 0, HELP_OPTION },
   { "copy-kernel", 0, 0, 0 },
   { "format", required_argument, 0, 'f' },
-  { "group", 0, 0, 'g' },
+  { "group", required_argument, 0, 'g' },
   { "kmods", required_argument, 0, 'k' },
-  { "user", 0, 0, 'u' },
+  { "user", required_argument, 0, 'u' },
   { "verbose", 0, 0, 'v' },
   { "version", 0, 0, 'V' },
   { 0, 0, 0, 0 }
