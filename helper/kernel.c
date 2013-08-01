@@ -98,13 +98,12 @@ has_modpath (const char *kernel_name)
   int r = isdir (modpath);
 
   if (r) {
-    if (verbose)
-      fprintf (stderr, "picked %s because modpath %s exists\n",
-               kernel_name, modpath);
     free (modpath);
     return 1;
   }
   else {
+    if (verbose)
+      fprintf (stderr, "ignoring %s (no modpath %s)\n", kernel_name, modpath);
     free (modpath);
     return 0;
   }
@@ -160,6 +159,9 @@ create_kernel (const char *hostcpu, const char *kernel)
   }
 
   sort (candidates, reverse_filevercmp);
+
+  if (verbose)
+    fprintf (stderr, "picked %s\n", candidates[0]);
 
   if (kernel) {
     /* Choose the first candidate. */
