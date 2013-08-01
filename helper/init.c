@@ -163,6 +163,11 @@ main ()
       if (fp != NULL)
         goto found;
 
+      if (delay_ns > 1000000000)
+	fprintf (stderr,
+		 "supermin: waiting another %" PRIu64 " ns for %s to appear\n",
+		 delay_ns, path);
+
       struct timespec t;
       t.tv_sec = delay_ns / 1000000000;
       t.tv_nsec = delay_ns % 1000000000;
