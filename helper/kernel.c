@@ -126,6 +126,14 @@ has_modpath (const char *kernel_name)
 const char *
 create_kernel (const char *hostcpu, const char *kernel)
 {
+  int is_x86;			/* x86 but not x86-64 */
+  int is_arm;			/* arm */
+
+  is_x86 =
+    hostcpu[0] == 'i' && hostcpu[2] == '8' && hostcpu[3] == '6' &&
+    hostcpu[4] == '\0';
+  is_arm = hostcpu[0] == 'a' && hostcpu[1] == 'r' && hostcpu[2] == 'm';
+
   /* Override kernel selection using environment variables? */
   char *kernel_env = getenv ("SUPERMIN_KERNEL");
   if (kernel_env) {
@@ -135,8 +143,7 @@ create_kernel (const char *hostcpu, const char *kernel)
 
   /* In original: ls -1dvr /boot/vmlinuz-*.$arch* 2>/dev/null | grep -v xen */
   const char *patt;
-  if (hostcpu[0] == 'i' && hostcpu[2] == '8' && hostcpu[3] == '6' &&
-      hostcpu[4] == '\0')
+  if (is_x86)
     patt = "vmlinuz-*.i?86*";
   else
     patt = xasprintf ("vmlinuz-*.%s*", hostcpu);
@@ -145,6 +152,10 @@ create_kernel (const char *hostcpu, const char *kernel)
   char **candidates;
   candidates = filter_fnmatch (all_files, patt, FNM_NOESCAPE);
   candidates = filter_notmatching_substring (candidates, "xen");
+  if (is_arm) {
+    candidates = filter_notmatching_substring (candidates, "lpae");
+    candidates = filter_notmatching_substring (candidates, "tegra");
+  }
   candidates = filter (candidates, has_modpath);
 
   if (candidates[0] == NULL) {
@@ -152,6 +163,10 @@ create_kernel (const char *hostcpu, const char *kernel)
     patt = "vmlinuz-*";
     candidates = filter_fnmatch (all_files, patt, FNM_NOESCAPE);
     candidates = filter_notmatching_substring (candidates, "xen");
+    if (is_arm) {
+      candidates = filter_notmatching_substring (candidates, "lpae");
+      candidates = filter_notmatching_substring (candidates, "tegra");
+    }
     candidates = filter (candidates, has_modpath);
 
     if (candidates[0] == NULL)
