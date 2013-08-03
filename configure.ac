@@ -141,10 +141,20 @@ if test "x$GAWK" = "xno" ; then
   AC_MSG_FAILURE([gawk (GNU awk) not found])
 fi
 
+dnl Disable network tests.
+AC_ARG_ENABLE([network-tests],
+    [AS_HELP_STRING([--disable-network-tests],
+                    [Disable tests that need a network connection.])],
+    [],
+    [enable_network_tests=yes])
+AM_CONDITIONAL([NETWORK_TESTS],
+               [test "x$enable_network_tests" = "xyes"])
+
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile
         helper/Makefile
         lib/Makefile
         src/config.ml
-        src/Makefile])
+        src/Makefile
+        tests/Makefile])
 AC_OUTPUT

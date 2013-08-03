@@ -77,6 +77,17 @@ Building and installing
   make
   sudo make install
 
+Tests
+-----
+
+  make check
+
+Note that the tests require a network connection.  If you don't
+have a network connection (eg. for distro package building) then
+try doing:
+
+  ./configure --disable-network-tests
+
 Feedback and bugs
 -----------------
 

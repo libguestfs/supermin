@@ -4,7 +4,9 @@
 *.cmi
 *.cmo
 *.cmx
+*.log
 *.o
+*.trs
 
 .deps
 Makefile
@@ -54,4 +56,5 @@ pod2htm?.tmp
 /src/supermin
 /src/supermin.8
 /stamp-h1
+/test-driver
 /warn-on-use.h

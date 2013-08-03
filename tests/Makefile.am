@@ -1,5 +1,5 @@
 # supermin Makefile.am
-# (C) Copyright 2009-2013 Red Hat Inc.
+# (C) Copyright 2013 Red Hat Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,26 +17,11 @@
 #
 # Written by Richard W.M. Jones <rjones@redhat.com>
 
-ACLOCAL_AMFLAGS = -I m4
+EXTRA_DIST = $(TESTS)
 
-SUBDIRS = lib src helper tests
+TESTS =
 
-EXTRA_DIST = \
-	.gitignore \
-	.gitmodules \
-	autogen.sh \
-	html/pod.css \
-	m4/gnulib-cache.m4 \
-	$(SOURCES)
-
-# Maintainer website update.
-HTMLFILES = \
-	html/supermin.8.html \
-	html/supermin-helper.8.html
-
-WEBSITEDIR = $(HOME)/d/redhat/websites/libguestfs
-
-website: $(HTMLFILES)
-	cp $(HTMLFILES) $(WEBSITEDIR)
-
-CLEANFILES = $(HTMLFILES) pod2*.tmp
+if NETWORK_TESTS
+TESTS += \
+	test-build-bash.sh
+endif

@@ -1,4 +1,5 @@
-# supermin Makefile.am
+#!/bin/bash -
+# supermin
 # (C) Copyright 2009-2013 Red Hat Inc.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -14,29 +15,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-#
-# Written by Richard W.M. Jones <rjones@redhat.com>
 
-ACLOCAL_AMFLAGS = -I m4
+set -e
 
-SUBDIRS = lib src helper tests
+rm -f test-build-bash.{kernel,initrd,root}
 
-EXTRA_DIST = \
-	.gitignore \
-	.gitmodules \
-	autogen.sh \
-	html/pod.css \
-	m4/gnulib-cache.m4 \
-	$(SOURCES)
+d=test-build-bash.d
+rm -rf $d
+mkdir -p $d
 
-# Maintainer website update.
-HTMLFILES = \
-	html/supermin.8.html \
-	html/supermin-helper.8.html
+# We assume 'bash' is a package everywhere.
+../src/supermin -v --names bash -o $d
 
-WEBSITEDIR = $(HOME)/d/redhat/websites/libguestfs
+arch="$(uname -m)"
 
-website: $(HTMLFILES)
-	cp $(HTMLFILES) $(WEBSITEDIR)
+# Check all supermin-helper formats work.
+../helper/supermin-helper -v -f checksum $d $arch
+../helper/supermin-helper -v -f cpio $d $arch \
+  test-build-bash.kernel test-build-bash.initrd
+../helper/supermin-helper -v -f ext2 $d $arch \
+  test-build-bash.kernel test-build-bash.initrd test-build-bash.root
 
-CLEANFILES = $(HTMLFILES) pod2*.tmp
+rm -r $d
+rm test-build-bash.{kernel,initrd,root}
