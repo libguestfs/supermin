@@ -379,7 +379,7 @@ let () =
    *)
   List.iter (
     fun (path, { ft_dir = is_dir; ft_mode = mode }, _) ->
-      if is_dir then chmod (rootdir // path) (mode land 0o777 lor 0o700)
+      if is_dir then chmod (rootdir // path) (mode land 0o3777 lor 0o700)
   ) (List.rev baseimgfiles);
 
   (* Construct the 'base.img' initramfs.  Feed in the list of filenames

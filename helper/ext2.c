@@ -132,7 +132,7 @@ ext2_mkdir (ext2_ino_t dir_ino, const char *dirname, const char *basename,
 {
   errcode_t err;
 
-  mode = LINUX_S_IFDIR | (mode & 0777);
+  mode = LINUX_S_IFDIR | (mode & 03777);
 
   /* Does the directory exist?  This is legitimate: we just skip
    * this case.
