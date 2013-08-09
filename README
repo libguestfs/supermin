@@ -88,6 +88,11 @@ try doing:
 
   ./configure --disable-network-tests
 
+Examples
+--------
+
+See the examples/ subdirectory.
+
 Feedback and bugs
 -----------------
 
