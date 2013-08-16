@@ -260,6 +260,23 @@ main ()
   exit (EXIT_FAILURE);
 }
 
+#define HAVE_XZ 1
+
+#ifdef HAVE_XZ
+#include <lzma.h>
+#endif
+
+static int ends_with(const char *str, const char *suffix)
+{
+  if (!str || !suffix)
+    return 0;
+  size_t lenstr = strlen(str);
+  size_t lensuffix = strlen(suffix);
+  if (lensuffix >  lenstr)
+    return 0;
+  return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
+}
+
 static void
 insmod (const char *filename)
 {
@@ -267,17 +284,84 @@ insmod (const char *filename)
 
   if (verbose)
     fprintf (stderr, "supermin: internal insmod %s\n", filename);
-
 #ifdef HAVE_LIBZ
-  gzFile gzfp = gzopen (filename, "rb");
+
   int capacity = 64*1024;
   char *buf = (char *) malloc (capacity);
   int tmpsize = 8 * 1024;
   char tmp[tmpsize];
   int num;
-
+  errno=0;
   size = 0;
 
+#ifdef HAVE_XZ
+  if (ends_with(filename, ".xz")) {
+    lzma_stream strm = LZMA_STREAM_INIT;
+    lzma_ret ret = lzma_stream_decoder(&strm, UINT64_MAX,
+          LZMA_CONCATENATED);
+    if (verbose)
+      fprintf (stderr, "supermin: running xz\n");
+    FILE *fd = fopen (filename, "r");
+    if (!fd) {
+      perror("popen failed");
+      exit (EXIT_FAILURE);
+    }
+    char tmp_out[tmpsize];
+    strm.avail_in = 0;
+    strm.next_out = tmp_out;
+    strm.avail_out = tmpsize;
+
+    lzma_action action = LZMA_RUN;
+
+    while (1) {
+      if (strm.avail_in == 0) {
+	strm.next_in = tmp;
+	strm.avail_in = fread(tmp, 1, tmpsize, fd);
+	
+	if (ferror(fd)) {
+	  // POSIX says that fread() sets errno if
+	  // an error occurred. ferror() doesn't
+	  // touch errno.
+	  perror("Error reading input file");
+	  exit (EXIT_FAILURE);
+	}
+	if (feof(fd)) action = LZMA_FINISH;
+      }
+
+      ret = lzma_code(&strm, action);
+
+      // Write and check write error before checking decoder error.
+      // This way as much data as possible gets written to output
+      // even if decoder detected an error.
+      if (strm.avail_out == 0 || ret != LZMA_OK) {
+          const size_t num =  tmpsize - strm.avail_out;
+      	   if (num > capacity) {   
+	        buf = (char*) realloc (buf, size*2);
+	        capacity = size;
+          }
+          memcpy (buf+size, tmp_out, num);
+          capacity -= num;
+          size += num;
+          if (verbose)
+	     fprintf (stderr, "read: %d\n", num);
+          strm.next_out = tmp_out;
+          strm.avail_out = tmpsize;
+      }
+      if (ret != LZMA_OK) {
+	if (ret == LZMA_STREAM_END) {
+	    break;
+	} else {
+	 perror("internal error");
+        exit(EXIT_FAILURE);
+	}
+     }
+    }
+    fclose (fd);
+    if (verbose)
+      fprintf (stderr, "done with xz %d read\n", size);
+  } else {
+#endif
+  gzFile gzfp = gzopen (filename, "rb");
   if (gzfp == NULL) {
     fprintf (stderr, "insmod: gzopen failed: %s", filename);
     exit (EXIT_FAILURE);
@@ -296,6 +380,10 @@ insmod (const char *filename)
     exit (EXIT_FAILURE);
   }
   gzclose (gzfp);
+#ifdef HAVE_XZ
+}
+#endif
+
 #else
   int fd = open (filename, O_RDONLY);
   if (fd == -1) {

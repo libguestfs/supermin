@@ -100,6 +100,9 @@ AC_CHECK_PROG(PACMAN,[pacman],[pacman],[no])
 dnl Support for gzipped kernel modules.
 AC_CHECK_LIB([z],[gzopen])
 
+dnl Support for xzed kernel modules.
+AC_CHECK_LIB([lzma],[lzma_code])
+
 dnl mke2fs.
 AC_PATH_PROG([MKE2FS],[mke2fs],[no],
              [$PATH$PATH_SEPARATOR/sbin$PATH_SEPARATOR])
