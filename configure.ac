@@ -69,6 +69,7 @@ AM_CONDITIONAL(HAVE_PERLDOC,[test "$perldoc" != "no"])
 
 dnl For yum-rpm handler.
 AC_CHECK_PROG(ZYPPER,[zypper],[zypper],[no])
+AC_CHECK_PROG(URPMI,[urpmi],[urpmi],[no], [$PATH$PATH_SEPARATOR/usr/sbin])
 AC_CHECK_PROG(YUM,[yum],[yum],[no])
 AC_CHECK_PROG(RPM,[rpm],[rpm],[no])
 AC_CHECK_PROG(YUMDOWNLOADER,[yumdownloader],[yumdownloader],[no])
@@ -98,6 +99,9 @@ AC_CHECK_PROG(PACMAN,[pacman],[pacman],[no])
 
 dnl Support for gzipped kernel modules.
 AC_CHECK_LIB([z],[gzopen])
+
+dnl Support for xzed kernel modules.
+AC_CHECK_LIB([lzma],[lzma_code])
 
 dnl mke2fs.
 AC_PATH_PROG([MKE2FS],[mke2fs],[no],
