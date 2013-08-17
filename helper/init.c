@@ -342,8 +342,6 @@ insmod (const char *filename)
           memcpy (buf+size, tmp_out, num);
           capacity -= num;
           size += num;
-          if (verbose)
-	     fprintf (stderr, "read: %d\n", num);
           strm.next_out = tmp_out;
           strm.avail_out = tmpsize;
       }
