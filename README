@@ -68,7 +68,7 @@ are building:
   qemu >= 0.13
   kernel >= 2.6.36
 
-  zlib - if your kernel uses gzipped modules
+  zlib (statically linked) - if your kernel uses gzipped modules
 
 Building and installing
 -----------------------

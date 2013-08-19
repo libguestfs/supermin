@@ -41,7 +41,7 @@
 
 #include <asm/unistd.h>
 
-#ifdef HAVE_LIBZ
+#ifdef HAVE_ZLIB
 #include <zlib.h>
 #endif
 
@@ -97,7 +97,7 @@ main ()
   print_uptime ();
   fprintf (stderr, "supermin: ext2 mini initrd starting up: "
            PACKAGE_VERSION
-#ifdef HAVE_LIBZ
+#ifdef HAVE_ZLIB
            " zlib"
 #endif
            "\n");
@@ -268,7 +268,7 @@ insmod (const char *filename)
   if (verbose)
     fprintf (stderr, "supermin: internal insmod %s\n", filename);
 
-#ifdef HAVE_LIBZ
+#ifdef HAVE_ZLIB
   gzFile gzfp = gzopen (filename, "rb");
   int capacity = 64*1024;
   char *buf = (char *) malloc (capacity);
@@ -328,7 +328,7 @@ insmod (const char *filename)
      */
   }
 
-#ifdef HAVE_LIBZ
+#ifdef HAVE_ZLIB
   free (buf);
 #endif
 }

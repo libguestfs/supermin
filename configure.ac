@@ -102,7 +102,36 @@ dnl For ArchLinux handler.
 AC_CHECK_PROG(PACMAN,[pacman],[pacman],[no])
 
 dnl Support for gzipped kernel modules.
-AC_CHECK_LIB([z],[gzopen])
+AC_CHECK_HEADER([zlib.h],[
+    AC_CHECK_LIB([z],[gzopen],[
+        AC_MSG_CHECKING([for gzip static library])
+        old_CFLAGS="$CFLAGS"
+        old_LDFLAGS="$LDFLAGS"
+        old_LIBS="$LIBS"
+        CFLAGS="$CFLAGS -static"
+        LDFLAGS="$LDFLAGS -static"
+        LIBS="$LIBS -lz"
+        AC_LINK_IFELSE([
+            #include <stdio.h>
+            #include <stdlib.h>
+            #include <zlib.h>
+            int main () { gzFile g = gzopen ("test", "rb"); exit (g ? 1 : 0); }
+        ],[
+            zlib_static=yes
+            ZLIB_STATIC_LIBS="-lz"
+            AC_MSG_RESULT([yes])
+        ],[
+            AC_MSG_RESULT([no])
+        ])
+        CFLAGS="$old_CFLAGS"
+        LDFLAGS="$old_LDFLAGS"
+        LIBS="$old_LIBS"
+    ])
+])
+if test "x$zlib_static" = "xyes"; then
+    AC_DEFINE([HAVE_ZLIB],[1],[Define if you have static zlib])
+    AC_SUBST([ZLIB_STATIC_LIBS])
+fi
 
 dnl mke2fs.
 AC_PATH_PROG([MKE2FS],[mke2fs],[no],
