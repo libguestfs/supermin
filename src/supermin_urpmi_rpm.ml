@@ -36,7 +36,11 @@ let urpmi_rpm_init () =
   if use_installed then
     failwith "urpmi_rpm driver doesn't support --use-installed"
 
-let urpmi_rpm_resolve_dependencies_and_download names =
+let urpmi_rpm_resolve_dependencies_and_download names mode =
+  if mode = PkgNamesOnly then (
+    eprintf "supermin: yum-rpm: --names-only flag is not implemented\n";
+    exit 1
+  );
   let cmd = sprintf "urpmq -rd --whatprovides --sources %s"
     (String.concat " " names) in
   let lines = run_command_get_lines cmd in
