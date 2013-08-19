@@ -12,6 +12,8 @@ supermin_package_handlers.cmo: supermin_utils.cmi supermin_cmdline.cmi supermin_
 supermin_package_handlers.cmx: supermin_utils.cmx supermin_cmdline.cmx supermin_package_handlers.cmi
 supermin_pacman.cmo: supermin_utils.cmi supermin_package_handlers.cmi supermin_cmdline.cmi config.cmo
 supermin_pacman.cmx: supermin_utils.cmx supermin_package_handlers.cmx supermin_cmdline.cmx config.cmx
+supermin_urpmi_rpm.cmo: supermin_utils.cmi supermin_package_handlers.cmi supermin_cmdline.cmi config.cmo
+supermin_urpmi_rpm.cmx: supermin_utils.cmx supermin_package_handlers.cmx supermin_cmdline.cmx config.cmx
 supermin_utils.cmi:
 supermin_utils.cmo: supermin_cmdline.cmi supermin_utils.cmi
 supermin_utils.cmx: supermin_cmdline.cmx supermin_utils.cmi

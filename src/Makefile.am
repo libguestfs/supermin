@@ -28,6 +28,7 @@ EXTRA_DIST = \
 	supermin_package_handlers.mli \
 	supermin_package_handlers.ml \
 	supermin_pacman.ml \
+	supermin_urpmi_rpm.ml \
 	supermin_utils.mli \
 	supermin_utils.ml \
 	supermin_yum_rpm.ml \
@@ -50,6 +51,7 @@ endif
 
 SOURCES += \
 	supermin_yum_rpm.ml \
+	supermin_urpmi_rpm.ml \
 	supermin_debian.ml \
 	supermin_pacman.ml \
 	supermin.ml
