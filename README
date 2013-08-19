@@ -70,6 +70,8 @@ are building:
 
   zlib (statically linked) - if your kernel uses gzipped modules
 
+  xz (statically linked) - if your kernel uses xz-compressed modules
+
 Building and installing
 -----------------------
 

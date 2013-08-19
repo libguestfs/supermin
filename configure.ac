@@ -133,6 +133,39 @@ if test "x$zlib_static" = "xyes"; then
     AC_SUBST([ZLIB_STATIC_LIBS])
 fi
 
+dnl Support for xzed kernel modules.
+AC_CHECK_HEADER([lzma.h],[
+    AC_CHECK_LIB([lzma],[lzma_code],[
+        AC_MSG_CHECKING([for xz static library])
+        old_CFLAGS="$CFLAGS"
+        old_LDFLAGS="$LDFLAGS"
+        old_LIBS="$LIBS"
+        CFLAGS="$CFLAGS -static"
+        LDFLAGS="$LDFLAGS -static"
+        LIBS="$LIBS -llzma"
+        AC_LINK_IFELSE([
+            #include <stdio.h>
+            #include <stdlib.h>
+            #include <lzma.h>
+            int main () { lzma_stream s = LZMA_STREAM_INIT;
+                 exit (s.next_in == NULL ? 1 : 0); }
+        ],[
+            lzma_static=yes
+            LZMA_STATIC_LIBS="-llzma"
+            AC_MSG_RESULT([yes])
+        ],[
+            AC_MSG_RESULT([no])
+        ])
+        CFLAGS="$old_CFLAGS"
+        LDFLAGS="$old_LDFLAGS"
+        LIBS="$old_LIBS"
+    ])
+])
+if test "x$lzma_static" = "xyes"; then
+    AC_DEFINE([HAVE_LZMA],[1],[Define if you have static lzma])
+    AC_SUBST([LZMA_STATIC_LIBS])
+fi
+
 dnl mke2fs.
 AC_PATH_PROG([MKE2FS],[mke2fs],[no],
              [$PATH$PATH_SEPARATOR/sbin$PATH_SEPARATOR])
