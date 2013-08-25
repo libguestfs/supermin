@@ -78,6 +78,9 @@ AC_CHECK_PROG(ZYPPER,[zypper],[zypper],[no])
 dnl For URPMI handler.
 AC_CHECK_PROG(URPMI,[urpmi],[urpmi],[no], [$PATH$PATH_SEPARATOR/usr/sbin])
 
+dnl For Poldek handler.
+AC_CHECK_PROG(POLDEK,[poldek],[poldek],[no])
+
 dnl For Debian handler.
 AC_CHECK_PROG(APTITUDE,[aptitude],[aptitude],[no])
 AC_CHECK_PROG(APT_CACHE,[apt-cache],[apt-cache],[no])
