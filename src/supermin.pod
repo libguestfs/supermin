@@ -188,6 +188,15 @@ the appliance.
 Note that unlike C<hostfiles>, paths and directories in the base image
 don't need to have any relationship to the host filesystem.
 
+=item B<base.img.gz>
+
+Since supermin E<ge> 4.1.4, any cpio image files may be
+gzip-compressed to save disk space.  C<hostfiles> cannot be
+compressed.  The supermin program won't create these files.  You need
+to compress the output yourself, eg by doing:
+
+ gzip -9 supermin.d/*.img
+
 =back
 
 =head2 RECONSTRUCTING THE APPLIANCE

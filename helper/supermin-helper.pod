@@ -143,6 +143,14 @@ Display version number and exit.
 
 =back
 
+=head1 COMPRESSED INPUT FILES
+
+supermin-helper E<ge> 4.1.4 supports gzip-compressed input cpio image
+files.  C<hostfiles> cannot be compressed.
+
+Compressing input files saves space, but can make supermin-helper run
+fractionally slower.
+
 =head1 SPEED
 
 In libguestfs, on a mid-range Intel-based PC, we reconstruct the

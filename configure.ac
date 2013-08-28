@@ -101,9 +101,12 @@ AC_SUBST([APT_CACHE_DEPENDS_RECURSE_BROKEN])
 dnl For ArchLinux handler.
 AC_CHECK_PROG(PACMAN,[pacman],[pacman],[no])
 
-dnl Support for gzipped kernel modules.
+dnl Support for compressed input files, gzipped kernel modules.
 AC_CHECK_HEADER([zlib.h],[
     AC_CHECK_LIB([z],[gzopen],[
+        zlib=yes
+        ZLIB_LIBS=-lz
+
         AC_MSG_CHECKING([for gzip static library])
         old_CFLAGS="$CFLAGS"
         old_LDFLAGS="$LDFLAGS"
@@ -118,7 +121,7 @@ AC_CHECK_HEADER([zlib.h],[
             int main () { gzFile g = gzopen ("test", "rb"); exit (g ? 1 : 0); }
         ],[
             zlib_static=yes
-            ZLIB_STATIC_LIBS="-lz"
+            ZLIB_STATIC_LIBS="$ZLIB_LIBS"
             AC_MSG_RESULT([yes])
         ],[
             AC_MSG_RESULT([no])
@@ -128,8 +131,12 @@ AC_CHECK_HEADER([zlib.h],[
         LIBS="$old_LIBS"
     ])
 ])
+if test "x$zlib" = "xyes"; then
+    AC_DEFINE([HAVE_ZLIB],[1],[Define if you have zlib])
+    AC_SUBST([ZLIB_LIBS])
+fi
 if test "x$zlib_static" = "xyes"; then
-    AC_DEFINE([HAVE_ZLIB],[1],[Define if you have static zlib])
+    AC_DEFINE([HAVE_ZLIB_STATIC],[1],[Define if you have static zlib])
     AC_SUBST([ZLIB_STATIC_LIBS])
 fi
 

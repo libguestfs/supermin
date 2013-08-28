@@ -109,9 +109,14 @@ iterate_inputs (char **inputs, int nr_inputs, struct writer *writer)
     else if (S_ISREG (statbuf.st_mode)) {
       /* Is it a cpio file? */
       char buf[6];
-      if (read (fd, buf, 6) == 6 && memcmp (buf, "070701", 6) == 0)
+      ssize_t r = read (fd, buf, 6);
+      if (r >= 6 && memcmp (buf, "070701", 6) == 0)
         /* Yes, a cpio file.  This is a skeleton appliance, case (1). */
+      cpio:
         writer->wr_cpio_file (inputs[i]);
+      else if (r >= 2 && memcmp (buf, "\x1f\x8b", 2) == 0)
+        /* A gzip-compressed file.  This must be cpio; case (1). */
+        goto cpio;
       else
         /* No, must be hostfiles, case (2). */
         add_hostfiles (inputs[i], writer);

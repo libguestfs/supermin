@@ -41,7 +41,7 @@
 
 #include <asm/unistd.h>
 
-#ifdef HAVE_ZLIB
+#ifdef HAVE_ZLIB_STATIC
 #include <zlib.h>
 #endif
 
@@ -101,7 +101,7 @@ main ()
   print_uptime ();
   fprintf (stderr, "supermin: ext2 mini initrd starting up: "
            PACKAGE_VERSION
-#ifdef HAVE_ZLIB
+#ifdef HAVE_ZLIB_STATIC
            " zlib"
 #endif
 #ifdef HAVE_LZMA_STATIC
@@ -289,7 +289,7 @@ insmod (const char *filename)
   if (verbose)
     fprintf (stderr, "supermin: internal insmod %s\n", filename);
 
-#ifdef HAVE_ZLIB
+#ifdef HAVE_ZLIB_STATIC
   int capacity = 64*1024;
   char *buf = (char *) malloc (capacity);
   int tmpsize = 8 * 1024;
@@ -419,7 +419,7 @@ insmod (const char *filename)
      */
   }
 
-#ifdef HAVE_ZLIB
+#ifdef HAVE_ZLIB_STATIC
   free (buf);
 #endif
 }

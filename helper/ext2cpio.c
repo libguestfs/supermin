@@ -28,6 +28,10 @@
 #include <sys/stat.h>
 #include <assert.h>
 
+#ifdef HAVE_ZLIB
+#include <zlib.h>
+#endif
+
 #include "error.h"
 
 #include "helper.h"
@@ -36,9 +40,9 @@
 /* This function must unpack the cpio file and add the files it
  * contains to the ext2 filesystem.  Essentially this is doing the
  * same thing as the kernel init/initramfs.c code.  Note that we
- * assume that the cpio is uncompressed newc format and can't/won't
- * deal with anything else.  All this cpio parsing code is copied to
- * some extent from init/initramfs.c in the kernel.
+ * assume that the cpio is 'newc' format and can't/won't deal with
+ * anything else.  All this cpio parsing code is copied to some extent
+ * from init/initramfs.c in the kernel.
  */
 #define N_ALIGN(len) ((((len) + 1) & ~3) + 2)
 
@@ -50,8 +54,14 @@ static gid_t gid;
 static time_t mtime;
 static int dev_major, dev_minor, rdev_major, rdev_minor;
 static loff_t curr, next_header;
+#ifdef HAVE_ZLIB
+static gzFile gzfp;
+#else
 static FILE *fp;
+#endif
+static const char *input_file;
 
+static int xread (void *buffer, size_t size);
 static void parse_header (char *s);
 static int parse_next_entry (void);
 static void skip_to_next_header (void);
@@ -64,38 +74,81 @@ static void clear_links (void);
 void
 ext2_cpio_file (const char *cpio_file)
 {
+  /* Save this for error messages in xread. */
+  input_file = cpio_file;
+
+#ifdef HAVE_ZLIB
+  gzfp = gzopen (cpio_file, "rb");
+  if (gzfp == NULL)
+    error (EXIT_FAILURE, errno, "open: %s", cpio_file);
+#else
   fp = fopen (cpio_file, "r");
   if (fp == NULL)
     error (EXIT_FAILURE, errno, "open: %s", cpio_file);
+#endif
 
   curr = 0;
   while (parse_next_entry ())
     ;
 
+#ifdef HAVE_ZLIB
+  gzclose (gzfp);
+#else
   fclose (fp);
+#endif
+}
+
+/* Read 'size' bytes from the handle and write it into 'buffer'.  If
+ * the read fails or there is a partial read, exit with an error.  If
+ * end of file, return 0.  If the full data was read, return > 0.
+ */
+static int
+xread (void *buffer, size_t size)
+{
+#ifdef HAVE_ZLIB
+  int r;
+
+  r = gzread (gzfp, buffer, size);
+  if (r == -1) {
+    int errnum;
+    const char *errstr;
+
+    errstr = gzerror (gzfp, &errnum);
+    error (EXIT_FAILURE, 0, "gzread: %s: %s (%d)", input_file, errstr, errnum);
+  }
+  if (r == 0)
+    return 0;
+  if ((size_t) r < size)
+    error (EXIT_FAILURE, 0, "gzread: %s: unexpected end of file", input_file);
+#else
+  clearerr (fp);
+  if (fread (buffer, size, 1, fp) != 1) {
+    if (feof (fp))
+      return 0;
+    error (EXIT_FAILURE, errno, "fread: %s: read failure", input_file);
+  }
+#endif
+  return 1;
 }
 
 static int
 parse_next_entry (void)
 {
-  clearerr (fp);
-
   char header[110];
 
   /* Skip padding and synchronize with the next header. */
  again:
-  if (fread (&header[0], 4, 1, fp) != 1) {
-    if (feof (fp))
-      return 0;
-    error (EXIT_FAILURE, errno, "read failure reading cpio file");
-  }
+  if (xread (&header[0], 4) == 0)
+    return 0;
+
   curr += 4;
   if (memcmp (header, "\0\0\0\0", 4) == 0)
     goto again;
 
   /* Read the rest of the header field. */
-  if (fread (&header[4], sizeof header - 4, 1, fp) != 1)
-    error (EXIT_FAILURE, errno, "read failure reading cpio file");
+  if (xread (&header[4], sizeof header - 4) == 0)
+    error (EXIT_FAILURE, errno, "%s: unexpected end of file reading cpio file",
+           input_file);
   curr += sizeof header - 4;
 
   if (verbose >= 2) {
@@ -165,10 +218,10 @@ skip_to_next_header (void)
     size_t bytes = (size_t) (next_header - curr);
     if (bytes > sizeof buf)
       bytes = sizeof buf;
-    size_t r = fread (buf, 1, bytes, fp);
-    if (r == 0)
-      error (EXIT_FAILURE, errno, "error or unexpected end of cpio file");
-    curr += r;
+    if (xread (buf, bytes) == 0)
+      error (EXIT_FAILURE, errno, "%s: unexpected end of cpio file",
+             input_file);
+    curr += bytes;
   }
 }
 
@@ -182,8 +235,9 @@ read_file (void)
   int dir_ft;
   char name[N_ALIGN(name_len)+1]; /* asserted above this is <= PATH_MAX */
 
-  if (fread (name, N_ALIGN(name_len), 1, fp) != 1)
-    error (EXIT_FAILURE, errno, "read failure reading name field in cpio file");
+  if (xread (name, N_ALIGN(name_len)) == 0)
+    error (EXIT_FAILURE, errno, "%s: unexpected end of file reading name field in cpio file",
+           input_file);
   curr += N_ALIGN(name_len);
 
   name[name_len] = '\0';
@@ -300,9 +354,9 @@ read_whole_body (void)
   if (buf == NULL)
     error (EXIT_FAILURE, errno, "malloc");
 
-  size_t r = fread (buf, body_len, 1, fp);
-  if (r != 1)
-    error (EXIT_FAILURE, errno, "read failure reading body in cpio file");
+  if (xread (buf, body_len) == 0)
+    error (EXIT_FAILURE, errno, "%s: unexpected end of file reading body in cpio file",
+           input_file);
   curr += body_len;
 
   return buf;

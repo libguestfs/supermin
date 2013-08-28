@@ -35,7 +35,7 @@ supermin_helper_SOURCES = \
 supermin_helper_CFLAGS = \
 	-Wall $(EXT2FS_CFLAGS) $(COM_ERR_CFLAGS) -I../lib
 supermin_helper_LDADD = \
-	ext2init.o $(EXT2FS_LIBS) $(COM_ERR_LIBS) \
+	ext2init.o $(EXT2FS_LIBS) $(COM_ERR_LIBS) $(ZLIB_LIBS) \
 	$(LTLIBINTL) -L../lib -lgnu
 
 # init "script" used by ext2 initrd.
