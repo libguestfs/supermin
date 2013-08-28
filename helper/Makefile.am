@@ -63,6 +63,7 @@ if HAVE_PERLDOC
 
 supermin-helper.8: supermin-helper.pod
 	pod2man \
+	  -u \
 	  --section 8 \
 	  -c "Virtualization Support" \
 	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
