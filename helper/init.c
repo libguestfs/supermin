@@ -45,7 +45,7 @@
 #include <zlib.h>
 #endif
 
-#ifdef HAVE_LZMA
+#ifdef HAVE_LZMA_STATIC
 #include <lzma.h>
 #endif
 
@@ -104,7 +104,7 @@ main ()
 #ifdef HAVE_ZLIB
            " zlib"
 #endif
-#ifdef HAVE_LZMA
+#ifdef HAVE_LZMA_STATIC
            " xz"
 #endif
            "\n");
@@ -267,7 +267,7 @@ main ()
   exit (EXIT_FAILURE);
 }
 
-#if HAVE_LZMA
+#if HAVE_LZMA_STATIC
 static int
 ends_with (const char *str, const char *suffix)
 {
@@ -299,7 +299,7 @@ insmod (const char *filename)
   errno = 0;
   size = 0;
 
-#ifdef HAVE_LZMA
+#ifdef HAVE_LZMA_STATIC
   if (ends_with(filename, ".xz")) {
     lzma_stream strm = LZMA_STREAM_INIT;
     lzma_ret ret = lzma_stream_decoder(&strm, UINT64_MAX,
@@ -383,7 +383,7 @@ insmod (const char *filename)
     exit (EXIT_FAILURE);
   }
   gzclose (gzfp);
-#ifdef HAVE_LZMA
+#ifdef HAVE_LZMA_STATIC
 }
 #endif
 

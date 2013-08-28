@@ -162,7 +162,7 @@ AC_CHECK_HEADER([lzma.h],[
     ])
 ])
 if test "x$lzma_static" = "xyes"; then
-    AC_DEFINE([HAVE_LZMA],[1],[Define if you have static lzma])
+    AC_DEFINE([HAVE_LZMA_STATIC],[1],[Define if you have static lzma])
     AC_SUBST([LZMA_STATIC_LIBS])
 fi
 
