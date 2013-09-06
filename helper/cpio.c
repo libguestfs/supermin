@@ -253,9 +253,9 @@ static void
 cpio_start (const char *hostcpu, const char *appliance,
             const char *modpath, const char *initrd)
 {
-  out_fd = open (appliance, O_WRONLY | O_CREAT | O_TRUNC | O_NOCTTY, 0644);
+  out_fd = open (initrd, O_WRONLY | O_CREAT | O_TRUNC | O_NOCTTY, 0644);
   if (out_fd == -1)
-    error (EXIT_FAILURE, errno, "open: %s", appliance);
+    error (EXIT_FAILURE, errno, "open: %s", initrd);
   out_offset = 0;
 }
 

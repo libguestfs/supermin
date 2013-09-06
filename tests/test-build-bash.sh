@@ -24,12 +24,23 @@ d=test-build-bash.d
 rm -rf $d
 mkdir -p $d
 
+set -x
+
 # We assume 'bash' is a package everywhere.
 ../src/supermin -v --names bash -o $d
 
 arch="$(uname -m)"
 
-# Check all supermin-helper formats work.
+# Check all supermin-helper formats work (new-style).
+../helper/supermin-helper -v -f checksum --host-cpu $arch $d
+../helper/supermin-helper -v -f cpio --host-cpu $arch $d \
+  --output-kernel test-build-bash.kernel --output-initrd test-build-bash.initrd
+../helper/supermin-helper -v -f ext2 --host-cpu $arch $d \
+  --output-kernel test-build-bash.kernel \
+  --output-initrd test-build-bash.initrd \
+  --output-appliance test-build-bash.root
+
+# Check all supermin-helper formats work (old-style).
 ../helper/supermin-helper -v -f checksum $d $arch
 ../helper/supermin-helper -v -f cpio $d $arch \
   test-build-bash.kernel test-build-bash.initrd

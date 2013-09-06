@@ -37,6 +37,9 @@ AC_SYS_LARGEFILE
 
 gl_INIT
 
+dnl Define a C symbol for the host CPU architecture.
+AC_DEFINE_UNQUOTED([host_cpu],["$host_cpu"],[Host architecture.])
+
 # Define $(SED).
 m4_ifdef([AC_PROG_SED],[
     AC_PROG_SED

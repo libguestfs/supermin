@@ -4,8 +4,24 @@ supermin-helper - Reconstruct initramfs from supermin appliance.
 
 =head1 SYNOPSIS
 
- supermin-helper supermin.img hostfiles.txt host_cpu kernel initrd
- supermin-helper input [...] host_cpu kernel initrd
+New style (since supermin 4.1.5):
+
+ supermin-helper [-f cpio|ext2] -o outputdir input [input...]
+
+or:
+
+ supermin-helper [-f cpio|ext2] --output-kernel kernel \
+   [--output-dtb dtb] --output-initrd initrd \
+   [--output-appliance appliance] input [input...]
+
+or:
+
+ supermin-helper -f checksum input [input ...]
+
+Old style (still supported in this version but deprecated):
+
+ supermin-helper [-f cpio] supermin.img hostfiles.txt host_cpu kernel initrd
+ supermin-helper [-f cpio] input [...] host_cpu kernel initrd
 
  supermin-helper -f ext2 input [...] host_cpu kernel initrd appliance
 
@@ -18,21 +34,24 @@ supermin appliance.  First you should be familiar with L<supermin(8)>.
 
 =head1 PARAMETERS
 
-Of the required parameters, the first few are I<input> files, and the
-last two or three are I<output> files.
+Specify the I<input> file(s), and I<-o> or I<--output-*> flags
+indicating where you want the appliance to be written.
+
+Use the I<-f> option to select what type of appliance you want.
 
 C<supermin.img> and C<hostfiles.txt> are the input files which
 describe the supermin appliance.  (You can also use a directory name
 here which is searched for files).
 
-C<host_cpu> should be the host CPU, eg. C<x86_64> or C<i686>.
+To write the appliance to a directory, use I<-o outputdir>.  The
+directory should already exist.  Files called C<outputdir/kernel>,
+C<outputdir/dtb>, C<outputdir/initrd> and/or C<outputdir/appliance>
+will be written.  (Not all files are written, it depends on what kind
+of appliance you asked for and what architecture you are running on)
 
-C<kernel>, C<initrd> and C<appliance> are the temporary output files
-that this script produces.  These output files are meant to be used
-just for booting the appliance, and should be deleted straight
-afterwards.  The extra C<appliance> parameter is only required when
-the format is C<ext2>.  None of these parameters are needed for
-the checksum output C<-f checksum>.
+To write files with specific names instead, use the
+I<--output-kernel>, I<--output-dtb>, I<--output-initrd> and/or
+I<--output-appliance> options.
 
 =head1 OPTIONS
 
@@ -41,6 +60,46 @@ the checksum output C<-f checksum>.
 =item B<--help>
 
 Display brief command line usage, and exit.
+
+=item B<--copy-kernel>
+
+Copy the kernel (and device tree, if created) instead of symlinking to
+the kernel in C</boot>.
+
+This is fractionally slower, but is necessary if you want to change
+the permissions or SELinux label on the kernel or device tree.
+
+=item B<--dtb wildcard>
+
+If specified, search for a device tree which is compatible with the
+selected kernel and the name of which matches the given wildcard.  You
+can use a wildcard such as C<vexpress-*a9*.dtb> which would match
+C<vexpress-v2p-ca9.dtb>.
+
+Notes:
+
+=over 4
+
+=item *
+
+You may need to quote the wildcard to prevent it from being expanded
+by your shell.
+
+=item *
+
+If no I<--dtb> option is given, no device tree will be looked for.
+
+=item *
+
+You only need a device tree on architectures such as ARM and PowerPC
+which use them.  On other architectures, don't use this option.
+
+=item *
+
+If you use this option and no compatible device tree can be found,
+supermin-helper will exit with an error.
+
+=back
 
 =item B<-f fmt>
 
@@ -54,8 +113,8 @@ Select the output format for the appliance.  Possible formats are:
 
 A Linux initramfs.  This is the default.
 
-In this case you have to supply names for the C<kernel>
-and C<initrd>, where the C<initrd> is the appliance.
+In this case you have to supply output names for the C<kernel> and
+C<initrd>.  The C<initrd> is the appliance.
 
 Note that L<cpio(1)> might not be able to extract this file fully.
 The format used by the Linux kernel is not quite a true cpio file.
@@ -64,8 +123,8 @@ The format used by the Linux kernel is not quite a true cpio file.
 
 An ext2 filesystem.
 
-In this case you have to supply names for the C<kernel>, a small
-C<initrd> which is used just to locate the appliance, and the
+In this case you have to supply output names for the C<kernel>, a
+small C<initrd> which is used just to locate the appliance, and the
 C<appliance> (the ext2 filesystem).
 
 =item checksum
@@ -83,12 +142,12 @@ host_cpu and the UID of the current user are included in the checksum.
 
 =back
 
-=item B<--copy-kernel>
+=item B<--host-cpu cpu>
 
-Copy the kernel instead of symlinking to the kernel in C</boot>.
-
-This is fractionally slower, but is necessary if you want to change
-the permissions or SELinux label on the kernel.
+Specify the host CPU (eg. C<i686>, C<x86_64>).  This is used as a
+substring match when searching for compatible kernels.  If not
+specified, it defaults to the host CPU that supermin-helper was
+compiled on.
 
 =item B<-k file>
 
@@ -109,6 +168,65 @@ automatically.
 If this option is not specified, then every kernel module from the
 host will be included.  This is safer, but can produce rather large
 appliances which need a lot more memory to boot.
+
+=item B<-o outputdir>
+
+Write the appliance to the named directory.  Two or more of the
+following files will be created (the exact files created depends on
+the type of appliance you asked for and the architecture):
+
+=over 4
+
+=item C<outputdir/kernel>
+
+(ie. A file literally called C<kernel> in the directory I<outputdir>
+that you specified).  This is usually a symlink to the kernel, unless
+you gave the I<--copy-kernel> option.
+
+=item C<outputdir/dtb>
+
+The device tree.  See also the I<--dtb> option.
+
+This is only created on architectures that use device trees, eg. ARM.
+
+This is usually a symlink to the device tree binary file, unless you
+gave the I<--copy-kernel> option.
+
+=item C<outputdir/initrd>
+
+The initrd.  For I<-f cpio> this also contains the full appliance.
+For I<-f ext2> this is just a small initrd which is sufficient to find
+and mount the appliance disk.
+
+=item C<outputdir/appliance>
+
+The appliance disk (only for I<-f ext2>).
+
+=back
+
+=item B<--output-kernel kernel>
+
+Instead of using the literal hard-coded name C<kernel>, write the
+kernel to the named path.
+This overrides the I<-o outputdir> option (if present).
+
+=item B<--output-dtb dtb>
+
+Instead of using the literal hard-coded name C<dtb>, write the
+device tree to the named path.
+This overrides the I<-o outputdir> option (if present).
+
+=item B<--output-initrd initrd>
+
+Instead of using the literal hard-coded name C<initrd>, write the
+initrd to the named path.
+This overrides the I<-o outputdir> option (if present).
+
+=item B<--output-initrd appliance>
+
+Instead of using the literal hard-coded name C<appliance>, write the
+initrd to the named path.
+This overrides the I<-o outputdir> option (if present).
 
 =item B<-u user>
 
@@ -198,6 +316,10 @@ The environment variable should point to a module directory,
 eg. C</lib/modules/3.0.x86_64/>
 
 This has no effect if C<SUPERMIN_KERNEL> is not set.
+
+=item SUPERMIN_DTB
+
+Force the given device tree file to be used.
 
 =back
 

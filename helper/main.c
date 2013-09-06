@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
@@ -42,13 +43,19 @@ int copy_kernel = 0;
 
 enum { HELP_OPTION = CHAR_MAX + 1 };
 
-static const char *options = "f:g:k:u:vV";
+static const char *options = "f:g:k:o:u:vV";
 static const struct option long_options[] = {
   { "help", 0, 0, HELP_OPTION },
   { "copy-kernel", 0, 0, 0 },
+  { "dtb", required_argument, 0, 0 },
   { "format", required_argument, 0, 'f' },
   { "group", required_argument, 0, 'g' },
+  { "host-cpu", required_argument, 0, 0 },
   { "kmods", required_argument, 0, 'k' },
+  { "output-appliance", required_argument, 0, 0 },
+  { "output-dtb", required_argument, 0, 0 },
+  { "output-initrd", required_argument, 0, 0 },
+  { "output-kernel", required_argument, 0, 0 },
   { "user", required_argument, 0, 'u' },
   { "verbose", 0, 0, 'v' },
   { "version", 0, 0, 'V' },
@@ -59,43 +66,54 @@ static void
 usage (FILE *f, const char *progname)
 {
   fprintf (f,
-          "%s: build the supermin appliance on the fly\n"
-          "\n"
-          "Usage:\n"
-          "  %s [-options] inputs [...] host_cpu kernel initrd\n"
-          "  %s -f ext2 inputs [...] host_cpu kernel initrd appliance\n"
-          "  %s -f checksum inputs [...] host_cpu\n"
-          "  %s --help\n"
-          "  %s --version\n"
-          "\n"
-          "This program is used by supermin to build the supermin appliance\n"
-          "(kernel and initrd output files).  You should NOT need to run this\n"
-          "program directly except if you are debugging tricky supermin\n"
-          "appliance problems.\n"
-          "\n"
-          "NB: The kernel and initrd parameters are OUTPUT parameters.  If\n"
-          "those files exist, they are overwritten by the output.\n"
-          "\n"
-          "Options:\n"
-          "  --help\n"
-          "       Display this help text and exit.\n"
-          "  -f cpio|ext2|checksum | --format cpio|ext2|checksum\n"
-          "       Specify output format (default: cpio).\n"
-          "  --copy-kernel\n"
-          "       Copy the kernel instead of symlinking to it.\n"
-          "  -u user | --user user\n"
-          "       The user name or uid the appliance will run as. Use of this\n"
-          "       option requires root privileges.\n"
-          "  -g group | --group group\n"
-          "       The group name or gid the appliance will run as. Use of\n"
-          "       this option requires root privileges.\n"
-          "  -k file | --kmods file\n"
-          "       Specify kernel module whitelist.\n"
-          "  --verbose | -v\n"
-          "       Enable verbose messages (give multiple times for more verbosity).\n"
-          "  --version | -V\n"
-          "       Display version number and exit.\n",
-          progname, progname, progname, progname, progname, progname);
+           "%s: build the supermin appliance on the fly\n"
+           "\n"
+           "Usage:\n"
+           "  %s [-f cpio|ext2] -o outputdir input [input...]\n"
+           "or:\n"
+           "  %s [-f cpio|ext2] --output-kernel kernel \\\n"
+           "  [--output-dtb dtb] --output-initrd initrd \\\n"
+           "  [--output-appliance appliance] input [input...]\n"
+           "or:\n"
+           "  %s -f checksum input [input ...]\n"
+           "or:\n"
+           "  %s --help\n"
+           "  %s --version\n"
+           "\n"
+           "This program is used to build the full appliance from the supermin appliance.\n"
+           "\n"
+           "Options:\n"
+           "  --help\n"
+           "       Display this help text and exit.\n"
+           "  --copy-kernel\n"
+           "       Copy the kernel & device tree instead of symlinking to it.\n"
+           "  --dtb wildcard\n"
+           "       Search for a device tree matching wildcard.\n"
+           "  -f cpio|ext2|checksum | --format cpio|ext2|checksum\n"
+           "       Specify output format (default: cpio).\n"
+           "  --host-cpu cpu\n"
+           "       Host CPU type (default: " host_cpu ").\n"
+           "  -k file | --kmods file\n"
+           "       Specify kernel module whitelist.\n"
+           "  -o outputdir\n"
+           "       Write output to outputdir/kernel etc.\n"
+           "  --output-appliance path\n"
+           "       Write appliance to path (overrides -o).\n"
+           "  --output-dtb path\n"
+           "       Write device tree to path (overrides -o).\n"
+           "  --output-initrd path\n"
+           "       Write initrd to path (overrides -o).\n"
+           "  --output-kernel path\n"
+           "       Write kernel to path (overrides -o).\n"
+           "  -u user | --user user\n"
+           "  -g group | --group group\n"
+           "       The user name or uid, and group name or gid the appliance will\n"
+           "       run as. Use of these options requires root privileges.\n"
+           "  --verbose | -v\n"
+           "       Enable verbose messages (give multiple times for more verbosity).\n"
+           "  --version | -V\n"
+           "       Display version number and exit.\n",
+           progname, progname, progname, progname, progname, progname);
 }
 
 static uid_t
@@ -163,8 +181,19 @@ main (int argc, char *argv[])
   const char *format = "cpio";
   const char *whitelist = NULL;
 
+  /* For the reason this was originally added, see
+   * https://bugzilla.redhat.com/show_bug.cgi?id=558593
+   */
+  const char *hostcpu = host_cpu;
+
+  /* Output files. */
+  char *kernel = NULL, *initrd = NULL, *appliance = NULL;
+  const char *output_dir = NULL;
+
   uid_t euid = geteuid ();
   gid_t egid = getegid ();
+
+  bool old_style = true;
 
   /* Command line arguments. */
   for (;;) {
@@ -180,7 +209,37 @@ main (int argc, char *argv[])
     case 0:                     /* options which are long only */
       if (strcmp (long_options[option_index].name, "copy-kernel") == 0) {
         copy_kernel = 1;
-      } else {
+      }
+      else if (strcmp (long_options[option_index].name, "dtb") == 0) {
+        fprintf (stderr, "%s: error: --dtb is not implemented yet\n", argv[0]);
+        exit (EXIT_FAILURE);
+      }
+      else if (strcmp (long_options[option_index].name, "host-cpu") == 0) {
+        hostcpu = optarg;
+        old_style = false;
+      }
+      else if (strcmp (long_options[option_index].name, "output-kernel") == 0) {
+        kernel = optarg;
+        old_style = false;
+      }
+      else if (strcmp (long_options[option_index].name, "output-dtb") == 0) {
+        /*
+        dtb = optarg;
+        old_style = false;
+        */
+        fprintf (stderr, "%s: error: --output-dtb is not implemented yet\n",
+                 argv[0]);
+        exit (EXIT_FAILURE);
+      }
+      else if (strcmp (long_options[option_index].name, "output-initrd") == 0) {
+        initrd = optarg;
+        old_style = false;
+      }
+      else if (strcmp (long_options[option_index].name, "output-appliance") == 0) {
+        appliance = optarg;
+        old_style = false;
+      }
+      else {
         fprintf (stderr, "%s: unknown long option: %s (%d)\n",
                  argv[0], long_options[option_index].name, option_index);
         exit (EXIT_FAILURE);
@@ -203,6 +262,11 @@ main (int argc, char *argv[])
       whitelist = optarg;
       break;
 
+    case 'o':
+      output_dir = optarg;
+      old_style = false;
+      break;
+
     case 'v':
       verbose++;
       break;
@@ -215,6 +279,125 @@ main (int argc, char *argv[])
       usage (stderr, argv[0]);
       exit (EXIT_FAILURE);
     }
+  }
+
+  /* Select the correct writer module. */
+  struct writer *writer;
+  bool needs_kernel;
+  bool needs_initrd;
+  bool needs_appliance;
+
+  if (strcmp (format, "cpio") == 0) {
+    writer = &cpio_writer;
+    needs_kernel = true;
+    needs_initrd = true;
+    needs_appliance = false;
+  }
+  else if (strcmp (format, "ext2") == 0) {
+    writer = &ext2_writer;
+    needs_kernel = true;
+    needs_initrd = true;
+    needs_appliance = true;
+  }
+  else if (strcmp (format, "checksum") == 0) {
+    writer = &checksum_writer;
+    needs_kernel = false;
+    needs_initrd = false;
+    needs_appliance = false;
+  }
+  else {
+    fprintf (stderr,
+             "%s: incorrect output format (-f): must be cpio|ext2|checksum\n",
+             argv[0]);
+    exit (EXIT_FAILURE);
+  }
+
+  char **inputs = &argv[optind];
+  int nr_inputs;
+
+  /* Old-style arguments? */
+  if (old_style) {
+    int nr_outputs;
+
+    if (strcmp (format, "cpio") == 0)
+      nr_outputs = 2;             /* kernel and appliance (== initrd) */
+    else if (strcmp (format, "ext2") == 0)
+      nr_outputs = 3;             /* kernel, initrd, appliance */
+    else if (strcmp (format, "checksum") == 0)
+      nr_outputs = 0;             /* (none) */
+    else
+      abort ();
+
+    /* [optind .. optind+nr_inputs-1] hostcpu [argc-nr_outputs-1 .. argc-1]
+     * <----     nr_inputs      ---->    1    <----    nr_outputs     ---->
+     */
+    nr_inputs = argc - nr_outputs - 1 - optind;
+    char **outputs = &argv[optind+nr_inputs+1];
+    /*assert (outputs [nr_outputs] == NULL);
+      assert (inputs [nr_inputs + 1 + nr_outputs] == NULL);*/
+
+    if (nr_outputs > 0)
+      kernel = outputs[0];
+    if (nr_outputs > 1)
+      initrd = outputs[1];
+    if (nr_outputs > 2)
+      appliance = outputs[2];
+  }
+  /* New-style?  Check all outputs were defined. */
+  else {
+    if (needs_kernel && !kernel) {
+      if (!output_dir) {
+      no_output_dir:
+        fprintf (stderr, "%s: use -o to specify output directory or --output-[kernel|dtb|initrd|appliance]\n", argv[0]);
+        exit (EXIT_FAILURE);
+      }
+      if (asprintf (&kernel, "%s/kernel", output_dir) == -1) {
+        perror ("asprintf");
+        exit (EXIT_FAILURE);
+      }
+    }
+
+    if (needs_initrd && !initrd) {
+      if (!output_dir)
+        goto no_output_dir;
+      if (asprintf (&initrd, "%s/initrd", output_dir) == -1) {
+        perror ("asprintf");
+        exit (EXIT_FAILURE);
+      }
+    }
+
+    if (needs_appliance && !appliance) {
+      if (!output_dir)
+        goto no_output_dir;
+      if (asprintf (&appliance, "%s/appliance", output_dir) == -1) {
+        perror ("asprintf");
+        exit (EXIT_FAILURE);
+      }
+    }
+
+    nr_inputs = argc - optind;
+  }
+
+  if (nr_inputs < 1) {
+    fprintf (stderr, "%s: not enough files specified on the command line\n",
+             argv[0]);
+    exit (EXIT_FAILURE);
+  }
+
+  if (verbose) {
+    print_timestamped_message ("whitelist = %s, "
+                               "host_cpu = %s, "
+                               "kernel = %s, "
+                               "initrd = %s, "
+                               "appliance = %s",
+                               whitelist ? : "(not specified)",
+                               hostcpu,
+                               kernel ? : "(none)",
+                               initrd ? : "(none)",
+                               appliance ? : "(none)");
+    int i;
+    for (i = 0; i < nr_inputs; ++i)
+      print_timestamped_message ("inputs[%d] = %s", i, inputs[i]);
   }
 
   /* We need to set the real, not effective, uid here to work round a
@@ -255,75 +438,12 @@ main (int argc, char *argv[])
     }
   }
 
-  /* Select the correct writer module. */
-  struct writer *writer;
-  int nr_outputs;
-
-  if (strcmp (format, "cpio") == 0) {
-    writer = &cpio_writer;
-    nr_outputs = 2;             /* kernel and appliance (== initrd) */
-  }
-  else if (strcmp (format, "ext2") == 0) {
-    writer = &ext2_writer;
-    nr_outputs = 3;             /* kernel, initrd, appliance */
-  }
-  else if (strcmp (format, "checksum") == 0) {
-    writer = &checksum_writer;
-    nr_outputs = 0;             /* (none) */
-  }
-  else {
-    fprintf (stderr,
-             "%s: incorrect output format (-f): must be cpio|ext2|checksum\n",
-             argv[0]);
-    exit (EXIT_FAILURE);
-  }
-
-  /* [optind .. optind+nr_inputs-1] hostcpu [argc-nr_outputs-1 .. argc-1]
-   * <----     nr_inputs      ---->    1    <----    nr_outputs     ---->
-   */
-  char **inputs = &argv[optind];
-  int nr_inputs = argc - nr_outputs - 1 - optind;
-  char **outputs = &argv[optind+nr_inputs+1];
-  /*assert (outputs [nr_outputs] == NULL);
-    assert (inputs [nr_inputs + 1 + nr_outputs] == NULL);*/
-
-  if (nr_inputs < 1) {
-    fprintf (stderr, "%s: not enough files specified on the command line\n",
-             argv[0]);
-    exit (EXIT_FAILURE);
-  }
-
-  /* See: https://bugzilla.redhat.com/show_bug.cgi?id=558593 */
-  const char *hostcpu = outputs[-1];
-
-  /* Output files. */
-  const char *kernel = NULL, *initrd = NULL, *appliance = NULL;
-  if (nr_outputs > 0)
-    kernel = outputs[0];
-  if (nr_outputs > 1)
-    initrd = appliance = outputs[1];
-  if (nr_outputs > 2)
-    appliance = outputs[2];
-
-  if (verbose) {
-    print_timestamped_message ("whitelist = %s, "
-                               "host_cpu = %s, "
-                               "kernel = %s, "
-                               "initrd = %s, "
-                               "appliance = %s",
-                               whitelist ? : "(not specified)",
-                               hostcpu, kernel, initrd, appliance);
-    int i;
-    for (i = 0; i < nr_inputs; ++i)
-      print_timestamped_message ("inputs[%d] = %s", i, inputs[i]);
-  }
-
   /* Remove the output files if they exist. */
   if (kernel)
     unlink (kernel);
   if (initrd)
     unlink (initrd);
-  if (appliance && initrd != appliance)
+  if (appliance)
     unlink (appliance);
 
   /* Create kernel output file. */
