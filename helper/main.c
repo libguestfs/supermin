@@ -394,23 +394,20 @@ main (int argc, char *argv[])
   }
 
   if (verbose) {
-    print_timestamped_message ("whitelist = %s, "
-                               "host_cpu = %s, "
-                               "dtb_wildcard = %s, "
-                               "kernel = %s, "
-                               "dtb = %s, "
-                               "initrd = %s, "
-                               "appliance = %s",
-                               whitelist ? : "(not specified)",
-                               hostcpu,
-                               dtb_wildcard ? : "(not specified)",
-                               kernel ? : "(none)",
-                               dtb ? : "(none)",
-                               initrd ? : "(none)",
-                               appliance ? : "(none)");
+    print_timestamped_message ("whitelist = %s",
+                               whitelist ? : "(not specified)");
+    print_timestamped_message ("host_cpu = %s", hostcpu);
+    print_timestamped_message ("dtb_wildcard = %s",
+                               dtb_wildcard ? : "(not specified)");
+    print_timestamped_message ("inputs:");
     int i;
     for (i = 0; i < nr_inputs; ++i)
       print_timestamped_message ("inputs[%d] = %s", i, inputs[i]);
+    print_timestamped_message ("outputs:");
+    print_timestamped_message ("kernel = %s", kernel ? : "(none)");
+    print_timestamped_message ("dtb = %s", dtb ? : "(none)");
+    print_timestamped_message ("initrd = %s", initrd ? : "(none)");
+    print_timestamped_message ("appliance = %s", appliance ? : "(none)");
   }
 
   /* We need to set the real, not effective, uid here to work round a
