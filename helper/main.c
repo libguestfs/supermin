@@ -187,8 +187,11 @@ main (int argc, char *argv[])
   const char *hostcpu = host_cpu;
 
   /* Output files. */
-  char *kernel = NULL, *initrd = NULL, *appliance = NULL;
+  char *kernel = NULL, *dtb = NULL, *initrd = NULL, *appliance = NULL;
   const char *output_dir = NULL;
+
+  /* Device tree wildcard (--dtb argument). */
+  const char *dtb_wildcard = NULL;
 
   uid_t euid = geteuid ();
   gid_t egid = getegid ();
@@ -211,8 +214,8 @@ main (int argc, char *argv[])
         copy_kernel = 1;
       }
       else if (strcmp (long_options[option_index].name, "dtb") == 0) {
-        fprintf (stderr, "%s: error: --dtb is not implemented yet\n", argv[0]);
-        exit (EXIT_FAILURE);
+        dtb_wildcard = optarg;
+        old_style = false;      /* --dtb + old-style wouldn't work anyway */
       }
       else if (strcmp (long_options[option_index].name, "host-cpu") == 0) {
         hostcpu = optarg;
@@ -223,13 +226,8 @@ main (int argc, char *argv[])
         old_style = false;
       }
       else if (strcmp (long_options[option_index].name, "output-dtb") == 0) {
-        /*
         dtb = optarg;
         old_style = false;
-        */
-        fprintf (stderr, "%s: error: --output-dtb is not implemented yet\n",
-                 argv[0]);
-        exit (EXIT_FAILURE);
       }
       else if (strcmp (long_options[option_index].name, "output-initrd") == 0) {
         initrd = optarg;
@@ -286,6 +284,8 @@ main (int argc, char *argv[])
   bool needs_kernel;
   bool needs_initrd;
   bool needs_appliance;
+
+  bool needs_dtb = dtb_wildcard != NULL;
 
   if (strcmp (format, "cpio") == 0) {
     writer = &cpio_writer;
@@ -357,6 +357,15 @@ main (int argc, char *argv[])
       }
     }
 
+    if (needs_dtb && !dtb) {
+      if (!output_dir)
+        goto no_output_dir;
+      if (asprintf (&dtb, "%s/dtb", output_dir) == -1) {
+        perror ("asprintf");
+        exit (EXIT_FAILURE);
+      }
+    }
+
     if (needs_initrd && !initrd) {
       if (!output_dir)
         goto no_output_dir;
@@ -387,12 +396,16 @@ main (int argc, char *argv[])
   if (verbose) {
     print_timestamped_message ("whitelist = %s, "
                                "host_cpu = %s, "
+                               "dtb_wildcard = %s, "
                                "kernel = %s, "
+                               "dtb = %s, "
                                "initrd = %s, "
                                "appliance = %s",
                                whitelist ? : "(not specified)",
                                hostcpu,
+                               dtb_wildcard ? : "(not specified)",
                                kernel ? : "(none)",
+                               dtb ? : "(none)",
                                initrd ? : "(none)",
                                appliance ? : "(none)");
     int i;
@@ -441,13 +454,15 @@ main (int argc, char *argv[])
   /* Remove the output files if they exist. */
   if (kernel)
     unlink (kernel);
+  if (dtb)
+    unlink (dtb);
   if (initrd)
     unlink (initrd);
   if (appliance)
     unlink (appliance);
 
   /* Create kernel output file. */
-  const char *modpath = create_kernel (hostcpu, kernel);
+  const char *modpath = create_kernel (hostcpu, kernel, dtb_wildcard, dtb);
 
   if (verbose)
     print_timestamped_message ("finished creating kernel");

@@ -65,7 +65,7 @@ extern struct writer cpio_writer;
 extern struct writer ext2_writer;
 
 /* kernel.c */
-extern const char *create_kernel (const char *hostcpu, const char *kernel);
+extern const char *create_kernel (const char *hostcpu, const char *kernel, const char *dtb_wildcard, const char *dtb);
 
 /* utils.c */
 extern void print_timestamped_message (const char *fs, ...);

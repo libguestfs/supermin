@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/utsname.h>
+#include <assert.h>
 
 #include "error.h"
 #include "xvasprintf.h"
@@ -44,8 +45,8 @@
 #define MODULESDIR "/lib/modules"
 
 static char* get_kernel_version (char* filename);
-static const char *create_kernel_from_env (const char *hostcpu, const char *kernel, const char *kernel_env, const char *modpath_env);
-static void copy_or_symlink_kernel (const char *from, const char *to);
+static const char *create_kernel_from_env (const char *hostcpu, const char *kernel, const char *kernel_env, const char *modpath_env, const char *dtb_wildcard, const char *dtb);
+static void copy_or_symlink_file (const char *what, const char *from, const char *to);
 
 static char *
 get_modpath (const char *kernel_name)
@@ -109,8 +110,85 @@ has_modpath (const char *kernel_name)
   }
 }
 
-/* Create the kernel.  This chooses an appropriate kernel and makes a
- * symlink to it (or copies it if --copy-kernel was passed).
+/* Try to find a device tree file in the kernel's dtb directory which
+ * matches the 'dtb_wildcard' pattern.  Copy the file (or symlink it) to
+ * 'dtb'.
+ *
+ * The dtb directory is formed by replacing "vmlinuz-" at the
+ * beginning of the 'kernel' filename with "dtb-".
+ *
+ * We can override the whole lot by setting $SUPERMIN_DTB.
+ */
+static void
+get_dtb (const char *kernel, const char *dtb_wildcard, const char *dtb)
+{
+  char *dtb_env = getenv ("SUPERMIN_DTB");
+  if (dtb_env) {
+    copy_or_symlink_file ("dtb", dtb_env, dtb);
+    return;
+  }
+
+  if (!dtb_wildcard)
+    return;
+
+  assert (dtb);      /* command line arg parsing should ensure this */
+  assert (kernel != NULL);
+
+  /* Replace /vmlinuz- with /dtb- */
+  if (strncmp (kernel, "vmlinuz-", 8) != 0) {
+  no_dtb_dir:
+    fprintf (stderr,
+             "supermin-helper: failed to find a dtb (device tree) directory.\n"
+             "I expected to take '%s'\n"
+	     "and replace vmlinuz- with dtb- to form a directory.\n"
+             "You can set SUPERMIN_DTB to point to the dtb *file* that should\n"
+             "be used.\n",
+             kernel);
+    exit (EXIT_FAILURE);
+  }
+
+  char *dtb_dir;
+  if (asprintf (&dtb_dir, KERNELDIR "/dtb-%s", &kernel[8]) == -1) {
+    perror ("asprintf");
+    exit (EXIT_FAILURE);
+  }
+
+  /* It should be a directory. */
+  if (!isdir (dtb_dir))
+    goto no_dtb_dir;
+
+  if (verbose)
+    fprintf (stderr, "looking for dtb matching %s in %s\n",
+	     dtb_wildcard, dtb_dir);
+
+  /* Look for the wildcard match.
+   * XXX Should probably do some sorting here and/or worry if there
+   * are multiple matches.
+   */
+  char **all_files = read_dir (dtb_dir);
+  char **candidates = filter_fnmatch (all_files, dtb_wildcard, FNM_NOESCAPE);
+
+  if (candidates[0] == NULL) {
+    fprintf (stderr,
+             "supermin-helper: failed to find a matching device tree.\n"
+             "I looked for a file matching '%s' in directory '%s'\n"
+             "You can set SUPERMIN_DTB to point to the dtb file that should\n"
+             "be used.\n",
+             dtb_wildcard, dtb_dir);
+    exit (EXIT_FAILURE);
+  }
+
+  if (verbose)
+    fprintf (stderr, "picked dtb %s\n", candidates[0]);
+
+  char *tmp = xasprintf ("%s/%s", dtb_dir, candidates[0]);
+  copy_or_symlink_file ("dtb", tmp, dtb);
+  free (tmp);
+}
+
+/* Create the kernel and device tree files.  This chooses an
+ * appropriate kernel, and optionally a device tree, and makes a
+ * symlink to them (or copies them if --copy-kernel was passed).
  *
  * Look for the most recent kernel named vmlinuz-*.<arch>* which has a
  * corresponding directory in /lib/modules/. If the architecture is
@@ -124,7 +202,8 @@ has_modpath (const char *kernel_name)
  * This function returns the module path (ie. /lib/modules/<version>).
  */
 const char *
-create_kernel (const char *hostcpu, const char *kernel)
+create_kernel (const char *hostcpu, const char *kernel,
+               const char *dtb_wildcard, const char *dtb)
 {
   int is_x86;			/* x86 but not x86-64 */
   int is_arm;			/* arm */
@@ -138,7 +217,8 @@ create_kernel (const char *hostcpu, const char *kernel)
   char *kernel_env = getenv ("SUPERMIN_KERNEL");
   if (kernel_env) {
     char *modpath_env = getenv ("SUPERMIN_MODULES");
-    return create_kernel_from_env (hostcpu, kernel, kernel_env, modpath_env);
+    return create_kernel_from_env (hostcpu, kernel, kernel_env, modpath_env,
+                                   dtb_wildcard, dtb);
   }
 
   /* In original: ls -1dvr /boot/vmlinuz-*.$arch* 2>/dev/null | grep -v xen */
@@ -176,14 +256,17 @@ create_kernel (const char *hostcpu, const char *kernel)
   sort (candidates, reverse_filevercmp);
 
   if (verbose)
-    fprintf (stderr, "picked %s\n", candidates[0]);
+    fprintf (stderr, "picked kernel %s\n", candidates[0]);
 
   if (kernel) {
     /* Choose the first candidate. */
     char *tmp = xasprintf (KERNELDIR "/%s", candidates[0]);
-    copy_or_symlink_kernel (tmp, kernel);
+    copy_or_symlink_file ("kernel", tmp, kernel);
     free (tmp);
   }
+
+  /* Device tree. */
+  get_dtb (candidates[0], dtb_wildcard, dtb);
 
   return get_modpath (candidates[0]);
 
@@ -205,7 +288,8 @@ create_kernel (const char *hostcpu, const char *kernel)
  */
 static const char *
 create_kernel_from_env (const char *hostcpu, const char *kernel,
-                        const char *kernel_env, const char *modpath_env)
+                        const char *kernel_env, const char *modpath_env,
+                        const char *dtb_wildcard, const char *dtb)
 {
   if (verbose) {
     fprintf (stderr,
@@ -250,25 +334,28 @@ create_kernel_from_env (const char *hostcpu, const char *kernel,
 
   /* Create the symlink. */
   if (kernel)
-    copy_or_symlink_kernel (kernel_env, kernel);
+    copy_or_symlink_file ("kernel", kernel_env, kernel);
+
+  /* Device tree. */
+  get_dtb (kernel, dtb_wildcard, dtb);
 
   return modpath_env;
 }
 
 static void
-copy_or_symlink_kernel (const char *from, const char *to)
+copy_or_symlink_file (const char *what, const char *from, const char *to)
 {
   int fd1, fd2;
   char buf[BUFSIZ];
   ssize_t r;
 
   if (verbose >= 2)
-    fprintf (stderr, "%s kernel %s -> %s\n",
-             !copy_kernel ? "symlink" : "copy", from, to);
+    fprintf (stderr, "%s %s %s -> %s\n",
+             !copy_kernel ? "symlink" : "copy", what, from, to);
 
   if (!copy_kernel) {
     if (symlink (from, to) == -1)
-      error (EXIT_FAILURE, errno, "creating kernel symlink %s %s", from, to);
+      error (EXIT_FAILURE, errno, "creating %s symlink %s %s", what, from, to);
   }
   else {
     fd1 = open (from, O_RDONLY | O_CLOEXEC);
