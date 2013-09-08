@@ -122,14 +122,14 @@ has_modpath (const char *kernel_name)
 static void
 get_dtb (const char *kernel, const char *dtb_wildcard, const char *dtb)
 {
+  if (!dtb_wildcard)
+    return;
+
   char *dtb_env = getenv ("SUPERMIN_DTB");
   if (dtb_env) {
     copy_or_symlink_file ("dtb", dtb_env, dtb);
     return;
   }
-
-  if (!dtb_wildcard)
-    return;
 
   assert (dtb);      /* command line arg parsing should ensure this */
   assert (kernel != NULL);
