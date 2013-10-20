@@ -101,8 +101,13 @@ else
 fi
 AC_SUBST([APT_CACHE_DEPENDS_RECURSE_BROKEN])
 
-dnl For ArchLinux handler.
-AC_CHECK_PROG(PACMAN,[pacman],[pacman],[no])
+dnl For FrugalWare handler.
+AC_CHECK_PROG(PACMAN_G2,[pacman-g2],[pacman-g2],[no])
+
+if test "x$pacman_g2" = "xno"; then
+    dnl For ArchLinux handler.
+    AC_CHECK_PROG(PACMAN,[pacman],[pacman],[no])
+fi
 
 dnl Support for compressed input files, gzipped kernel modules.
 AC_CHECK_HEADER([zlib.h],[
