@@ -28,6 +28,7 @@ EXTRA_DIST = \
 	supermin_package_handlers.mli \
 	supermin_package_handlers.ml \
 	supermin_pacman.ml \
+	supermin_pacman_g2.ml \
 	supermin_urpmi_rpm.ml \
 	supermin_utils.mli \
 	supermin_utils.ml \
@@ -54,6 +55,7 @@ SOURCES += \
 	supermin_urpmi_rpm.ml \
 	supermin_debian.ml \
 	supermin_pacman.ml \
+	supermin_pacman_g2.ml \
 	supermin.ml
 
 CLEANFILES = *~ *.cmi *.cmo *.cmx *.o supermin
