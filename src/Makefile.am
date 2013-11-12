@@ -19,7 +19,7 @@
 
 EXTRA_DIST = \
 	config.ml \
-	supermin.8 \
+	supermin.1 \
 	supermin.pod \
 	supermin.ml \
 	supermin_cmdline.mli \
@@ -61,7 +61,7 @@ SOURCES += \
 CLEANFILES = *~ *.cmi *.cmo *.cmx *.o supermin
 
 man_MANS = \
-	supermin.8
+	supermin.1
 
 bin_SCRIPTS = supermin
 
@@ -111,23 +111,23 @@ SUFFIXES = .cmo .cmi .cmx .ml .mli .mll .mly
 
 if HAVE_PERLDOC
 
-supermin.8: supermin.pod
+supermin.1: supermin.pod
 	pod2man \
 	  -u \
-	  --section 8 \
+	  --section 1 \
 	  -c "Virtualization Support" \
 	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
 	  $< > $@
 
 noinst_DATA = \
-	../html/supermin.8.html
+	../html/supermin.1.html
 
-../html/supermin.8.html: supermin.pod
+../html/supermin.1.html: supermin.pod
 	mkdir -p ../html
 	pod2html \
 	  --css 'pod.css' \
 	  --htmldir ../html \
-	  --outfile ../html/supermin.8.html \
+	  --outfile ../html/supermin.1.html \
 	  supermin.pod
 
 endif

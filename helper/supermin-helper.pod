@@ -30,7 +30,7 @@ Old style (still supported in this version but deprecated):
 =head1 DESCRIPTION
 
 I<supermin-helper> reconstructs a bootable kernel and initramfs from a
-supermin appliance.  First you should be familiar with L<supermin(8)>.
+supermin appliance.  First you should be familiar with L<supermin(1)>.
 
 =head1 PARAMETERS
 
@@ -325,7 +325,7 @@ Force the given device tree file to be used.
 
 =head1 SEE ALSO
 
-L<supermin(8)>.
+L<supermin(1)>.
 
 =head1 AUTHORS
 

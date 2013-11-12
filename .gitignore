@@ -33,10 +33,10 @@ pod2htm?.tmp
 /examples/basic-supermin.d
 /helper/ext2init.S
 /helper/supermin-helper
-/helper/supermin-helper.8
+/helper/supermin-helper.1
 /helper/init
-/html/supermin-helper.8.html
-/html/supermin.8.html
+/html/supermin-helper.1.html
+/html/supermin.1.html
 /lib/alloca.h
 /lib/arg-nonnull.h
 /lib/c++defs.h
@@ -57,7 +57,7 @@ pod2htm?.tmp
 /snippet/
 /src/config.ml
 /src/supermin
-/src/supermin.8
+/src/supermin.1
 /stamp-h1
 /supermin-*.tar.gz
 /test-driver

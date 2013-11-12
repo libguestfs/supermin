@@ -96,7 +96,7 @@ Usage:
  supermin [-o OUTPUTDIR] --names LIST OF PKGS ...
  supermin [-o OUTPUTDIR] PKG FILE NAMES ...
 
-For full instructions see the supermin(8) man page.
+For full instructions see the supermin(1) man page.
 
 Options:\n"
 

@@ -31,8 +31,8 @@ EXTRA_DIST = \
 
 # Maintainer website update.
 HTMLFILES = \
-	html/supermin.8.html \
-	html/supermin-helper.8.html
+	html/supermin.1.html \
+	html/supermin-helper.1.html
 
 WEBSITEDIR = $(HOME)/d/redhat/websites/libguestfs
 

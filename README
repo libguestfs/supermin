@@ -8,7 +8,7 @@ appliances [similar to virtual machines], usually around 100KB in
 size, which get fully instantiated on-the-fly in a fraction of a
 second when you need to boot one of them.
 
-A complete description is in the supermin(8) man page.
+A complete description is in the supermin(1) man page.
 
 IMPORTANT NOTE FOR USERS OF FEBOOTSTRAP 3.x:
   supermin 4.x is just an evolution of febootstrap 3.x (really we just

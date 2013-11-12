@@ -57,32 +57,32 @@ ext2init.S: init
 	./bin2s.pl $< $@
 
 man_MANS = \
-	supermin-helper.8
+	supermin-helper.1
 
 if HAVE_PERLDOC
 
-supermin-helper.8: supermin-helper.pod
+supermin-helper.1: supermin-helper.pod
 	pod2man \
 	  -u \
-	  --section 8 \
+	  --section 1 \
 	  -c "Virtualization Support" \
 	  --release "$(PACKAGE_NAME)-$(PACKAGE_VERSION)" \
 	  $< > $@
 
 noinst_DATA = \
-	$(top_builddir)/html/supermin-helper.8.html
+	$(top_builddir)/html/supermin-helper.1.html
 
-$(top_builddir)/html/supermin-helper.8.html: supermin-helper.pod
+$(top_builddir)/html/supermin-helper.1.html: supermin-helper.pod
 	mkdir -p $(top_builddir)/html
 	cd $(top_builddir) && pod2html \
 	  --css 'pod.css' \
 	  --htmldir html \
-	  --outfile html/supermin-helper.8.html \
+	  --outfile html/supermin-helper.1.html \
 	  helper/supermin-helper.pod
 
 endif
 
 EXTRA_DIST = \
-	supermin-helper.8 \
+	supermin-helper.1 \
 	supermin-helper.pod \
 	bin2s.pl

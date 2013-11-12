@@ -201,7 +201,7 @@ to compress the output yourself, eg by doing:
 
 =head2 RECONSTRUCTING THE APPLIANCE
 
-The separate tool L<supermin-helper(8)> is used to
+The separate tool L<supermin-helper(1)> is used to
 reconstruct an appliance from the hostfiles and base image files.
 
 This program in fact iterates recursively over the files and
@@ -286,7 +286,7 @@ host kernel.
 
 supermin-helper is able to choose the best host kernel
 available to boot the appliance.  Users can override this by setting
-environment variables (see L<supermin-helper(8)>).
+environment variables (see L<supermin-helper(1)>).
 
 =head2 BOOTING AND CACHING THE SUPERMIN APPLIANCE
 
@@ -305,7 +305,7 @@ dependent packages and thus making sure the host files are available.
 
 =head1 SEE ALSO
 
-L<supermin-helper(8)>,
+L<supermin-helper(1)>,
 L<http://people.redhat.com/~rjones/supermin/>,
 L<guestfs(3)>,
 L<http://libguestfs.org/>.
