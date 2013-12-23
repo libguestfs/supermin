@@ -18,6 +18,7 @@
 # Written by Richard W.M. Jones <rjones@redhat.com>
 
 EXTRA_DIST = \
+	.depend \
 	config.ml \
 	supermin.1 \
 	supermin.pod \
@@ -105,7 +106,7 @@ depend: .depend
 	  sort > $@-t
 	mv $@-t $@
 
-include .depend
+-include .depend
 
 SUFFIXES = .cmo .cmi .cmx .ml .mli .mll .mly
 

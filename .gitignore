@@ -55,6 +55,7 @@ pod2htm?.tmp
 /install-sh
 /missing
 /snippet/
+/src/.depend
 /src/config.ml
 /src/supermin
 /src/supermin.1
