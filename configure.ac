@@ -17,7 +17,7 @@ dnl Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 dnl
 dnl Written by Richard W.M. Jones <rjones@redhat.com>
 
-AC_INIT([supermin],[4.1.5])
+AC_INIT([supermin],[4.1.6])
 AM_INIT_AUTOMAKE(foreign)
 
 dnl Check for basic C environment.
