@@ -18,7 +18,7 @@ dnl
 dnl Written by Richard W.M. Jones <rjones@redhat.com>
 
 AC_INIT([supermin],[4.1.5])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE(foreign)
 
 dnl Check for basic C environment.
 AC_PROG_CC_STDC
