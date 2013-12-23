@@ -45,13 +45,28 @@ SOURCES = \
 	supermin_utils.ml \
 	supermin_package_handlers.mli \
 	supermin_package_handlers.ml
+# Can't use filter for this because of automake brokenness.
+SOURCES_ML = \
+	config.ml \
+	supermin_cmdline.ml \
+	supermin_utils.ml \
+	supermin_package_handlers.ml
 
 if HAVE_OCAML_INIFILES
 SOURCES += \
 	supermin_zypp_rpm.ml
+SOURCES_ML += \
+	supermin_zypp_rpm.ml
 endif
 
 SOURCES += \
+	supermin_yum_rpm.ml \
+	supermin_urpmi_rpm.ml \
+	supermin_debian.ml \
+	supermin_pacman.ml \
+	supermin_pacman_g2.ml \
+	supermin.ml
+SOURCES_ML += \
 	supermin_yum_rpm.ml \
 	supermin_urpmi_rpm.ml \
 	supermin_debian.ml \
@@ -66,7 +81,6 @@ man_MANS = \
 
 bin_SCRIPTS = supermin
 
-SOURCES_ML = $(filter %.ml,$(SOURCES))
 BOBJECTS = $(SOURCES_ML:.ml=.cmo)
 XOBJECTS = $(SOURCES_ML:.ml=.cmx)
 
