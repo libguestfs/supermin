@@ -1,5 +1,5 @@
 # supermin Makefile.am
-# (C) Copyright 2009-2013 Red Hat Inc.
+# (C) Copyright 2009-2014 Red Hat Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,67 +19,83 @@
 
 EXTRA_DIST = \
 	.depend \
-	config.ml \
+	config.ml.in \
 	supermin.1 \
 	supermin.pod \
-	supermin.ml \
-	supermin_cmdline.mli \
-	supermin_cmdline.ml \
-	supermin_debian.ml \
-	supermin_package_handlers.mli \
-	supermin_package_handlers.ml \
-	supermin_pacman.ml \
-	supermin_pacman_g2.ml \
-	supermin_urpmi_rpm.ml \
-	supermin_utils.mli \
-	supermin_utils.ml \
-	supermin_yum_rpm.ml \
-	supermin_zypp_rpm.ml
+	$(SOURCES)
 
 # Note these must be in build dependency order.
 SOURCES = \
+	ext2fs-c.c \
+	ext2fs.ml \
+	ext2fs.mli \
+	ext2init-c.c \
+	ext2init.ml \
+	ext2init.mli \
+	fnmatch-c.c \
+	fnmatch.ml \
+	fnmatch.mli \
+	glob-c.c \
+	glob.ml \
+	glob.mli \
+	realpath-c.c \
+	realpath.ml \
+	realpath.mli \
 	config.ml \
-	supermin_cmdline.mli \
-	supermin_cmdline.ml \
-	supermin_utils.mli \
-	supermin_utils.ml \
-	supermin_package_handlers.mli \
-	supermin_package_handlers.ml
+	utils.ml \
+	utils.mli \
+	types.ml \
+	package_handler.ml \
+	package_handler.mli \
+	rpm.ml \
+	dpkg.ml \
+	prepare.ml \
+	chroot.ml \
+	kernel.ml \
+	ext2_initrd.ml \
+	ext2.ml \
+	build.ml \
+	supermin.ml
+
 # Can't use filter for this because of automake brokenness.
 SOURCES_ML = \
+	ext2fs.ml \
+	ext2init.ml \
+	fnmatch.ml \
+	glob.ml \
+	realpath.ml \
 	config.ml \
-	supermin_cmdline.ml \
-	supermin_utils.ml \
-	supermin_package_handlers.ml
-
-if HAVE_OCAML_INIFILES
-SOURCES += \
-	supermin_zypp_rpm.ml
-SOURCES_ML += \
-	supermin_zypp_rpm.ml
-endif
-
-SOURCES += \
-	supermin_yum_rpm.ml \
-	supermin_urpmi_rpm.ml \
-	supermin_debian.ml \
-	supermin_pacman.ml \
-	supermin_pacman_g2.ml \
+	utils.ml \
+	types.ml \
+	package_handler.ml \
+	rpm.ml \
+	dpkg.ml \
+	prepare.ml \
+	chroot.ml \
+	kernel.ml \
+	ext2_initrd.ml \
+	ext2.ml \
+	build.ml \
 	supermin.ml
-SOURCES_ML += \
-	supermin_yum_rpm.ml \
-	supermin_urpmi_rpm.ml \
-	supermin_debian.ml \
-	supermin_pacman.ml \
-	supermin_pacman_g2.ml \
-	supermin.ml
+
+SOURCES_C = \
+	ext2fs-c.c \
+	ext2init-c.c \
+	fnmatch-c.c \
+	glob-c.c \
+	realpath-c.c
 
 CLEANFILES = *~ *.cmi *.cmo *.cmx *.o supermin
 
 man_MANS = \
 	supermin.1
 
-bin_SCRIPTS = supermin
+bin_PROGRAMS = supermin
+
+supermin_SOURCES = $(SOURCES_C)
+supermin_CFLAGS = \
+	-I$(shell $(OCAMLC) -where) \
+	$(EXT2FS_CFLAGS) $(COM_ERR_CFLAGS)
 
 BOBJECTS = $(SOURCES_ML:.ml=.cmo)
 XOBJECTS = $(SOURCES_ML:.ml=.cmx)
@@ -93,14 +109,16 @@ BEST    = opt
 endif
 
 OCAMLPACKAGES = -package unix,str
-if HAVE_OCAML_INIFILES
-OCAMLPACKAGES += -package inifiles
-endif
 OCAMLFLAGS = -warn-error CDEFLMPSUVXYZ
 
-supermin: $(OBJECTS)
-	$(OCAMLFIND) $(BEST) $(OCAMLFLAGS) $(OCAMLPACKAGES) -linkpkg \
-	  $^ -o $@
+supermin_DEPENDENCIES = $(OBJECTS) ext2init-bin.o
+
+supermin_LDADD = ext2init-bin.o
+
+supermin_LINK = \
+	./supermin-link.sh \
+	  $(OCAMLFIND) $(BEST) $(OCAMLFLAGS) $(OCAMLPACKAGES) \
+	  $(OBJECTS) -o $@
 
 .mli.cmi:
 	$(OCAMLFIND) ocamlc $(OCAMLFLAGS) $(OCAMLPACKAGES) -c $< -o $@
@@ -108,6 +126,24 @@ supermin: $(OBJECTS)
 	$(OCAMLFIND) ocamlc $(OCAMLFLAGS) $(OCAMLPACKAGES) -c $< -o $@
 .ml.cmx:
 	$(OCAMLFIND) ocamlopt $(OCAMLFLAGS) $(OCAMLPACKAGES) -c $< -o $@
+
+# init "script" used by ext2 initrd.
+noinst_PROGRAMS = init
+init_SOURCES = init.c
+init_CFLAGS = -static
+init_LDFLAGS = -static
+init_LDADD = $(ZLIB_STATIC_LIBS) $(LZMA_STATIC_LIBS)
+
+CLEANFILES += ext2init-bin.S
+
+ext2init-bin.o: ext2init-bin.S
+	$(CC) -o $@ -c $<
+
+ext2init-bin.S: init
+	strip --strip-all $<
+	@file $< | grep -isq static || \
+	  (echo "*** error: init is not staticly linked"; exit 1)
+	./bin2s.pl $< $@
 
 depend: .depend
 

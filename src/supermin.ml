@@ -1,5 +1,5 @@
-(* supermin 4
- * Copyright (C) 2009-2013 Red Hat Inc.
+(* supermin 5
+ * Copyright (C) 2009-2014 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,425 +19,246 @@
 open Unix
 open Printf
 
-open Supermin_package_handlers
-open Supermin_utils
-open Supermin_cmdline
+open Types
+open Utils
+open Prepare
+open Build
+open Package_handler
 
-(* Create a temporary directory for use by all the functions in this file. *)
-let tmpdir = tmpdir ()
+type mode = Prepare | Build
+
+let usage_msg = "\
+supermin - tool for creating supermin appliances
+Copyright (C) 2009-2014 Red Hat Inc.
+
+Usage:
+
+  supermin --prepare LIST OF PACKAGES ...
+  supermin --build INPUT [INPUT ...]
+
+For full instructions, read the supermin(1) man page.
+
+Options:
+"
+
+let main () =
+  Random.self_init ();
+
+  (* Make sure that all the subcommands that we run are printing
+   * messages in English.  Certain package handlers (cough RPM) rely on
+   * this.
+   *)
+  putenv "LANG" "C";
+
+  (* Create a temporary directory for scratch storage. *)
+  let tmpdir =
+    let tmpdir = Filename.temp_file "supermin" ".tmpdir" in
+    unlink tmpdir;
+    mkdir tmpdir 0o700;
+    at_exit
+      (fun () ->
+        let cmd = sprintf "rm -rf %s" (quote tmpdir) in
+        ignore (Sys.command cmd));
+    tmpdir in
+
+  let debug, mode, if_newer, inputs, lockfile, outputdir, args =
+    let display_version () =
+      printf "supermin %s\n" Config.package_version;
+      exit 0
+    in
+
+    let add xs s = xs := s :: !xs in
+
+    let copy_kernel = ref false in
+    let debug = ref 0 in
+    let dtb_wildcard = ref "" in
+    let format = ref None in
+    let host_cpu = ref Config.host_cpu in
+    let if_newer = ref false in
+    let lockfile = ref "" in
+    let mode = ref None in
+    let outputdir = ref "" in
+    let packager_config = ref "" in
+    let use_installed = ref false in
+
+    let set_debug () = incr debug in
+
+    let set_format = function
+      | "chroot" | "fs" | "filesystem" -> format := Some Chroot
+      | "ext2" -> format := Some Ext2
+      | s ->
+        eprintf "supermin: unknown --format option (%s)\n" s;
+        exit 1
+    in
+
+    let rec set_prepare_mode () =
+      if !mode <> None then
+        bad_mode ();
+      mode := Some Prepare
+    and set_build_mode () =
+      if !mode <> None then
+        bad_mode ();
+      mode := Some Build
+    and bad_mode () =
+      eprintf "supermin: you must use --prepare or --build to select the mode\n";
+      exit 1
+    in
+
+    let ditto = " -\"-" in
+    let argspec = Arg.align [
+      "--build",   Arg.Unit set_build_mode,   " Build a full appliance";
+      "--copy-kernel", Arg.Set copy_kernel,   " Copy kernel instead of symlinking";
+      "--dtb",     Arg.Set_string dtb_wildcard, "WILDCARD Find device tree matching wildcard";
+      "-f",        Arg.String set_format,     "chroot|ext2 Set output format";
+      "--format",  Arg.String set_format,     ditto;
+      "--host-cpu", Arg.Set_string host_cpu,  "ARCH Set host CPU architecture";
+      "--if-newer", Arg.Set if_newer,             " Only build if needed";
+      "--lock",    Arg.Set_string lockfile,   "LOCKFILE Use a lock file";
+      "-o",        Arg.Set_string outputdir,  "OUTPUTDIR Set output directory";
+      "--packager-config", Arg.Set_string packager_config, "CONFIGFILE Set packager config file";
+      "--prepare", Arg.Unit set_prepare_mode, " Prepare a supermin appliance";
+      "--use-installed", Arg.Set use_installed, " Use installed files instead of accessing network";
+      "-v",        Arg.Unit set_debug,        " Enable debugging messages";
+      "--verbose", Arg.Unit set_debug,        ditto;
+      "-V",        Arg.Unit display_version,  " Display version and exit";
+      "--version", Arg.Unit display_version,  ditto;
+    ] in
+    let inputs = ref [] in
+    let anon_fun = add inputs in
+    Arg.parse argspec anon_fun usage_msg;
+
+    let copy_kernel = !copy_kernel in
+    let debug = !debug in
+    let dtb_wildcard = match !dtb_wildcard with "" -> None | s -> Some s in
+    let host_cpu = !host_cpu in
+    let if_newer = !if_newer in
+    let inputs = List.rev !inputs in
+    let lockfile = match !lockfile with "" -> None | s -> Some s in
+    let mode = match !mode with Some x -> x | None -> bad_mode (); Prepare in
+    let outputdir = !outputdir in
+    let packager_config =
+      match !packager_config with "" -> None | s -> Some s in
+    let use_installed = !use_installed in
+
+    let format =
+      match mode, !format with
+      | Prepare, Some _ ->
+        eprintf "supermin: cannot use --prepare and --format options together\n";
+        exit 1
+      | Prepare, None -> Chroot (* doesn't matter, prepare doesn't use this *)
+      | Build, None ->
+        eprintf "supermin: when using --build, you must specify an output --format\n";
+        exit 1
+      | Build, Some f -> f in
+
+    if outputdir = "" then (
+      eprintf "supermin: output directory (-o option) must be supplied\n";
+      exit 1
+    );
+
+    debug, mode, if_newer, inputs, lockfile, outputdir,
+    (copy_kernel, dtb_wildcard, format, host_cpu,
+     packager_config, tmpdir, use_installed) in
+
+  if debug >= 1 then printf "supermin: %s\n" Config.package_version;
+
+  (* Try to find out which package management system we're using.
+   * This fails with an error if one could not be located.
+   *)
+  let () =
+    let (_, _, _, _, packager_config, tmpdir, _) = args in
+    let settings = {
+      debug = debug;
+      tmpdir = tmpdir;
+      packager_config = packager_config;
+    } in
+    check_system settings in
+
+  (* Grab the lock file, is using.  Note it is released automatically
+   * when the program exits for any reason.
+   *)
+  (match lockfile with
+  | None -> ()
+  | Some lockfile ->
+    if debug >= 1 then printf "supermin: acquiring lock on %s\n%!" lockfile;
+    let fd = openfile lockfile [O_WRONLY;O_CREAT] 0o644 in
+    lockf fd F_LOCK 0;
+  );
+
+  (* If the --if-newer flag was given, check the dates on input files,
+   * package database and output directory.  If the output directory
+   * does not exist, or if the dates of either input files or package
+   * database is newer, then we rebuild.  Else we can just exit.
+   *)
+  if if_newer then (
+    try
+      let odate = (lstat outputdir).st_mtime in
+      let idates = List.map (fun d -> (lstat d).st_mtime) inputs in
+      let pdate = (get_package_handler ()).ph_get_package_database_mtime () in
+      if List.for_all (fun idate -> idate < odate) (pdate :: idates) then (
+        if debug >= 1 then
+          printf "supermin: if-newer: output does not need rebuilding\n%!";
+        exit 0
+      )
+    with
+      Unix_error _ -> () (* just continue *)
+  );
+
+  (* Create the output directory nearly atomically. *)
+  let new_outputdir = outputdir ^ "." ^ string_random8 () in
+  mkdir new_outputdir 0o755;
+  at_exit
+    (fun () ->
+      let cmd =
+        sprintf "rm -rf %s 2>/dev/null" (quote new_outputdir) in
+      ignore (Sys.command cmd));
+
+  (match mode with
+  | Prepare -> prepare debug args inputs new_outputdir
+  | Build -> build debug args inputs new_outputdir
+  );
+
+  (* Delete the old output directory if it exists. *)
+  let old_outputdir =
+    try
+      let old_outputdir = outputdir ^ "." ^ string_random8 () in
+      rename outputdir old_outputdir;
+      Some old_outputdir
+    with
+      Unix_error _ -> None in
+
+  if debug >= 1 then
+    printf "supermin: renaming %s to %s\n%!" new_outputdir outputdir;
+  rename new_outputdir outputdir;
+
+  match old_outputdir with
+  | None -> ()
+  | Some old_outputdir ->
+    let cmd = sprintf "rm -rf %s 2>/dev/null &" (quote old_outputdir) in
+    ignore (Sys.command cmd)
 
 let () =
-  debug "%s %s" Config.package_name Config.package_version;
-
-  (* Instead of printing out warnings as we go along, accumulate them
-   * in lists and print them all out at the end.
-   *)
-  let warn_unreadable = ref [] in
-
-  (* Determine which package manager this system uses. *)
-  check_system ();
-  let ph = get_package_handler () in
-
-  debug "selected package handler: %s" (get_package_handler_name ());
-
-  (* Not --names: check files exist. *)
-  if mode = PkgFiles then (
-    List.iter (
-      fun pkg ->
-        if not (file_exists pkg) then (
-          eprintf "supermin: %s: no such file (did you miss out the --names option?)\n" pkg;
-          exit 1
-        )
-    ) packages
-  );
-
-  (* --names: resolve the package list to a full list of package names
-   * (including dependencies).
-   *)
-  let packages =
-    if mode <> PkgFiles then (
-      let packages = ph.ph_resolve_dependencies_and_download packages mode in
-      debug "resolved packages: %s" (String.concat " " packages);
-      packages
-    )
-    else packages in
-
-  (* Get the list of files. *)
-  let files =
-    List.flatten (
-      List.map (
-        fun pkg ->
-          let files = ph.ph_list_files pkg in
-          List.map (fun (filename, ft) -> filename, ft, pkg) files
-      ) packages
-    ) in
-
-  (* Canonicalize the name of directories, so that /a and /a/ are the same. *)
-  let files =
-    List.map (
-      fun (filename, ft, pkg) ->
-        let len = String.length filename in
-        let filename =
-          if len > 1 (* don't rewrite "/" *) && ft.ft_dir
-            && filename.[len-1] = '/' then
-              String.sub filename 0 (len-1)
-          else
-            filename in
-        (filename, ft, pkg)
-    ) files in
-
-  (* Sort and combine duplicate files. *)
-  let files =
-    let files = List.sort compare files in
-
-    let combine (name1, ft1, pkg1) (name2, ft2, pkg2) =
-      (* Rules for combining files. *)
-      if ft1.ft_config || ft2.ft_config then (
-	(* It's a fairly frequent bug in Fedora for two packages to
-	 * incorrectly list the same config file.  Allow this, provided
-	 * the size of both files is 0; or one is a ghost file and the
-	 * other is not.
-         *)
-	if ft1.ft_size = 0 && ft2.ft_size = 0 then
-	  (name1, ft1, pkg1)
-        else if not ft1.ft_ghost && ft2.ft_ghost then
-          (name1, ft1, pkg1)
-        else if ft1.ft_ghost && not ft2.ft_ghost then
-          (name2, ft2, pkg2)
-	else (
-          eprintf "supermin: error: %s is a config file which is listed in two packages (%s, %s)\n"
-            name1 pkg1 pkg2;
-          exit 1
-	)
-      )
-      else if (ft1.ft_dir || ft2.ft_dir) && (not (ft1.ft_dir && ft2.ft_dir)) then (
-        eprintf "supermin: error: %s appears as both directory and ordinary file (%s, %s)\n"
-          name1 pkg1 pkg2;
-        exit 1
-      )
-      else if ft1.ft_ghost then
-        (name2, ft2, pkg2)
-      else
-        (name1, ft1, pkg1)
-    in
-
-    let rec loop = function
-      | [] -> []
-      | (name1, _, _ as f1) :: (name2, _, _ as f2) :: fs when name1 = name2 ->
-          let f = combine f1 f2 in loop (f :: fs)
-      | f :: fs -> f :: loop fs
-    in
-    loop files in
-
-  (* Ignore %ghost non-regular files.  RPMs in Fedora 20 contain these.
-   * It's not clear what they are meant to signify.  XXX
-   *)
-  let files = List.filter (
-    function
-    | name, { ft_dir = false; ft_ghost = true; ft_mode = mode }, pkg ->
-        if (mode land 0o170_000) = 0o100_000 then
-          true
-        else (
-          debug "ignoring ghost non-regular file %s (mode 0%o) from package %s"
-	    name mode pkg;
-          false
-        )
-    | _ -> true
-  ) files in
-
-  (* Because we may have excluded some packages, and also because of
-   * distribution packaging errors, it's not necessarily true that a
-   * directory is created before each file in that directory.
-   * Determine those missing directories and add them now.
-   *)
-  let files =
-    let insert_dir, dir_seen =
-      let h = Hashtbl.create (List.length files) in
-      let insert_dir dir = Hashtbl.replace h dir true in
-      let dir_seen dir = Hashtbl.mem h dir in
-      insert_dir, dir_seen
-    in
-    let files =
-      List.map (
-        fun (path, { ft_dir = is_dir }, _ as f) ->
-          if is_dir then
-            insert_dir path;
-
-          let rec loop path =
-            let parent = Filename.dirname path in
-            if dir_seen parent then []
-            else (
-              insert_dir parent;
-              let newdir = (parent, { ft_dir = true; ft_config = false;
-                                      ft_ghost = false; ft_mode = 0o40755;
-				      ft_size = 0 },
-                            "") in
-              newdir :: loop parent
-            )
-          in
-          List.rev (f :: loop path)
-      ) files in
-    List.flatten files in
-
-  (* Debugging. *)
-  debug "%d files and directories" (List.length files);
-  if false then (
-    List.iter (
-      fun (name, { ft_dir = dir; ft_ghost = ghost; ft_config = config;
-                   ft_mode = mode; ft_size = size }, pkg) ->
-        printf "%s [%s%s%s%o %d] from %s\n" name
-          (if dir then "dir " else "")
-          (if ghost then "ghost " else "")
-          (if config then "config " else "")
-          mode size
-          pkg
-    ) files
-  );
-
-  (* Split the list of files into ones for hostfiles and ones for base image. *)
-  let p_hmac = Str.regexp "^\\..*\\.hmac$" in
-
-  let hostfiles = ref []
-  and baseimgfiles = ref [] in
-  List.iter (
-    fun (path, {ft_dir = dir; ft_ghost = ghost; ft_config = config} ,_ as f) ->
-      let file = Filename.basename path in
-
-      (* Ignore boot files, kernel, kernel modules.  Supermin appliances
-       * are booted from external kernel and initrd, and
-       * supermin-helper copies the host kernel modules.
-       * Note we want to keep the /boot and /lib/modules directory entries.
-       *)
-      if string_prefix "/boot/" path then ()
-      else if string_prefix "/lib/modules/" path then ()
-
-      (* Always write directory names to both output files. *)
-      else if dir then (
-        hostfiles := f :: !hostfiles;
-        baseimgfiles := f :: !baseimgfiles;
-      )
-
-      (* Timezone configuration is config, but copy it from host system. *)
-      else if path = "/etc/localtime" then
-        hostfiles := f :: !hostfiles
-
-      (* Ignore FIPS files (.*.hmac) (RHBZ#654638). *)
-      else if Str.string_match p_hmac file 0 then ()
-
-      (* Ghost files are created empty in the base image. *)
-      else if ghost then
-        baseimgfiles := f :: !baseimgfiles
-
-      (* For config files we can't rely on the host-installed copy
-       * since the admin may have modified then.  We have to get the
-       * original file from the package and put it in the base image.
-       *)
-      else if config then
-        baseimgfiles := f :: !baseimgfiles
-
-      (* Anything else comes from the host. *)
-      else
-        hostfiles := f :: !hostfiles
-  ) files;
-  let hostfiles = List.rev !hostfiles
-  and baseimgfiles = List.rev !baseimgfiles in
-
-  (* Write hostfiles. *)
-
-  (* Regexps used below. *)
-  let p_ld_so = Str.regexp "^ld-[.0-9]+\\.so$" in
-  let p_libbfd = Str.regexp "^libbfd-.*\\.so$" in
-  let p_libgcc = Str.regexp "^libgcc_s-.*\\.so\\.\\([0-9]+\\)$" in
-  let p_libntfs3g = Str.regexp "^libntfs-3g\\.so\\..*$" in
-  let p_lib123so = Str.regexp "^lib\\(.*\\)-[-.0-9]+\\.so$" in
-  let p_lib123so123 =
-    Str.regexp "^lib\\(.*\\)-[-.0-9]+\\.so\\.\\([0-9]+\\)\\." in
-  let p_libso123 = Str.regexp "^lib\\(.*\\)\\.so\\.\\([0-9]+\\)\\." in
-  let ntfs3g_once = ref false in
-
-  let chan = open_out (tmpdir // "hostfiles") in
-  List.iter (
-    fun (path, {ft_dir = is_dir; ft_ghost = ghost; ft_config = config;
-                ft_mode = mode }, _) ->
-      let dir = Filename.dirname path in
-      let file = Filename.basename path in
-
-      if is_dir then
-        fprintf chan "%s\n" path
-
-      (* Warn about hostfiles which are unreadable by non-root.  We
-       * won't be able to add those to the appliance at run time, but
-       * there's not much else we can do about it except get the
-       * distros to fix this nonsense.
-       *)
-      else if mode land 0o004 = 0 then
-        warn_unreadable := path :: !warn_unreadable
-
-      (* Replace fixed numbers in some library names by wildcards. *)
-      else if Str.string_match p_ld_so file 0 then
-        fprintf chan "%s/ld-*.so\n" dir
-
-      (* Special case for libbfd. *)
-      else if Str.string_match p_libbfd file 0 then
-        fprintf chan "%s/libbfd-*.so\n" dir
-
-      (* Special case for libgcc_s-<gccversion>-<date>.so.N *)
-      else if Str.string_match p_libgcc file 0 then
-        fprintf chan "%s/libgcc_s-*.so.%s\n" dir (Str.matched_group 1 file)
-
-      (* Special case for libntfs-3g.so.* *)
-      else if Str.string_match p_libntfs3g file 0 then (
-        if not !ntfs3g_once then (
-          fprintf chan "%s/libntfs-3g.so.*\n" dir;
-          ntfs3g_once := true
-        )
-      )
-
-      (* libfoo-1.2.3.so *)
-      else if Str.string_match p_lib123so file 0 then
-        fprintf chan "%s/lib%s-*.so\n" dir (Str.matched_group 1 file)
-
-      (* libfoo-1.2.3.so.123 (but NOT '*.so.N') *)
-      else if Str.string_match p_lib123so123 file 0 then
-        fprintf chan "%s/lib%s-*.so.%s.*\n" dir
-          (Str.matched_group 1 file) (Str.matched_group 2 file)
-
-      (* libfoo.so.1.2.3 (but NOT '*.so.N') *)
-      else if Str.string_match p_libso123 file 0 then
-        fprintf chan "%s/lib%s.so.%s.*\n" dir
-          (Str.matched_group 1 file) (Str.matched_group 2 file)
-
-      (* Anything else comes from the host. *)
-      else
-        fprintf chan "%s\n" path
-  ) hostfiles;
-  close_out chan;
-
-  (* Write base.img.
-   *
-   * We have to create directories and copy files to tmpdir/root
-   * and then call out to cpio to construct the initrd.
-   *)
-  let rootdir = tmpdir // "root" in
-  mkdir rootdir 0o755;
-  List.iter (
-    fun (path, { ft_dir = is_dir; ft_ghost = ghost; ft_config = config;
-                 ft_mode = mode }, pkg) ->
-      (* Always write directory names to both output files. *)
-      if is_dir then (
-        (* Directory permissions are fixed up below. *)
-        if path <> "/" then mkdir (rootdir // path) 0o755
-      )
-
-      (* Ghost files are just touched with the correct perms. *)
-      else if ghost then (
-        let chan = open_out (rootdir // path) in
-        close_out chan;
-        chmod (rootdir // path) (mode land 0o777 lor 0o400)
-      )
-
-      (* For config files we can't rely on the host-installed copy
-       * since the admin may have modified it.  We have to get the
-       * original file from the package.
-       *)
-      else if config then (
-        let outfile = ph.ph_get_file_from_package pkg path in
-
-        (* Note that the output config file might not be a regular file. *)
-        let statbuf = lstat outfile in
-
-        let destfile = rootdir // path in
-
-        (* Depending on the file type, copy it to destination. *)
-        match statbuf.st_kind with
-        | S_REG ->
-            (* Unreadable files (eg. /etc/gshadow).  Make readable. *)
-            if statbuf.st_perm = 0 then chmod outfile 0o400;
-            let cmd =
-              sprintf "cp %s %s"
-                (Filename.quote outfile) (Filename.quote destfile) in
-            run_command cmd;
-            chmod destfile (mode land 0o777 lor 0o400)
-        | S_LNK ->
-            let link = readlink outfile in
-            symlink link destfile
-        | S_DIR -> assert false
-        | S_CHR
-        | S_BLK
-        | S_FIFO
-        | S_SOCK ->
-            eprintf "supermin: error: %s: don't know how to handle this type of file\n" path;
-            exit 1
-      )
-
-      else
-        assert false (* should not be reached *)
-  ) baseimgfiles;
-
-  (* Fix up directory permissions, in reverse order.  Since we don't
-   * want to have a read-only directory that we can't write into above.
-   *)
-  List.iter (
-    fun (path, { ft_dir = is_dir; ft_mode = mode }, _) ->
-      if is_dir then chmod (rootdir // path) (mode land 0o3777 lor 0o700)
-  ) (List.rev baseimgfiles);
-
-  (* Construct the 'base.img' initramfs.  Feed in the list of filenames
-   * partly because we conveniently have them, and partly because
-   * this results in a nice alphabetical ordering in the cpio file.
-   *)
-  (*let cmd = sprintf "ls -lR %s" rootdir in
-  ignore (Sys.command cmd);*)
-  let cmd =
-    sprintf "(cd %s && cpio --quiet -o -0 -H newc) > %s"
-      rootdir (tmpdir // "base.img") in
-  let chan = open_process_out cmd in
-  List.iter (fun (path, _, _) -> fprintf chan ".%s\000" path) baseimgfiles;
-  let stat = close_process_out chan in
-  (match stat with
-   | WEXITED 0 -> ()
-   | WEXITED i ->
-       eprintf "supermin: command '%s' failed (returned %d), see earlier error messages\n" cmd i;
-       exit i
-   | WSIGNALED i ->
-       eprintf "supermin: command '%s' killed by signal %d" cmd i;
-       exit 1
-   | WSTOPPED i ->
-       eprintf "supermin: command '%s' stopped by signal %d" cmd i;
-       exit 1
-  );
-
-  (* Undo directory permissions, because rm -rf can't delete files in
-   * unreadable directories.
-   *)
-  List.iter (
-    fun (path, { ft_dir = is_dir; ft_mode = mode }, _) ->
-      if is_dir then chmod (rootdir // path) 0o755
-  ) (List.rev baseimgfiles);
-
-  (* Print warnings. *)
-  if warnings then (
-    (match !warn_unreadable with
-     | [] -> ()
-     | paths ->
-         eprintf "supermin: warning: some host files are unreadable by non-root\n";
-         eprintf "supermin: warning: get your distro to fix these files:\n";
-         List.iter
-           (fun path -> eprintf "\t%s\n%!" path)
-           (List.sort compare paths)
-    );
-  );
-
-  (* Near-atomically copy files to the final output directory. *)
-  debug "writing %s ..." (outputdir // "base.img");
-  let cmd =
-    sprintf "mv %s %s"
-      (Filename.quote (tmpdir // "base.img"))
-      (Filename.quote (outputdir // "base.img")) in
-  run_command cmd;
-  debug "writing %s ..." (outputdir // "hostfiles");
-  let cmd =
-    sprintf "mv %s %s"
-      (Filename.quote (tmpdir // "hostfiles"))
-      (Filename.quote (outputdir // "hostfiles")) in
-  run_command cmd
+  try main ()
+  with
+  | Unix.Unix_error (code, fname, "") -> (* from a syscall *)
+    eprintf "supermin: error: %s: %s\n" fname (Unix.error_message code);
+    exit 1
+  | Unix.Unix_error (code, fname, param) -> (* from a syscall *)
+    eprintf "supermin: error: %s: %s: %s\n" fname (Unix.error_message code)
+      param;
+    exit 1
+  | Failure msg ->                      (* from failwith/failwithf *)
+    eprintf "supermin: failure: %s\n" msg;
+    exit 1
+  | Invalid_argument msg ->             (* probably should never happen *)
+    eprintf "supermin: internal error: invalid argument: %s\n" msg;
+    exit 1
+  | Assert_failure (file, line, char) -> (* should never happen *)
+    eprintf "supermin: internal error: assertion failed at %s, line %d, char %d\n" file line char;
+    exit 1
+  | Not_found ->                        (* should never happen *)
+    eprintf "supermin: internal error: Not_found exception was thrown\n";
+    exit 1
+  | exn ->                              (* something not matched above *)
+    eprintf "supermin: exception: %s\n" (Printexc.to_string exn);
+    exit 1

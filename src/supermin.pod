@@ -2,57 +2,77 @@
 
 =head1 NAME
 
-supermin - Tool for creating supermin appliances
+supermin - Tool for creating and building supermin appliances
 
 =head1 SYNOPSIS
 
- supermin [-o OUTPUTDIR] --names LIST OF PKGS ...
- supermin [-o OUTPUTDIR] PKG FILE NAMES ...
+ supermin --prepare -o OUTPUTDIR PACKAGE [PACKAGE ...]
+
+ supermin --build -o OUTPUTDIR --format chroot|ext2 INPUT [INPUT ...]
 
 =head1 DESCRIPTION
 
-Supermin is a tool for building supermin appliances.  These are
-tiny appliances (similar to virtual machines), usually around 100KB in
+Supermin is a tool for building supermin appliances.  These are tiny
+appliances (similar to virtual machines), usually around 100KB in
 size, which get fully instantiated on-the-fly in a fraction of a
 second when you need to boot one of them.
 
-Originally "fe" in "febootstrap" stood for "Fedora", but this tool is
-now distro-independent and can build supermin appliances for several
-popular Linux distros, and adding support for others is reasonably
-easy.  For this reason, starting with version 4, we have renamed the
-tool "supermin".
-
-Note that this manual page documents supermin 4.x which is a complete
-rewrite and quite different from febootstrap 2.x.  If you are looking
-for the febootstrap 2.x tools, then this is not the right place.
+This program used to be called febootstrap.  This manual page
+documents supermin 5.x which is a complete rewrite and quite different
+from febootstrap 2.x.  If you are looking for the febootstrap 2.x
+tools, then this is not the right place.
 
 =head2 BASIC OPERATION
 
-There are two modes for using supermin.  With the I<--names>
-parameter, supermin takes a list of package names and creates a
-supermin appliance containing those packages and all dependencies that
-those packages require.  In this mode supermin usually needs
-network access because it may need to consult package repositories in
-order to work out dependencies and download packages.
+The supermin tool can be used in two modes, B<preparing> a tiny
+supermin appliance, which is done on a build system.  And B<building>,
+which takes the supermin appliance and constructs a full, bootable
+appliance, which is done on the end user's system.
 
-Without I<--names>, supermin takes a list of packages (ie.
-filenames of locally available packages).  This package set must be
-complete and consistent with no dependencies outside the set of
-packages you provide.  In this mode supermin does not require any
-network access.  It works by looking at the package files themselves.
+Supermin does not need to be run as root, and generally I<should not>
+be run as root.  It does not affect the host system or the packages
+installed on the host system.
 
-By "package" we mean the RPM, DEB, (etc.) package.  A package name
-might be the fully qualified name (eg. C<coreutils-8.5-7.fc14.x86_64>)
-or some abbreviation (eg. C<coreutils>).  The precise format of the
-name and what abbreviations are allowed depends on the package
-manager.
+=head3 PREPARE MODE
 
-The supermin appliance that supermin writes consists of two files
-called C<hostfiles> and C<base.img> (see L</SUPERMIN APPLIANCES>
-below).  By default these are written to the current directory.  If
-you specify the I<-o OUTPUTDIR> option then these files are written to
-the named directory instead (traditionally this directory is named
-C<supermin.d> but you can call it whatever you want).
+I<--prepare> creates the tiny supermin appliance in the given output
+directory.  You give it a list of packages that you want installed,
+and supermin will automatically find the dependencies.  The list of
+packages has to be installed on the host machine.
+
+For example:
+
+ mkdir supermin.d
+ supermin --prepare bash coreutils -o supermin.d
+
+creates a supermin appliance containing the packages C<bash> and
+C<coreutils>.  Specifically, it creates some files in directory
+C<supermin.d>.  This directory I<is> the supermin appliance.  (See
+L</SUPERMIN APPLIANCES> below).
+
+It is intended that the I<--prepare> step is done on a central build
+machine, and the supermin appliance is distributed to end users (which
+is easy because supermin appliances are so small).
+
+=head3 BUILD MODE
+
+I<--build> (previously a separate program called C<supermin-helper>)
+builds the full appliance from the supermin appliance:
+
+ supermin --build -o appliance.d --format ext2 supermin.d
+
+This will create files called C<appliance.d/kernel>,
+C<appliance.d/root> etc, which is the full sized bootable appliance.
+
+It is intended that the I<--build> step is done on the end user's
+machine at the last second before the appliance is needed.  The
+packages in the supermin appliance (those specified when the supermin
+appliance was prepared) must be installed on the end user's machine.
+
+=head3 PACKAGES
+
+By "package" we mean the RPM, Debian, (etc.) package,
+eg. C<coreutils>, C<perl>.
 
 In all cases supermin can only build a supermin appliance which is
 identical in distro, version and architecture to the host.  It does
@@ -66,32 +86,163 @@ I<not> do cross-builds.
 
 Display brief command line usage, and exit.
 
-=item B<--exclude REGEXP>
+=item B<--build>
 
-After doing dependency resolution, exclude packages which match the
-regular expression.
+Build the full appliance from the supermin appliance.  This used to be
+a separate program called C<supermin-helper>.
 
-This option is only used with I<--names>, and it can be given multiple
-times on the command line.
+=item B<--copy-kernel>
 
-=item B<--names>
+(I<--build> mode only)
 
-Provide a list of package names, instead of providing packages
-directly.  In this mode supermin may require network access.  See
-L</BASIC OPERATION> above.
+Copy the kernel (and device tree, if created) instead of symlinking to
+the kernel in C</boot>.
 
-=item B<--no-warnings>
+This is fractionally slower, but is necessary if you want to change
+the permissions or SELinux label on the kernel or device tree.
 
-Don't print warnings about packaging problems.
+=item B<--dtb> WILDCARD
 
-=item B<-o outputdir>
+(I<--build> mode only)
 
-Select the output directory where the two supermin appliance files are
-written (C<hostfiles> and C<base.img>).  The default directory is the
-current directory.  Note that if this files exist already in the
-output directory then they will be overwritten.
+If specified, search for a device tree which is compatible with the
+selected kernel and the name of which matches the given wildcard.  You
+can use a wildcard such as C<vexpress-*a9*.dtb> which would match
+C<vexpress-v2p-ca9.dtb>.
 
-=item B<--packager-config CONFIGFILE>
+Notes:
+
+=over 4
+
+=item *
+
+You may need to quote the wildcard to prevent it from being expanded
+by your shell.
+
+=item *
+
+If no I<--dtb> option is given, no device tree will be looked for.
+
+=item *
+
+You only need a device tree on architectures such as ARM and PowerPC
+which use them.  On other architectures, don't use this option.
+
+=item *
+
+If you use this option and no compatible device tree can be found,
+supermin will exit with an error.
+
+=back
+
+=item B<-f> FORMAT
+
+=item B<--format> FORMAT
+
+(I<--build> mode only)
+
+Select the output format for the full appliance.
+
+There is no default.  When using I<--build> you must specify the
+I<--format> option.
+
+Possible formats are:
+
+=over 4
+
+=item chroot
+
+A directory tree in the host filesystem.
+
+The filesystem tree is written to C<OUTPUTDIR> (ie. the I<-o> option).
+
+This is called a C<chroot> because you could literally L<chroot(1)>
+into this directory afterwards, although it's a better idea to use a
+container technology (LXC, etc.).
+
+No kernel, initrd or dtb is generated in this mode because it is
+assumed that you will be running the appliance using the host kernel.
+
+=item ext2
+
+An ext2 filesystem disk image.
+
+The output kernel is written to C<OUTPUTDIR/kernel>, the device tree
+(if using) to C<OUTPUTDIR/dtb>, a small initramfs which can mount the
+appliance to C<OUTPUTDIR/initrd>, and the ext2 filesystem image to
+C<OUTPUTDIR/root>.  (Where C<OUTPUTDIR> is specified by the I<-o>
+option).
+
+=back
+
+=item B<--host-cpu> CPU
+
+(I<--build> mode only)
+
+Specify the host CPU (eg. C<i686>, C<x86_64>).  This is used as a
+substring match when searching for compatible kernels.  If not
+specified, it defaults to the host CPU that supermin was compiled on.
+
+=item B<--if-newer>
+
+(I<--build> mode only)
+
+The output directory is checked and it is I<not> rebuilt unless it
+needs to be.
+
+This is done by consulting the dates of the host package database
+(C</var/lib/rpm> etc), the input supermin files, and the output
+directory.  The operation is only carried out if either the host
+package database or the input supermin files are newer than the output
+directory.
+
+See also I<--lock> above.
+
+=item B<--lock> LOCKFILE
+
+(I<--build> mode only)
+
+If multiple parallel runs of supermin need to build a full appliance,
+then you can use the I<--lock> option to ensure they do not stomp on
+each other.
+
+The lock file is used to provide mutual exclusion so only one instance
+of supermin will run at a time.
+
+Typical usage is:
+
+ supermin --build -f ext2 \
+   --if-newer --lock /run/user/`id -u`/supermin.lock \
+   -o /var/tmp/random_dir/appliance.d \
+   /usr/share/your_app/supermin.d
+
+(where it is assumed that multiple applications might run the above
+command at the same time in order to build or update the appliance.)
+
+Note that the lock file B<must not> be stored inside the output
+directory.
+
+=item B<-o> OUTPUTDIR
+
+Select the output directory.
+
+When using I<--prepare>, this is the directory where the supermin
+appliance will be written.  When using I<--build>, this is the
+directory where the full appliance, kernel etc will be written.
+
+B<Any previous contents of the output directory are deleted>, and a
+new output directory is created.
+
+The output directory is created (nearly) atomically by constructing a
+temporary directory called something like C<OUTPUTDIR.abc543>, then
+renaming the old output directory (if present) and deleting it, and
+then renaming the temporary directory to C<OUTPUTDIR>.  By combining
+this option with I<--lock> you can ensure that multiple parallel runs
+of supermin do not conflict with each other.
+
+=item B<--packager-config> CONFIGFILE
+
+(I<--prepare> mode only)
 
 Set the configuration file for the package manager.  This allows you
 to specify alternate software repositories.
@@ -102,12 +253,13 @@ C</etc/pacman.conf>).  See L<pacman.conf(5)>.
 For Yum/RPM distributions, this sets the yum configuration file
 (default C</etc/yum.conf>).  See L<yum.conf(5)>.
 
-=item B<--save-temps>
+=item B<--prepare>
 
-Don't remove temporary files and directories on exit.  This is useful
-for debugging.
+Prepare the supermin appliance.
 
 =item B<--use-installed>
+
+(I<--prepare> mode only)
 
 If packages are already installed, use the contents (from the local
 filesystem) instead of downloading them.
@@ -117,7 +269,8 @@ changed from what was originally in the package.  This is particularly
 a problem for configuration files.
 
 However this option is useful in some controlled situations: for
-example when using supermin inside a freshly installed chroot.
+example when using supermin inside a freshly installed chroot, or if
+you have no network access during the build.
 
 =item B<-v>
 
@@ -125,15 +278,30 @@ example when using supermin inside a freshly installed chroot.
 
 Enable verbose messages.
 
+You can give this option multiple times to enable even more messages:
+
+=over 4
+
+=item I<-v>
+
+Debugging of overall stages.
+
+=item I<-v -v>
+
+Detailed information within each stage.
+
+=item I<-v -v -v>
+
+Massive amounts of debugging (far too much more normal use, but good
+if you are trying to diagnose a bug in supermin).
+
+=back
+
 =item B<-V>
 
 =item B<--version>
 
 Print the package name and version number, and exit.
-
-=item B<--yum-config CONFIGFILE>
-
-This is a deprecated alias for I<--packager-config CONFIGFILE>.
 
 =back
 
@@ -146,7 +314,7 @@ appliance share many common files such as C</bin/bash> and
 C</lib/libc.so> there is no reason to ship these files in the
 appliance.  They can simply be read from the host on demand when the
 appliance is launched.  Therefore to save space we just store the
-names of the host files that we want.
+packages we want from the host, and copy those in at build time.
 
 There are some files which cannot just be copied from the host in this
 way.  These include configuration files which the host admin might
@@ -155,15 +323,32 @@ skeleton base image which contains these files and the outline
 directory structure.
 
 Therefore the supermin appliance normally consists of at least two
-control files:
+control files (C<packages> and C<base.tar.gz>).
 
 =over 4
 
+=item B<packages>
+
+The list of packages to be copied from the host.  Dependencies are
+resolved automatically.
+
+The file is plain text, one package name per line.
+
+=item B<base.tar>
+
+=item B<base.tar.gz>
+
+This tar file (which may be compressed) contains the skeleton
+filesystem.  Mostly it contains directories and a few configuration
+files.
+
+All paths in the tar file should be relative to the root directory of
+the appliance.
+
 =item B<hostfiles>
 
-The list of files that are to be copied from the host.  This is a
-plain text file with one pathname per line.  Directories are included
-in this file.
+Any other files that are to be copied from the host.  This is a plain
+text file with one pathname per line.
 
 Paths can contain wildcards, which are expanded when the appliance
 is created, eg:
@@ -172,140 +357,123 @@ is created, eg:
 
 would copy all of the C<*.repo> files into the appliance.
 
-Each pathname in the file should start with a C</> character.  (In
-older versions of febootstrap, paths started with C<./> and were
-relative to the root directory, but you should not do that in new
-files).
+Each pathname in the file should start with a C</> character.
 
-=item B<base.img>
+Supermin itself does not create hostfiles (although before
+S<version 5>, this was the main mechanism used to create the full
+appliance).
 
-This uncompressed cpio file contains the skeleton filesystem.  Mostly
-it contains directories and a few configuration files.
+=item B<excludefiles>
 
-All paths in the cpio file should be relative to the root directory of
-the appliance.
+A list of filenames, directory names, or wildcards prefixed by C<->
+which are excluded from the final appliance.
 
-Note that unlike C<hostfiles>, paths and directories in the base image
-don't need to have any relationship to the host filesystem.
+This is rather brutal since it just removes things, potentially
+breaking packages.  However it can be used as a convenient way to
+minimize the size of the final appliance.
 
-=item B<base.img.gz>
-
-Since supermin E<ge> 4.1.4, any cpio image files may be
-gzip-compressed to save disk space.  C<hostfiles> cannot be
-compressed.  The supermin program won't create these files.  You need
-to compress the output yourself, eg by doing:
-
- gzip -9 supermin.d/*.img
+Supermin itself does not create excludefiles.
 
 =back
 
+Note that the names above are just suggestions.  You can use any names
+you want, as supermin detects the contents of each file when it
+reconstructs the appliance.  You can also have multiple of each type
+of file.
+
 =head2 RECONSTRUCTING THE APPLIANCE
 
-The separate tool L<supermin-helper(1)> is used to
-reconstruct an appliance from the hostfiles and base image files.
+The separate mode C<supermin --build> is used to reconstruct an
+appliance from the supermin appliance files.
 
 This program in fact iterates recursively over the files and
-directories passed to it.  A common layout is:
+directories passed to it.  A common layout could look like this:
 
  supermin.d/
- supermin.d/base.img
- supermin.d/extra.img
- supermin.d/hostfiles
-
-and then invoking supermin-helper with just the
-C<supermin.d> directory path as an argument.
+ supermin.d/base.tar.gz
+ supermin.d/extra.tar.gz
+ supermin.d/packages
+ supermin.d/zz-hostfiles
 
 In this way extra files can be added to the appliance just by creating
-another cpio file (C<extra.img> in the example above) and dropping it
-into the directory.  When the appliance is constructed, the extra
-files will appear in the appliance.
-
-=head3 DIRECTORIES BEFORE FILES
-
-In order for supermin-helper to run quickly, it does not
-know how to create directories automatically.  Inside hostfiles and
-the cpio files, directories must be specified before any files that
-they contain.  For example:
-
- /usr
- /usr/sbin
- /usr/sbin/serviced
-
-It is fine to list the same directory name multiple times.
-
-=head3 LEXICOGRAPHICAL ORDER
-
-supermin-helper visits the supermin control files in
-lexicographical order.  Thus in the example above, in the order
-C<base.img> -E<gt> C<extra.img> -E<gt> C<hostfiles>.
-
-This has an important effect: files contained in later cpio files
-overwrite earlier files, and directories do not need to be specified
-if they have already been created in earlier control files.
-
-=head3 EXAMPLE OF CREATING EXTRA CPIO FILE
-
-You can create a file like C<extra.img> very easily using a shell
-snippet similar to this one:
-
- cd $tmpdir
- mkdir -p usr/sbin
- cp /path/to/serviced usr/sbin/
- echo -e "usr\nusr/sbin\nusr/sbin/serviced" |
-   cpio --quiet -o -H newc > extra.img
- rm -rf usr
-
-Notice how we instruct cpio to create intermediate directories.
+another tar file (C<extra.tar.gz> in the example above) and dropping
+it into the directory, and additional host files can be added
+(C<zz-hostfiles> in the example above).  When the appliance is
+constructed, the extra files will appear in the appliance.
 
 =head2 MINIMIZING THE SUPERMIN APPLIANCE
 
 You may want to "minimize" the supermin appliance in order to save
 time and space when it is instantiated.  Typically you might want to
-remove documentation, info files, man pages and locales.  We used to
-provide a separate tool called C<febootstrap-minimize> for this
-purpose, but it is no longer provided.  Instead you can post-process
-C<hostfiles> yourself to remove any files or directories that you
-don't want (by removing lines from the file).  Be careful what you
-remove because files may be necessary for correct operation of the
-appliance.
+remove documentation, info files, man pages and locales.
 
-For example:
+You can do this by creating an excludefiles that lists files,
+directories or wildcards that you don't want to include.  They are
+skipped when the full appliance is built.
 
- < supermin.d/hostfiles \
- grep -v '^/usr/share/man/' |
- grep -v '^/usr/share/doc/' |
- grep -v '^/usr/share/info/' > supermin.d/hostfiles-t
- mv supermin.d/hostfiles-t supermin.d/hostfiles
+ -/boot/*
+ -/lib/modules/*
+ -/usr/share/man/*
+ -/usr/share/doc/*
+ -/usr/share/info/*
+
+Be careful what you remove because files may be necessary for correct
+operation of the appliance.
 
 =head2 KERNEL AND KERNEL MODULES
 
 Usually the kernel and kernel modules are I<not> included in the
-supermin appliance.  When the appliance is instantiated, the kernel
-modules from the host kernel are copied in, and it is booted using the
-host kernel.
+supermin appliance.
 
-supermin-helper is able to choose the best host kernel
-available to boot the appliance.  Users can override this by setting
-environment variables (see L<supermin-helper(1)>).
+When the full appliance is built, the kernel modules from the host are
+copied in, and it is booted using the host kernel.
+
+Supermin is able to choose the best host kernel available to boot the
+appliance.  Users can override this by setting environment variables
+(see L</ENVIRONMENT VARIABLES> below).
 
 =head2 BOOTING AND CACHING THE SUPERMIN APPLIANCE
 
-For fastest boot times you should cache the output of
-supermin-helper.  See the libguestfs source file
-C<src/appliance.c> for an example of how this is done.
+For fastest boot times you should cache the output of supermin
+I<--build>.  See the libguestfs source file C<src/appliance.c> for an
+example of how this is done.
 
 =head2 ENFORCING AVAILABILITY OF HOSTFILES
 
-supermin-helper builds the appliance by copying in host
-files as listed in C<hostfiles>.  For this to work those host files
-must be available.  We usually enforce this by adding requirements
-(eg. RPM C<Requires:> lines) on the package that uses the supermin
-appliance, so that package cannot be installed without pulling in the
-dependent packages and thus making sure the host files are available.
+Supermin builds the appliance by copying in host files as listed in
+C<hostfiles>.  For this to work those host files must be available.
+We usually enforce this by adding requirements (eg. RPM C<Requires:>
+lines) on the package that uses the supermin appliance, so that
+package cannot be installed without pulling in the dependent packages
+and thus making sure the host files are available.
+
+=head1 ENVIRONMENT VARIABLES
+
+=over 4
+
+=item SUPERMIN_KERNEL
+
+If this environment variable is set, then automatic selection of the
+kernel is bypassed and this kernel is used.
+
+The environment variable should point to a kernel file,
+eg. C</boot/vmlinuz-3.0.x86_64>
+
+=item SUPERMIN_MODULES
+
+This specifies the kernel modules directory to use.
+
+The environment variable should point to a module directory,
+eg. C</lib/modules/3.0.x86_64/>
+
+=item SUPERMIN_DTB
+
+Force the given device tree file to be used.
+
+=back
 
 =head1 SEE ALSO
 
-L<supermin-helper(1)>,
 L<http://people.redhat.com/~rjones/supermin/>,
 L<guestfs(3)>,
 L<http://libguestfs.org/>.
@@ -320,13 +488,13 @@ Richard W.M. Jones L<http://people.redhat.com/~rjones/>
 
 =item *
 
-Matthew Booth L<mbooth@redhat.com>
+Matthew Booth
 
 =back
 
 =head1 COPYRIGHT
 
-Copyright (C) 2009-2011 Red Hat Inc.
+Copyright (C) 2009-2014 Red Hat Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

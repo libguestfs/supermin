@@ -1,0 +1,11 @@
+The examples in this directory will give you some ideas how to run supermin.
+
+You can run them from this directory, eg:
+
+  ./build-basic-vm.sh
+
+- You will need to build supermin first.
+
+- Read the scripts first!
+
+- They do NOT need root privileges, and are safe to run.

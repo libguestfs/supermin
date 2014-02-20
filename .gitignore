@@ -27,9 +27,7 @@ pod2htm?.tmp
 /configure
 /cscope.out
 /depcomp
-/examples/basic-kernel
-/examples/basic-initrd
-/examples/basic-root
+/examples/basic-full-appliance
 /examples/basic-supermin.d
 /helper/ext2init.S
 /helper/supermin-helper
@@ -57,8 +55,11 @@ pod2htm?.tmp
 /snippet/
 /src/.depend
 /src/config.ml
+/src/ext2init-bin.S
+/src/init
 /src/supermin
 /src/supermin.1
+/src/supermin-link.sh
 /stamp-h1
 /supermin-*.tar.gz
 /test-driver

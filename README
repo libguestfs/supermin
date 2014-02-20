@@ -10,6 +10,10 @@ second when you need to boot one of them.
 
 A complete description is in the supermin(1) man page.
 
+IMPORTANT NOTE FOR USERS OF SUPERMIN 4.x: supermin 5.x is a rewrite of
+  supermin 4.  It is compatible at a high level with supermin 4 /
+  febootstrap 3, but requires some command line adjustments.
+
 IMPORTANT NOTE FOR USERS OF FEBOOTSTRAP 3.x:
   supermin 4.x is just an evolution of febootstrap 3.x (really we just
   renamed it). The previous febootstrap program is now called
@@ -49,8 +53,7 @@ Requirements
 For Fedora/RHEL:
 
   rpm
-  yum
-  yumdownloader
+  yumdownloader (from yum-utils)
 
 For Debian/Ubuntu:
 

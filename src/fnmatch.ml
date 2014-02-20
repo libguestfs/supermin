@@ -1,6 +1,5 @@
 (* supermin 5
  * Copyright (C) 2009-2014 Red Hat Inc.
- * @configure_input@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,15 +16,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *)
 
-let package_name = "@PACKAGE_NAME@"
-let package_version = "@PACKAGE_VERSION@"
-let zypper = "@ZYPPER@"
-let urpmi = "@URPMI@"
-let rpm = "@RPM@"
-let yumdownloader = "@YUMDOWNLOADER@"
-let dpkg = "@DPKG@"
-let pacman = "@PACMAN@"
-let pacman_g2 = "@PACMAN_G2@"
-let host_cpu = "@host_cpu@"
-let mke2fs = "@MKE2FS@"
-let mke2fs_t_option = "@MKE2FS_T_OPTION@"
+(* NB: These flags must appear in the same order as fnmatch-c.c *)
+type flag =
+| FNM_NOESCAPE
+| FNM_PATHNAME
+| FNM_PERIOD
+| FNM_FILE_NAME
+| FNM_LEADING_DIR
+| FNM_CASEFOLD
+
+external fnmatch : string -> string -> flag list -> bool = "supermin_fnmatch"

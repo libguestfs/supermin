@@ -1,0 +1,41 @@
+Send patches to the libguestfs mailing list.
+
+Overview of the source files:
+
+  supermin.ml        main program, argument parsing and coordination
+
+  |
+  +- prepare.ml        Prepare mode (--prepare option)
+  |
+  +- build.ml          Build mode (--build option)
+     |
+     +- chroot.ml           Build a chroot (--build -f chroot)
+     |
+     +- ext2.ml             Build an ext2 fs (--build -f ext2)
+        |
+        +- kernel.ml           Find the right kernel to use
+        |
+        +- ext2_initrd.ml      Build a minimal initrd
+
+Libraries used by both modes:
+
+  |
+  +- package_hander.ml   Package manager interface, for resolving
+  |   |                  package dependencies, list of files, etc.
+  |   |
+  |   +- rpm.ml           Package manager implementation for RPM distros
+  |   |
+  |   +- dpkg.ml          Package manager implementation for dpkg distros
+  |   |
+  |   +- etc.
+  |
+  +- config.ml           Configuration (from autoconf)
+  |
+  +- types.ml            Some global type declarations
+  |
+  +- utils.ml            Some utility functions
+  |
+  +- fnmatch.ml          Interface to fnmatch(3)
+  |  |
+  |  +- fnmatch-c.c      Binding to fnmatch(3)
+  +- etc.                And other C bindings ...

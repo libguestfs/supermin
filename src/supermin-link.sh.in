@@ -1,5 +1,6 @@
 # supermin Makefile.am
-# (C) Copyright 2009-2013 Red Hat Inc.
+# @configure_input@
+# (C) Copyright 2009-2014 Red Hat Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,24 +18,7 @@
 #
 # Written by Richard W.M. Jones <rjones@redhat.com>
 
-ACLOCAL_AMFLAGS = -I m4
+# Hack automake to link 'supermin' binary properly.  There is no other
+# way to add the -cclib parameter to the end of the command line.
 
-SUBDIRS = src examples tests
-
-EXTRA_DIST = \
-	.gitignore \
-	.gitmodules \
-	autogen.sh \
-	html/pod.css \
-	$(SOURCES)
-
-# Maintainer website update.
-HTMLFILES = \
-	html/supermin.1.html
-
-WEBSITEDIR = $(HOME)/d/redhat/websites/libguestfs
-
-website: $(HTMLFILES)
-	cp $(HTMLFILES) $(WEBSITEDIR)
-
-CLEANFILES = $(HTMLFILES) pod2*.tmp
+exec "$@" -linkpkg -cclib '@EXT2FS_LIBS@ @COM_ERR_LIBS@'
