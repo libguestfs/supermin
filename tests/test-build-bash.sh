@@ -1,6 +1,6 @@
 #!/bin/bash -
 # supermin
-# (C) Copyright 2009-2013 Red Hat Inc.
+# (C) Copyright 2009-2014 Red Hat Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,34 +18,19 @@
 
 set -e
 
-rm -f test-build-bash.{kernel,initrd,root}
-
-d=test-build-bash.d
-rm -rf $d
-mkdir -p $d
+d1=test-build-bash.d1
+d2=test-build-bash.d2
+rm -rf $d1 $d2
 
 set -x
 
 # We assume 'bash' is a package everywhere.
-../src/supermin -v --names bash -o $d
+../src/supermin -v --prepare bash -o $d1
 
 arch="$(uname -m)"
 
-# Check all supermin-helper formats work (new-style).
-../helper/supermin-helper -v -f checksum --host-cpu $arch $d
-../helper/supermin-helper -v -f cpio --host-cpu $arch $d \
-  --output-kernel test-build-bash.kernel --output-initrd test-build-bash.initrd
-../helper/supermin-helper -v -f ext2 --host-cpu $arch $d \
-  --output-kernel test-build-bash.kernel \
-  --output-initrd test-build-bash.initrd \
-  --output-appliance test-build-bash.root
+# Check all supermin-helper formats work.
+../src/supermin -v --build -f chroot --host-cpu $arch $d1 -o $d2
+../src/supermin -v --build -f ext2 --host-cpu $arch $d1 -o $d2
 
-# Check all supermin-helper formats work (old-style).
-../helper/supermin-helper -v -f checksum $d $arch
-../helper/supermin-helper -v -f cpio $d $arch \
-  test-build-bash.kernel test-build-bash.initrd
-../helper/supermin-helper -v -f ext2 $d $arch \
-  test-build-bash.kernel test-build-bash.initrd test-build-bash.root
-
-rm -r $d
-rm test-build-bash.{kernel,initrd,root}
+rm -r $d1 $d2
