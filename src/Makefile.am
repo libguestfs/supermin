@@ -19,6 +19,7 @@
 
 EXTRA_DIST = \
 	.depend \
+	bin2s.pl \
 	config.ml.in \
 	supermin.1 \
 	supermin.pod \

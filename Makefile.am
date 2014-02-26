@@ -23,9 +23,10 @@ SUBDIRS = src examples tests
 
 EXTRA_DIST = \
 	.gitignore \
-	.gitmodules \
-	autogen.sh \
+	HACKING \
 	html/pod.css \
+	README \
+	TODO \
 	$(SOURCES)
 
 # Maintainer website update.
