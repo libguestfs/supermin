@@ -183,7 +183,7 @@ and split_version = function
 
 let compare_architecture a1 a2 =
   let index_of_architecture = function
-    | "noarch" -> 100
+    | "noarch" | "all" -> 100
     | "i386" | "i486" | "i586" | "i686" | "x86_32" | "x86-32" -> 32
     | "x86_64" | "x86-64" | "amd64" -> 64
     | "armel" | "armhf" -> 32
