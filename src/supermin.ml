@@ -234,7 +234,13 @@ let main () =
   match old_outputdir with
   | None -> ()
   | Some old_outputdir ->
-    let cmd = sprintf "rm -rf %s 2>/dev/null &" (quote old_outputdir) in
+    let cmd =
+      (* We have to do the chmod since unwritable directories cannot
+       * be deleted by 'rm -rf'.  Unwritable directories can be created
+       * by '-f chroot'.
+       *)
+      sprintf "( chmod -R +w %s ; rm -rf %s ) 2>/dev/null &"
+        (quote old_outputdir) (quote old_outputdir) in
     ignore (Sys.command cmd)
 
 let () =
