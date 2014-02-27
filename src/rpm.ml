@@ -22,11 +22,15 @@ open Printf
 open Utils
 open Package_handler
 
-let rpm_detect () =
+let fedora_detect () =
   Config.rpm <> "no" &&
     Config.yumdownloader <> "no" &&
-    (file_exists "/etc/redhat-release" ||
-       file_exists "/etc/fedora-release")
+    (file_exists "/etc/redhat-release" || file_exists "/etc/fedora-release")
+
+let opensuse_detect () =
+  Config.rpm <> "no" &&
+    Config.zypper <> "no" &&
+    file_exists "/etc/SuSE-release"
 
 let settings = ref no_settings
 
@@ -166,7 +170,10 @@ let rpm_get_all_files pkgs =
 
 let rpm_get_files pkg = rpm_get_all_files (PackageSet.singleton pkg)
 
-let rpm_download_all_packages pkgs dir =
+let rpm_get_package_database_mtime () =
+  (lstat "/var/lib/rpm/Packages").st_mtime
+
+let rec fedora_download_all_packages pkgs dir =
   let tdir = !settings.tmpdir // string_random8 () in
 
   (* It's quite complex to get yumdownloader to download specific
@@ -195,6 +202,50 @@ let rpm_download_all_packages pkgs dir =
       (quoted_list rpms) in
   run_command cmd;
 
+  rpm_unpack tdir dir
+
+and opensuse_download_all_packages pkgs dir =
+  let tdir = !settings.tmpdir // string_random8 () in
+
+  let rpms = List.map rpm_of_pkg (PackageSet.elements pkgs) in
+  let rpms = List.map (
+    fun { name = name; arch = arch } ->
+      sprintf "%s.%s" name arch
+  ) rpms in
+
+  (* This isn't quite right because zypper will resolve the dependencies
+   * of the listed packages against the public repos and download all the
+   * dependencies too.  We only really want it to download the named
+   * packages. XXX
+   *)
+  let cmd =
+    sprintf "
+      %s%s \\
+        --root %s \\
+        --reposd-dir /etc/zypp/repos.d \\
+        --cache-dir %s \\
+        --pkg-cache-dir %s \\
+        --gpg-auto-import-keys --no-gpg-checks --non-interactive \\
+        install \\
+        --auto-agree-with-licenses --download-only \\
+        %s"
+      Config.zypper
+      (if !settings.debug >= 1 then " --verbose --verbose" else " --quiet")
+      (quote tdir)
+      (quote tdir)
+      (quote tdir)
+      (quoted_list rpms) in
+  run_command cmd;
+
+  rpm_unpack tdir dir
+
+and fedora_download_package pkg dir =
+  fedora_download_all_packages (PackageSet.singleton pkg) dir
+
+and opensuse_download_package pkg dir =
+  opensuse_download_all_packages (PackageSet.singleton pkg) dir
+
+and rpm_unpack tdir dir =
   (* Unpack each downloaded package.
    * 
    * yumdownloader can't necessarily download the specific file that we
@@ -203,21 +254,16 @@ let rpm_download_all_packages pkgs dir =
   let cmd =
     sprintf "
 umask 0000
-for f in %s/*.rpm; do
+for f in `find %s -name '*.rpm'`; do
   rpm2cpio \"$f\" | (cd %s && cpio --quiet -id)
 done"
       (quote tdir) (quote dir) in
   run_command cmd
 
-let rpm_download_package pkg dir =
-  rpm_download_all_packages (PackageSet.singleton pkg) dir
-
-let rpm_get_package_database_mtime () =
-  (lstat "/var/lib/rpm/Packages").st_mtime
-
+(* We register package handlers for each RPM distro variant. *)
 let () =
-  let ph = {
-    ph_detect = rpm_detect;
+  let fedora = {
+    ph_detect = fedora_detect;
     ph_init = rpm_init;
     ph_package_of_string = rpm_package_of_string;
     ph_package_to_string = rpm_package_to_string;
@@ -226,8 +272,15 @@ let () =
     ph_get_all_requires = rpm_get_all_requires;
     ph_get_files = rpm_get_files;
     ph_get_all_files = rpm_get_all_files;
-    ph_download_package = rpm_download_package;
-    ph_download_all_packages = rpm_download_all_packages;
     ph_get_package_database_mtime = rpm_get_package_database_mtime;
+    ph_download_package = fedora_download_package;
+    ph_download_all_packages = fedora_download_all_packages;
   } in
-  register_package_handler "rpm" ph
+  register_package_handler "rpm-fedora" fedora;
+  let opensuse = {
+    fedora with
+    ph_detect = opensuse_detect;
+    ph_download_package = opensuse_download_package;
+    ph_download_all_packages = opensuse_download_all_packages;
+  } in
+  register_package_handler "rpm-opensuse" opensuse
