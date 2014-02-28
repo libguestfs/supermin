@@ -76,7 +76,7 @@ let pacman_package_of_string str =
         let epoch, vr =
           try
             let i = String.index evr ':' in
-            int_of_string (String.sub evr 0 (i-1)),
+            int_of_string (String.sub evr 0 i),
             String.sub evr (i+1) (String.length evr - (i+1))
           with Not_found -> 0, evr in
         let version, release =
