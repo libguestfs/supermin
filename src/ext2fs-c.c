@@ -568,18 +568,38 @@ ext2_copy_file (ext2_filsys fs, const char *src, const char *dest)
     basename = p+1;
 
     /* If the parent directory is a symlink to another directory, then
-     * we want to look up the target directory. (RHBZ#698089).
+     * we want to look up the target directory as an absolute path
+     * (RHBZ#698089).  We really want GNU coreutils 'readlink -f' so
+     * we might as well just run it.
      */
     struct stat stat1, stat2;
     if (lstat (dirname, &stat1) == 0 && S_ISLNK (stat1.st_mode) &&
-        stat (dirname, &stat2) == 0 && S_ISDIR (stat2.st_mode)) {
-      char *new_dirname = malloc (PATH_MAX+1);
-      ssize_t r = readlink (dirname, new_dirname, PATH_MAX+1);
-      if (r == -1)
-        unix_error (errno, (char *) "readlink", caml_copy_string (dest));
-      new_dirname[r] = '\0';
+	stat (dirname, &stat2) == 0 && S_ISDIR (stat2.st_mode)) {
+      char cmd[strlen (dirname) + 100];
+      FILE *fp;
+      char *new_dirname;
+      size_t len;
+
+      /* XXX quoting, although this is from a trusted source */
+      snprintf (cmd, sizeof cmd, "readlink -f '%s'", dirname);
+      fp = popen (cmd, "r");
+      if (fp == NULL)
+	goto cont;
+      new_dirname = malloc (PATH_MAX+1);
+      if (fgets (new_dirname, PATH_MAX, fp) == NULL) {
+	pclose (fp);
+	goto cont;
+      }
+      pclose (fp);
+
+      len = strlen (new_dirname);
+      if (len >= 1 &&
+	  new_dirname[len-1] == '\n')
+	new_dirname[len-1] = '\0';
+
       dirname = new_dirname;
     }
+  cont:
 
     /* Look up the parent directory. */
     err = ext2fs_namei (fs, EXT2_ROOT_INO, EXT2_ROOT_INO, dirname, &dir_ino);
