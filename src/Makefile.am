@@ -50,6 +50,7 @@ SOURCES = \
 	package_handler.mli \
 	rpm.ml \
 	dpkg.ml \
+	pacman.ml \
 	prepare.ml \
 	chroot.ml \
 	kernel.ml \
@@ -71,6 +72,7 @@ SOURCES_ML = \
 	package_handler.ml \
 	rpm.ml \
 	dpkg.ml \
+	pacman.ml \
 	prepare.ml \
 	chroot.ml \
 	kernel.ml \
