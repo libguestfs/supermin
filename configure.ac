@@ -74,7 +74,7 @@ dnl For Zypper handler.
 AC_CHECK_PROG(ZYPPER,[zypper],[zypper],[no])
 
 dnl For URPMI handler.
-AC_CHECK_PROG(URPMI,[urpmi],[urpmi],[no], [$PATH$PATH_SEPARATOR/usr/sbin])
+AC_PATH_PROG(URPMI,[urpmi],[no], [$PATH$PATH_SEPARATOR/usr/sbin])
 
 dnl For Debian handler.
 AC_CHECK_PROG(DPKG,[dpkg],[dpkg],[no])

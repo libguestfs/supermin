@@ -32,6 +32,11 @@ let opensuse_detect () =
     Config.zypper <> "no" &&
     file_exists "/etc/SuSE-release"
 
+let mageia_detect () =
+  Config.rpm <> "no" &&
+    Config.urpmi <> "no" &&
+    file_exists "/etc/mageia-release"
+
 let settings = ref no_settings
 
 let rpm_init s = settings := s
@@ -235,6 +240,26 @@ and opensuse_download_all_packages pkgs dir =
 
   rpm_unpack tdir dir
 
+and mageia_download_all_packages pkgs dir =
+  let tdir = !settings.tmpdir // string_random8 () in
+
+  let rpms = List.map rpm_package_name (PackageSet.elements pkgs) in
+
+  let cmd =
+    sprintf "
+      fakeroot %s%s \\
+        --download-all %s \\
+        --replacepkgs \\
+        --no-install \\
+        %s"
+      Config.urpmi
+      (if !settings.debug >= 1 then " --verbose" else " --quiet")
+      (quote tdir)
+      (quoted_list rpms) in
+  run_command cmd;
+
+  rpm_unpack tdir dir
+
 and rpm_unpack tdir dir =
   (* Unpack each downloaded package.
    * 
@@ -269,4 +294,10 @@ let () =
     ph_detect = opensuse_detect;
     ph_download_package = PHDownloadAllPackages opensuse_download_all_packages;
   } in
-  register_package_handler "rpm-opensuse" opensuse
+  register_package_handler "rpm-opensuse" opensuse;
+  let mageia = {
+    fedora with
+    ph_detect = mageia_detect;
+    ph_download_package = PHDownloadAllPackages mageia_download_all_packages;
+  } in
+  register_package_handler "rpm-mageia" mageia
