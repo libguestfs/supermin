@@ -100,14 +100,8 @@ let rec build debug
       (PackageSet.cardinal packages);
 
   (* List the files in each package. *)
-  let files =
-    PackageSet.fold (
-      fun pkg files ->
-        let fs = get_files pkg in
-        let fs = List.map (fun { ft_path = path } -> path) fs in
-        fs :: files
-    ) packages [] in
-  let files = List.flatten files in
+  let files = get_all_files packages in
+  let files = List.map (fun { ft_path = path } -> path) files in
 
   if debug >= 1 then
     printf "supermin: build: %d files\n%!" (List.length files);

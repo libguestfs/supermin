@@ -169,5 +169,5 @@ val get_package_handler_name : unit -> string
 
 val get_all_requires : PackageSet.t -> PackageSet.t
 val get_files : package -> file list
-(*val get_all_files : PackageSet.t -> file list*)
+val get_all_files : PackageSet.t -> file list
 val download_all_packages : PackageSet.t -> string -> unit

@@ -128,14 +128,12 @@ let get_files pkg =
   | PHGetFiles f -> f pkg
   | PHGetAllFiles f -> f (PackageSet.singleton pkg)
 
-(*
 let get_all_files pkgs =
   let ph = get_package_handler () in
   match ph.ph_get_files with
   | PHGetFiles f ->
     PackageSet.fold (fun pkg xs -> let files = f pkg in files @ xs) pkgs []
   | PHGetAllFiles f -> f pkgs
-*)
 
 let download_all_packages pkgs dir =
   let ph = get_package_handler () in
