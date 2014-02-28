@@ -111,7 +111,7 @@ and no_kernels () =
   eprintf "\
 supermin: failed to find a suitable kernel.
 
-I looked for kernels in /bool and modules in /lib/modules.
+I looked for kernels in /boot and modules in /lib/modules.
 
 If this is a Xen guest, and you only have Xen domU kernels
 installed, try installing a fullvirt kernel (only for
