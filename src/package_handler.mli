@@ -100,16 +100,18 @@ type package_handler = {
   ph_package_to_string : package -> string;
   (** Convert package back to a printable string.  {b Only} use this
       for debugging and printing errors.  Use {!ph_package_name} for a
-      reproducible name that can be written to packagelist. *)
+      reproducible name that can be written to packages file. *)
 
   ph_package_name : package -> string;
   (** Return the name of the package, for writing to packagelist. *)
 
   ph_get_package_database_mtime : unit -> float;
-  (** Return the last modification time of the package database.  If
-      not supported, then a package handler can return [0.0] here.
+  (** Return the last modification time of the package database.
+
+      If not supported, then a package handler can return [0.0] here.
       However that will mean that supermin will rebuild the appliance
-      every time it is run, even when the --if-newer option is used. *)
+      every time it is run, even when the --if-newer option is
+      used. *)
 
   ph_get_requires : ph_get_requires;
   (** Given a single installed package or set of packages, return the
@@ -133,7 +135,7 @@ type package_handler = {
 
   ph_download_package : ph_download_package;
   (** [ph_download_package package dir] downloads the named package
-      from the repository, and unpack it in the given [dir].
+      from the repository, and unpacks it in the given [dir].
 
       The package handler can either implement a function to download
       a single package ([PHDownloadPackage]), or (more efficiently)

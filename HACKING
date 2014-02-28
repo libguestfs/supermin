@@ -20,6 +20,7 @@ Overview of the source files:
 Libraries used by both modes:
 
   |
+  +- package_hander.mli
   +- package_hander.ml   Package manager interface, for resolving
   |   |                  package dependencies, list of files, etc.
   |   |
