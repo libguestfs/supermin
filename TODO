@@ -1,8 +1,3 @@
-For supermin 5 rewrite:
-
- - support for other distros
-
-
 Store %post scripts
 -------------------
 
@@ -13,10 +8,8 @@ appliance?
 Some features of supermin 4 which were cut in supermin 5
 --------------------------------------------------------
 
+ - Frugalware / pacman-g2: requires 'pactree' tool to be packaged
+
  - write an initrd file (ie. '-f cpio')
- - install from a set of package files
- - exclude packages after dep solving
- - save-temps
- - --output-{appliance,dtb,initrd,kernel} options
+
  - --user/--group options
- - --kmods option
