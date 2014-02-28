@@ -199,6 +199,11 @@ if test "x$GAWK" = "xno" ; then
   AC_MSG_FAILURE([gawk (GNU awk) not found])
 fi
 
+dnl cpio
+AC_CHECK_PROG([CPIO],[cpio],[cpio],[no])
+test "x$CPIO" = "xno" &&
+    AC_MSG_ERROR([cpio must be installed])
+
 dnl Disable network tests.
 AC_ARG_ENABLE([network-tests],
     [AS_HELP_STRING([--disable-network-tests],
