@@ -24,5 +24,6 @@ TESTS =
 if NETWORK_TESTS
 TESTS += \
 	test-build-bash.sh \
-	test-binaries-exist.sh
+	test-binaries-exist.sh \
+	test-harder.sh
 endif
