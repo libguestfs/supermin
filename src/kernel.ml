@@ -49,9 +49,12 @@ and find_kernel debug host_cpu copy_kernel kernel =
   let kernel_file, kernel_name, kernel_version =
     try
       let kernel_env = getenv "SUPERMIN_KERNEL" in
-      let kernel_version = get_kernel_version_from_kernel kernel_env in
       if debug >= 1 then
-        printf "supermin: kernel: SUPERMIN_KERNEL environment variable = %s\n%!"
+        printf "supermin: kernel: SUPERMIN_KERNEL environment variable %s\n%!"
+          kernel_env;
+      let kernel_version = get_kernel_version_from_file kernel_env in
+      if debug >= 1 then
+        printf "supermin: kernel: SUPERMIN_KERNEL version %s\n%!"
           kernel_version;
       let kernel_name = Filename.basename kernel_env in
       kernel_env, kernel_name, kernel_version
@@ -200,8 +203,11 @@ and get_kernel_version kernel_name =
   if string_prefix "vmlinuz-" kernel_name then (
     let kv = String.sub kernel_name 8 (String.length kernel_name - 8) in
     if file_exists ("/lib/modules/" ^ kv ^ "/modules.dep") then kv
-    else get_kernel_version_from_kernel kernel_name
-  ) else get_kernel_version_from_kernel kernel_name
+    else get_kernel_version_from_name kernel_name
+  ) else get_kernel_version_from_name kernel_name
+
+and get_kernel_version_from_name kernel_name =
+  get_kernel_version_from_file ("/boot" // kernel_name)
 
 (* Extract the kernel version from a Linux kernel file.
  *
@@ -218,9 +224,9 @@ and get_kernel_version kernel_name =
  *
  * Bugs: probably limited to x86 kernels.
  *)
-and get_kernel_version_from_kernel kernel_name =
+and get_kernel_version_from_file file =
   try
-    let chan = open_in ("/boot" // kernel_name) in
+    let chan = open_in file in
     let buf = read_string chan 514 4 in
     if buf <> "HdrS" then (
       close_in chan;
@@ -240,8 +246,8 @@ and get_kernel_version_from_kernel kernel_name =
     close_in chan;
     let rec loop i =
       if i < 132 then (
-        if buf.[i] = '\000' || buf.[i] = ' ' &&
-          buf.[i] = '\t' && buf.[i] = '\n' then
+        if buf.[i] = '\000' || buf.[i] = ' ' ||
+          buf.[i] = '\t' || buf.[i] = '\n' then
           String.sub buf 0 i
         else
           loop (i+1)
