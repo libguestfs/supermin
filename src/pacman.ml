@@ -71,16 +71,22 @@ let pacman_package_of_string str =
     );
 
     (* Parse epoch:version-release field. *)
-    let epoch, vr =
+    let epoch, version, release =
       try
-        let i = String.index evr ':' in
-        int_of_string (String.sub evr 0 (i-1)),
-        String.sub evr (i+1) (String.length evr - (i+1))
-      with Not_found -> 0, evr in
-    let version, release =
-      match string_split "-" vr with
-      | [ v; r ] -> v, int_of_string r
-      | _ -> assert false in
+        let epoch, vr =
+          try
+            let i = String.index evr ':' in
+            int_of_string (String.sub evr 0 (i-1)),
+            String.sub evr (i+1) (String.length evr - (i+1))
+          with Not_found -> 0, evr in
+        let version, release =
+          match string_split "-" vr with
+          | [ v; r ] -> v, int_of_string r
+          | _ -> assert false in
+        epoch, version, release
+      with
+        Failure "int_of_string" ->
+          failwith ("failed to parse epoch:version-release field " ^ evr) in
 
     { name = name;
       epoch = epoch;
