@@ -104,6 +104,9 @@ let dpkg_package_name pkg =
   let dpkg = dpkg_of_pkg pkg in
   dpkg.name
 
+let dpkg_get_package_database_mtime () =
+  (lstat "/var/lib/dpkg/status").st_mtime
+
 let dpkg_get_all_requires pkgs =
   let get pkgs =
     let cmd = sprintf "\
@@ -125,8 +128,6 @@ let dpkg_get_all_requires pkgs =
   in
   loop pkgs
 
-let dpkg_get_requires pkg = dpkg_get_all_requires (PackageSet.singleton pkg)
-
 let dpkg_get_all_files pkgs =
   let cmd =
     sprintf "dpkg -L %s | grep '^/' | grep -v '^/.$' | sort -u"
@@ -140,8 +141,6 @@ let dpkg_get_all_files pkgs =
 	with Unix_error _ -> false in
       { ft_path = path; ft_config = config }
   ) lines
-
-let dpkg_get_files pkg = dpkg_get_all_files (PackageSet.singleton pkg)
 
 let dpkg_download_all_packages pkgs dir =
   let tdir = !settings.tmpdir // string_random8 () in
@@ -166,12 +165,6 @@ done"
       (quote tdir) (quote dir) in
   run_command cmd
 
-let dpkg_download_package pkg dir =
-  dpkg_download_all_packages (PackageSet.singleton pkg) dir
-
-let dpkg_get_package_database_mtime () =
-  (lstat "/var/lib/dpkg/status").st_mtime
-
 let () =
   let ph = {
     ph_detect = dpkg_detect;
@@ -179,12 +172,9 @@ let () =
     ph_package_of_string = dpkg_package_of_string;
     ph_package_to_string = dpkg_package_to_string;
     ph_package_name = dpkg_package_name;
-    ph_get_requires = dpkg_get_requires;
-    ph_get_all_requires = dpkg_get_all_requires;
-    ph_get_files = dpkg_get_files;
-    ph_get_all_files = dpkg_get_all_files;
-    ph_download_package = dpkg_download_package;
-    ph_download_all_packages = dpkg_download_all_packages;
     ph_get_package_database_mtime = dpkg_get_package_database_mtime;
+    ph_get_requires = PHGetAllRequires dpkg_get_all_requires;
+    ph_get_files = PHGetAllFiles dpkg_get_all_files;
+    ph_download_package = PHDownloadAllPackages dpkg_download_all_packages;
   } in
   register_package_handler "dpkg" ph

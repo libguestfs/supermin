@@ -126,6 +126,9 @@ let rpm_package_name pkg =
   let rpm = rpm_of_pkg pkg in
   rpm.name
 
+let rpm_get_package_database_mtime () =
+  (lstat "/var/lib/rpm/Packages").st_mtime
+
 let rpm_get_all_requires pkgs =
   let get pkgs =
     let cmd = sprintf "\
@@ -150,8 +153,6 @@ let rpm_get_all_requires pkgs =
   in
   loop pkgs
 
-let rpm_get_requires pkg = rpm_get_all_requires (PackageSet.singleton pkg)
-
 let rpm_get_all_files pkgs =
   let cmd = sprintf "\
       rpm -q --qf '[%%{FILENAMES} %%{FILEFLAGS:fflags}\\n]' %s |
@@ -167,11 +168,6 @@ let rpm_get_all_files pkgs =
       { ft_path = path; ft_config = config }
     | _ -> assert false
   ) lines
-
-let rpm_get_files pkg = rpm_get_all_files (PackageSet.singleton pkg)
-
-let rpm_get_package_database_mtime () =
-  (lstat "/var/lib/rpm/Packages").st_mtime
 
 let rec fedora_download_all_packages pkgs dir =
   let tdir = !settings.tmpdir // string_random8 () in
@@ -239,12 +235,6 @@ and opensuse_download_all_packages pkgs dir =
 
   rpm_unpack tdir dir
 
-and fedora_download_package pkg dir =
-  fedora_download_all_packages (PackageSet.singleton pkg) dir
-
-and opensuse_download_package pkg dir =
-  opensuse_download_all_packages (PackageSet.singleton pkg) dir
-
 and rpm_unpack tdir dir =
   (* Unpack each downloaded package.
    * 
@@ -268,19 +258,15 @@ let () =
     ph_package_of_string = rpm_package_of_string;
     ph_package_to_string = rpm_package_to_string;
     ph_package_name = rpm_package_name;
-    ph_get_requires = rpm_get_requires;
-    ph_get_all_requires = rpm_get_all_requires;
-    ph_get_files = rpm_get_files;
-    ph_get_all_files = rpm_get_all_files;
     ph_get_package_database_mtime = rpm_get_package_database_mtime;
-    ph_download_package = fedora_download_package;
-    ph_download_all_packages = fedora_download_all_packages;
+    ph_get_requires = PHGetAllRequires rpm_get_all_requires;
+    ph_get_files = PHGetAllFiles rpm_get_all_files;
+    ph_download_package = PHDownloadAllPackages fedora_download_all_packages;
   } in
   register_package_handler "rpm-fedora" fedora;
   let opensuse = {
     fedora with
     ph_detect = opensuse_detect;
-    ph_download_package = opensuse_download_package;
-    ph_download_all_packages = opensuse_download_all_packages;
+    ph_download_package = PHDownloadAllPackages opensuse_download_all_packages;
   } in
   register_package_handler "rpm-opensuse" opensuse

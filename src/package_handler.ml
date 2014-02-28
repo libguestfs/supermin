@@ -52,14 +52,20 @@ type package_handler = {
   ph_package_of_string : string -> package option;
   ph_package_to_string : package -> string;
   ph_package_name : package -> string;
-  ph_get_requires : package -> PackageSet.t;
-  ph_get_all_requires : PackageSet.t -> PackageSet.t;
-  ph_get_files : package -> file list;
-  ph_get_all_files : PackageSet.t -> file list;
-  ph_download_package : package -> string -> unit;
-  ph_download_all_packages : PackageSet.t -> string -> unit;
   ph_get_package_database_mtime : unit -> float;
+  ph_get_requires : ph_get_requires;
+  ph_get_files : ph_get_files;
+  ph_download_package : ph_download_package;
 }
+and ph_get_requires =
+| PHGetRequires of (package -> PackageSet.t)
+| PHGetAllRequires of (PackageSet.t -> PackageSet.t)
+and ph_get_files =
+| PHGetFiles of (package -> file list)
+| PHGetAllFiles of (PackageSet.t -> file list)
+and ph_download_package =
+| PHDownloadPackage of (package -> string -> unit)
+| PHDownloadAllPackages of (PackageSet.t -> string -> unit)
 
 (* Suggested memoization functions. *)
 let get_memo_functions () =
@@ -109,22 +115,31 @@ let rec get_package_handler_name () =
   | Some (name, _) -> name
   | None -> assert false
 
-let default_get_all_requires pkgs =
+let get_all_requires pkgs =
   let ph = get_package_handler () in
-  PackageSet.fold
-    (fun pkg -> PackageSet.union (ph.ph_get_requires pkg))
-    pkgs PackageSet.empty
+  match ph.ph_get_requires with
+  | PHGetRequires f ->
+    PackageSet.fold (fun pkg -> PackageSet.union (f pkg)) pkgs PackageSet.empty
+  | PHGetAllRequires f -> f pkgs
 
-let default_get_all_files pkgs =
+let get_files pkg =
   let ph = get_package_handler () in
-  PackageSet.fold (
-    fun pkg xs ->
-      let files = ph.ph_get_files pkg in
-      files @ xs
-  ) pkgs []
+  match ph.ph_get_files with
+  | PHGetFiles f -> f pkg
+  | PHGetAllFiles f -> f (PackageSet.singleton pkg)
 
-let default_download_all_packages pkgs dir =
+(*
+let get_all_files pkgs =
   let ph = get_package_handler () in
-  PackageSet.iter (
-    fun pkg -> ph.ph_download_package pkg dir
-  ) pkgs
+  match ph.ph_get_files with
+  | PHGetFiles f ->
+    PackageSet.fold (fun pkg xs -> let files = f pkg in files @ xs) pkgs []
+  | PHGetAllFiles f -> f pkgs
+*)
+
+let download_all_packages pkgs dir =
+  let ph = get_package_handler () in
+  match ph.ph_download_package with
+  | PHDownloadPackage f ->
+    PackageSet.iter (fun pkg -> f pkg dir) pkgs
+  | PHDownloadAllPackages f -> f pkgs dir
