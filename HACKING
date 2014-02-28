@@ -1,5 +1,14 @@
 Send patches to the libguestfs mailing list.
 
+----------------------------------------------------------------------
+
+If you want to write a package manager for a new Linux distro, then
+first look at the interface that you have to supply.  It is documented
+in src/package_handler.mli.  Secondly look at existing handlers, eg.
+src/rpm.ml, src/dpkg.ml.
+
+----------------------------------------------------------------------
+
 Overview of the source files:
 
   supermin.ml        main program, argument parsing and coordination
