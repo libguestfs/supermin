@@ -27,6 +27,10 @@ set -e
 
 if [ -f /etc/arch-release ]; then
     distro=arch
+elif [ -f /etc/debian_version ]; then
+    distro=debian
+elif [ -f /etc/fedora-release ]; then
+    distro=fedora
 else
     exit 77
 fi
@@ -39,6 +43,12 @@ case $distro in
     arch)
 	# Choose at least one from AUR.
 	pkgs="hivex"
+	;;
+    debian)
+	pkgs="augeas-tools libaugeas0 libhivex0 libhivex-bin"
+	;;
+    fedora)
+	pkgs="augeas hivex"
 	;;
 esac
 
@@ -55,8 +65,52 @@ case $distro in
 	    ls -lR $d2
 	    exit 1
 	fi
-	if [ ! -f $d2/usr/lib/libhivex.so ]; then
+	if [ "$(find $d2/usr/lib* -name libhivex.so.0 | wc -l)" -lt 1 ]; then
+	    echo "$0: $distro: hivex library not installed in chroot"
+	    ls -lR $d2
+	    exit 1
+	fi
+	;;
+    debian)
+	if [ ! -x $d2/usr/bin/augtool ]; then
+	    echo "$0: $distro: augtool binary not installed in chroot"
+	    ls -lR $d2
+	    exit 1
+	fi
+	if [ "$(find $d2/usr/lib* -name libaugeas.so.0 | wc -l)" -lt 1 ]; then
+	    echo "$0: $distro: augeas library not installed in chroot"
+	    ls -lR $d2
+	    exit 1
+	fi
+	if [ ! -x $d2/usr/bin/hivexget ]; then
 	    echo "$0: $distro: hivexget binary not installed in chroot"
+	    ls -lR $d2
+	    exit 1
+	fi
+	if [ "$(find $d2/usr/lib* -name libhivex.so.0 | wc -l)" -lt 1 ]; then
+	    echo "$0: $distro: hivex library not installed in chroot"
+	    ls -lR $d2
+	    exit 1
+	fi
+	;;
+    fedora)
+	if [ ! -x $d2/usr/bin/augtool ]; then
+	    echo "$0: $distro: augtool binary not installed in chroot"
+	    ls -lR $d2
+	    exit 1
+	fi
+	if [ "$(find $d2/usr/lib* -name libaugeas.so.0 | wc -l)" -lt 1 ]; then
+	    echo "$0: $distro: augeas library not installed in chroot"
+	    ls -lR $d2
+	    exit 1
+	fi
+	if [ ! -x $d2/usr/bin/hivexget ]; then
+	    echo "$0: $distro: hivexget binary not installed in chroot"
+	    ls -lR $d2
+	    exit 1
+	fi
+	if [ "$(find $d2/usr/lib* -name libhivex.so.0 | wc -l)" -lt 1 ]; then
+	    echo "$0: $distro: hivex library not installed in chroot"
 	    ls -lR $d2
 	    exit 1
 	fi
