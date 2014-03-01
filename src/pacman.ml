@@ -23,7 +23,7 @@ open Utils
 open Package_handler
 
 let pacman_detect () =
-  Config.pacman <> "no" &&
+  Config.pacman <> "no" && Config.fakeroot <> "no" &&
     file_exists "/etc/arch-release"
 
 let settings = ref no_settings
@@ -173,9 +173,10 @@ let pacman_download_all_packages pkgs dir =
         umask 0000
         cd %s
         mkdir -p var/lib/pacman
-        fakeroot pacman%s -Syw --noconfirm --cachedir=$(pwd) --root=$(pwd) %s
+        %s pacman%s -Syw --noconfirm --cachedir=$(pwd) --root=$(pwd) %s
       "
         (quote tdir)
+        Config.fakeroot
         (match !settings.packager_config with
          | None -> ""
          | Some filename -> " --config " ^ (quote filename))

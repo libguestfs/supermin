@@ -87,6 +87,10 @@ if test "x$pacman_g2" = "xno"; then
     AC_CHECK_PROG(PACMAN,[pacman],[pacman],[no])
 fi
 
+dnl Check for fakeroot, only used a few drivers where the host package
+dnl manager contains broken/unnecessary tests for root privs.
+AC_CHECK_PROG(FAKEROOT,[fakeroot],[fakeroot],[no])
+
 dnl Support for compressed input files, gzipped kernel modules.
 AC_CHECK_HEADER([zlib.h],[
     AC_CHECK_LIB([z],[gzopen],[

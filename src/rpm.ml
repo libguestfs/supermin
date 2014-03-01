@@ -35,6 +35,7 @@ let opensuse_detect () =
 let mageia_detect () =
   Config.rpm <> "no" &&
     Config.urpmi <> "no" &&
+    Config.fakeroot <> "no" &&
     file_exists "/etc/mageia-release"
 
 let settings = ref no_settings
@@ -247,11 +248,12 @@ and mageia_download_all_packages pkgs dir =
 
   let cmd =
     sprintf "
-      fakeroot %s%s \\
+      %s %s%s \\
         --download-all %s \\
         --replacepkgs \\
         --no-install \\
         %s"
+      Config.fakeroot
       Config.urpmi
       (if !settings.debug >= 1 then " --verbose" else " --quiet")
       (quote tdir)
