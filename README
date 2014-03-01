@@ -65,8 +65,6 @@ For Debian/Ubuntu:
 Optional
 --------
 
-  ocaml inifiles library (needed for zypper only)
-
 These are only needed if you plan to boot the supermin appliances you
 are building:
 
