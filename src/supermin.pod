@@ -198,6 +198,11 @@ directory.
 
 See also I<--lock> below.
 
+=item B<--list-drivers>
+
+List the package manager drivers compiled into supermin, and whether
+the corresponding package manager is detected on the current system.
+
 =item B<--lock> LOCKFILE
 
 (I<--build> mode only)

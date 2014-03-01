@@ -87,6 +87,13 @@ let get_memo_functions () =
 let handlers = ref []
 let register_package_handler name ph = handlers := (name, ph) :: !handlers
 
+let list_package_handlers () =
+  List.iter (
+    fun (name, ph) ->
+      let detected = ph.ph_detect () in
+      printf "%s\t%s\n" name (if detected then "detected" else "not-detected")
+  ) !handlers
+
 let handler = ref None
 
 let check_system settings =
@@ -102,6 +109,11 @@ If this is a new Linux distro, or not Linux, or a Linux distro that uses
 an unusual packaging format then you may need to port supermin.  If
 you are expecting that supermin should work on this system or distro
 then it may be that the package detection code is not working.
+
+To list which package handlers are compiled into this version of
+supermin, do:
+
+  supermin --list-drivers
 ";
     exit 1
 

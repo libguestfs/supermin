@@ -161,6 +161,8 @@ val get_memo_functions : unit -> (package -> 'a) * ('a -> package)
 (** At program start-up, all package handlers register themselves here. *)
 val register_package_handler : string -> package_handler -> unit
 
+val list_package_handlers : unit -> unit
+
 val check_system : settings -> unit
 
 val get_package_handler : unit -> package_handler

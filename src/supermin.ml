@@ -67,6 +67,11 @@ let main () =
       exit 0
     in
 
+    let display_drivers () =
+      list_package_handlers ();
+      exit 0
+    in
+
     let add xs s = xs := s :: !xs in
 
     let copy_kernel = ref false in
@@ -113,6 +118,7 @@ let main () =
       "--format",  Arg.String set_format,     ditto;
       "--host-cpu", Arg.Set_string host_cpu,  "ARCH Set host CPU architecture";
       "--if-newer", Arg.Set if_newer,             " Only build if needed";
+      "--list-drivers", Arg.Unit display_drivers, " Display list of drivers and exit";
       "--lock",    Arg.Set_string lockfile,   "LOCKFILE Use a lock file";
       "-o",        Arg.Set_string outputdir,  "OUTPUTDIR Set output directory";
       "--packager-config", Arg.Set_string packager_config, "CONFIGFILE Set packager config file";
