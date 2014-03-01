@@ -47,8 +47,7 @@ let pach = Hashtbl.create 13
 let pacman_package_of_string str =
   (* Parse a package name into the fields like name and version. *)
   let parse_pac str =
-    let cmd =
-      sprintf "pacman -Qi %s" (quote str) in
+    let cmd = sprintf "%s -Qi %s" Config.pacman (quote str) in
     let lines = run_command_get_lines cmd in
 
     let name = ref "" and evr = ref "" and arch = ref "" in
@@ -96,7 +95,7 @@ let pacman_package_of_string str =
 
   (* Check if a package is installed. *)
   and check_pac_installed name =
-    let cmd = sprintf "pacman -Qq %s >/dev/null 2>&1" (quote name) in
+    let cmd = sprintf "%s -Qq %s >/dev/null 2>&1" Config.pacman (quote name) in
     0 = Sys.command cmd
   in
 
@@ -130,16 +129,18 @@ let pacman_get_package_database_mtime () =
 
 let pacman_get_all_requires pkgs =
   let cmd = sprintf "\
-    for p in %s; do pactree -u $p; done | awk '{print $1}' | sort -u
-  " (quoted_list (List.map pacman_package_name (PackageSet.elements pkgs))) in
+    for p in %s; do %s -u $p; done | awk '{print $1}' | sort -u
+  " (quoted_list (List.map pacman_package_name (PackageSet.elements pkgs)))
+    Config.pactree in
   let lines = run_command_get_lines cmd in
   let lines = filter_map pacman_package_of_string lines in
   PackageSet.union pkgs (package_set_of_list lines)
 
 let pacman_get_all_files pkgs =
   let cmd =
-    sprintf "pacman -Ql %s | awk '{print $2}'" 
-    (quoted_list (List.map pacman_package_name (PackageSet.elements pkgs))) in
+    sprintf "%s -Ql %s | awk '{print $2}'"
+      Config.pacman
+      (quoted_list (List.map pacman_package_name (PackageSet.elements pkgs))) in
   let lines = run_command_get_lines cmd in
   List.map (
     fun path ->
@@ -173,10 +174,10 @@ let pacman_download_all_packages pkgs dir =
         umask 0000
         cd %s
         mkdir -p var/lib/pacman
-        %s pacman%s -Syw --noconfirm --cachedir=$(pwd) --root=$(pwd) %s
+        %s %s%s -Syw --noconfirm --cachedir=$(pwd) --root=$(pwd) %s
       "
         (quote tdir)
-        Config.fakeroot
+        Config.fakeroot Config.pacman
         (match !settings.packager_config with
          | None -> ""
          | Some filename -> " --config " ^ (quote filename))
@@ -190,7 +191,7 @@ let pacman_download_all_packages pkgs dir =
           wget %s
           tar xf %s
           cd %s
-          makepkg
+          %s
           mv %s-*.pkg.tar.xz %s
        "
           (quote tdir)
@@ -199,8 +200,8 @@ let pacman_download_all_packages pkgs dir =
 	          "/" ^ name ^ "/" ^ name ^ ".tar.gz"))
           (quote (name ^ ".tar.gz"))
           (quote name) (* cd *)
-          (quote name) (* mv *)
-          (quote tdir) in
+          Config.makepkg
+          (quote name) (quote tdir) (* mv *) in
         run_command cmd
       );
   ) names;

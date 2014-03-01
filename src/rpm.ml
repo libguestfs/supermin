@@ -23,17 +23,17 @@ open Utils
 open Package_handler
 
 let fedora_detect () =
-  Config.rpm <> "no" &&
+  Config.rpm <> "no" && Config.rpm2cpio <> "no" &&
     Config.yumdownloader <> "no" &&
     (file_exists "/etc/redhat-release" || file_exists "/etc/fedora-release")
 
 let opensuse_detect () =
-  Config.rpm <> "no" &&
+  Config.rpm <> "no" && Config.rpm2cpio <> "no" &&
     Config.zypper <> "no" &&
     file_exists "/etc/SuSE-release"
 
 let mageia_detect () =
-  Config.rpm <> "no" &&
+  Config.rpm <> "no" && Config.rpm2cpio <> "no" &&
     Config.urpmi <> "no" &&
     Config.fakeroot <> "no" &&
     file_exists "/etc/mageia-release"
@@ -63,7 +63,8 @@ let rpm_package_of_string str =
    * ourselves.  *)
   let parse_rpm str =
     let cmd =
-      sprintf "rpm -q --qf '%%{name} %%{epoch} %%{version} %%{release} %%{arch}\\n' %s"
+      sprintf "%s -q --qf '%%{name} %%{epoch} %%{version} %%{release} %%{arch}\\n' %s"
+        Config.rpm
         (quote str) in
     let lines = run_command_get_lines cmd in
     let lines = List.map (string_split " ") lines in
@@ -103,7 +104,7 @@ let rpm_package_of_string str =
 
   (* Check if an RPM is installed. *)
   and check_rpm_installed name =
-    let cmd = sprintf "rpm -q %s >/dev/null" (quote name) in
+    let cmd = sprintf "%s -q %s >/dev/null" Config.rpm (quote name) in
     0 = Sys.command cmd
   in
 
@@ -138,11 +139,12 @@ let rpm_get_package_database_mtime () =
 let rpm_get_all_requires pkgs =
   let get pkgs =
     let cmd = sprintf "\
-        rpm -qR %s |
+        %s -qR %s |
         awk '{print $1}' |
         xargs rpm -q --qf '%%{name}\\n' --whatprovides |
         grep -v 'no package provides' |
         sort -u"
+      Config.rpm
       (quoted_list (List.map rpm_package_to_string
                       (PackageSet.elements pkgs))) in
     let lines = run_command_get_lines cmd in
@@ -161,9 +163,10 @@ let rpm_get_all_requires pkgs =
 
 let rpm_get_all_files pkgs =
   let cmd = sprintf "\
-      rpm -q --qf '[%%{FILENAMES} %%{FILEFLAGS:fflags}\\n]' %s |
+      %s -q --qf '[%%{FILENAMES} %%{FILEFLAGS:fflags}\\n]' %s |
       grep '^/' |
       sort -u"
+    Config.rpm
     (quoted_list (List.map rpm_package_to_string (PackageSet.elements pkgs))) in
   let lines = run_command_get_lines cmd in
   let lines = List.map (string_split " ") lines in
@@ -272,9 +275,9 @@ and rpm_unpack tdir dir =
     sprintf "
 umask 0000
 for f in `find %s -name '*.rpm'`; do
-  rpm2cpio \"$f\" | (cd %s && cpio --quiet -id)
+  %s \"$f\" | (cd %s && %s --quiet -id)
 done"
-      (quote tdir) (quote dir) in
+      (quote tdir) Config.rpm2cpio (quote dir) Config.cpio in
   run_command cmd
 
 (* We register package handlers for each RPM distro variant. *)

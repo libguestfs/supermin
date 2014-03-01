@@ -23,7 +23,11 @@ open Utils
 open Package_handler
 
 let dpkg_detect () =
-  file_exists "/etc/debian_version" && Config.dpkg <> "no"
+  Config.dpkg <> "no" &&
+    Config.dpkg_deb <> "no" &&
+    Config.dpkg_query <> "no" &&
+    Config.apt_get <> "no" &&
+    file_exists "/etc/debian_version"
 
 let settings = ref no_settings
 
@@ -49,7 +53,8 @@ let dpkg_package_of_string str =
    *)
   let parse_dpkg str =
     let cmd =
-      sprintf "dpkg-query --show --showformat='${Package} ${Version} ${Architecture}\\n' %s"
+      sprintf "%s --show --showformat='${Package} ${Version} ${Architecture}\\n' %s"
+        Config.dpkg_query
         (quote str) in
     let lines = run_command_get_lines cmd in
 
@@ -67,15 +72,16 @@ let dpkg_package_of_string str =
 
   (* Check if a package is installed. *)
   and check_dpkg_installed name =
-    let cmd = sprintf "dpkg-query --show %s >/dev/null 2>&1" (quote name) in
+    let cmd =
+      sprintf "%s --show %s >/dev/null 2>&1" Config.dpkg_query (quote name) in
     if 0 <> Sys.command cmd then false
     else (
       (* dpkg-query --show can return information about packages which
        * are not installed.  These have no version information.
        *)
       let cmd =
-	sprintf "dpkg-query --show --showformat='${Version}' %s"
-	  (quote name) in
+	sprintf "%s --show --showformat='${Version}' %s"
+          Config.dpkg_query (quote name) in
       let lines = run_command_get_lines cmd in
       match lines with
       | [] | [""] -> false
@@ -110,9 +116,10 @@ let dpkg_get_package_database_mtime () =
 let dpkg_get_all_requires pkgs =
   let get pkgs =
     let cmd = sprintf "\
-        dpkg-query --show --showformat='${Depends} ${Pre-Depends} ' %s |
+        %s --show --showformat='${Depends} ${Pre-Depends} ' %s |
         sed -e 's/([^)]*)//g' -e 's/,//g' -e 's/ \\+/\\n/g' |
         sort -u"
+      Config.dpkg_query
       (quoted_list (List.map dpkg_package_name (PackageSet.elements pkgs))) in
     let lines = run_command_get_lines cmd in
     let lines = filter_map dpkg_package_of_string lines in
@@ -130,7 +137,8 @@ let dpkg_get_all_requires pkgs =
 
 let dpkg_get_all_files pkgs =
   let cmd =
-    sprintf "dpkg -L %s | grep '^/' | grep -v '^/.$' | sort -u"
+    sprintf "%s -L %s | grep '^/' | grep -v '^/.$' | sort -u"
+      Config.dpkg
       (quoted_list (List.map dpkg_package_name
 		      (PackageSet.elements pkgs))) in
   let lines = run_command_get_lines cmd in
@@ -149,8 +157,9 @@ let dpkg_download_all_packages pkgs dir =
   let dpkgs = List.map dpkg_package_name (PackageSet.elements pkgs) in
 
   let cmd =
-    sprintf "cd %s && apt-get %s download %s"
+    sprintf "cd %s && %s %s download %s"
       (quote tdir)
+      Config.apt_get
       (if !settings.debug >= 1 then "" else " --quiet --quiet")
       (quoted_list dpkgs) in
   run_command cmd;
@@ -160,9 +169,9 @@ let dpkg_download_all_packages pkgs dir =
     sprintf "
 umask 0000
 for f in %s/*.deb; do
-  dpkg-deb --fsys-tarfile \"$f\" | (cd %s && tar xf -)
+  %s --fsys-tarfile \"$f\" | (cd %s && tar xf -)
 done"
-      (quote tdir) (quote dir) in
+      (quote tdir) Config.dpkg_deb (quote dir) in
   run_command cmd
 
 let () =

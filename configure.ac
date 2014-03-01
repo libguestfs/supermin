@@ -59,6 +59,12 @@ if test "$OCAMLFIND" = "no"; then
     AC_MSG_ERROR([You must install OCaml findlib (the ocamlfind command)])
 fi
 
+# NB: AC_CHECK_PROG(S) or AC_PATH_PROG(S)?
+# Use AC_CHECK_PROG(S) for programs which are only used during build.
+# Use AC_PATH_PROG(S) for program names which are compiled into the
+# binary and used at run time.  The reason is so that we know which
+# programs the binary actually uses.
+
 dnl Optional programs.
 AC_CHECK_PROG(PERLDOC,[perldoc],[perldoc],[no])
 if test "x$PERLDOC" = "xno" ; then
@@ -67,29 +73,35 @@ fi
 AM_CONDITIONAL(HAVE_PERLDOC,[test "$perldoc" != "no"])
 
 dnl For yum-rpm handler.
-AC_CHECK_PROG(RPM,[rpm],[rpm],[no])
-AC_CHECK_PROG(YUMDOWNLOADER,[yumdownloader],[yumdownloader],[no])
+AC_PATH_PROG(RPM,[rpm],[no])
+AC_PATH_PROG(RPM2CPIO,[rpm2cpio],[no])
+AC_PATH_PROG(YUMDOWNLOADER,[yumdownloader],[no])
 
 dnl For Zypper handler.
-AC_CHECK_PROG(ZYPPER,[zypper],[zypper],[no])
+AC_PATH_PROG(ZYPPER,[zypper],[no])
 
 dnl For URPMI handler.
 AC_PATH_PROG(URPMI,[urpmi],[no], [$PATH$PATH_SEPARATOR/usr/sbin])
 
 dnl For Debian handler.
-AC_CHECK_PROG(DPKG,[dpkg],[dpkg],[no])
+AC_PATH_PROG(APT_GET,[apt-get],[no])
+AC_PATH_PROG(DPKG,[dpkg],[no])
+AC_PATH_PROG(DPKG_DEB,[dpkg-deb],[no])
+AC_PATH_PROG(DPKG_QUERY,[dpkg-query],[no])
 
 dnl For FrugalWare handler (currently disabled).
-AC_CHECK_PROG(PACMAN_G2,[pacman-g2],[pacman-g2],[no])
+AC_PATH_PROG(PACMAN_G2,[pacman-g2],[no])
 
 if test "x$pacman_g2" = "xno"; then
     dnl For ArchLinux handler.
-    AC_CHECK_PROG(PACMAN,[pacman],[pacman],[no])
+    AC_PATH_PROG(PACMAN,[pacman],[no])
+    AC_PATH_PROG(PACTREE,[pactree],[no])
+    AC_PATH_PROG(MAKEPKG,[makepkg],[no])
 fi
 
 dnl Check for fakeroot, only used a few drivers where the host package
 dnl manager contains broken/unnecessary tests for root privs.
-AC_CHECK_PROG(FAKEROOT,[fakeroot],[fakeroot],[no])
+AC_PATH_PROG(FAKEROOT,[fakeroot],[no])
 
 dnl Support for compressed input files, gzipped kernel modules.
 AC_CHECK_HEADER([zlib.h],[
@@ -204,7 +216,7 @@ if test "x$GAWK" = "xno" ; then
 fi
 
 dnl cpio
-AC_CHECK_PROG([CPIO],[cpio],[cpio],[no])
+AC_PATH_PROG([CPIO],[cpio],[no])
 test "x$CPIO" = "xno" &&
     AC_MSG_ERROR([cpio must be installed])
 
