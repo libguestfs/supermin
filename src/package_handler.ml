@@ -85,20 +85,23 @@ let get_memo_functions () =
   internal_of_pkg, pkg_of_internal
 
 let handlers = ref []
-let register_package_handler name ph = handlers := (name, ph) :: !handlers
+let register_package_handler system packager ph =
+  handlers := (system, packager, ph) :: !handlers
 
 let list_package_handlers () =
   List.iter (
-    fun (name, ph) ->
+    fun (system, packager, ph) ->
       let detected = ph.ph_detect () in
-      printf "%s\t%s\n" name (if detected then "detected" else "not-detected")
+      printf "%s/%s\t%s\n"
+        system packager (if detected then "detected" else "not-detected")
   ) !handlers
 
 let handler = ref None
 
 let check_system settings =
   try
-    let (_, ph) as h = List.find (fun (_, ph) -> ph.ph_detect ()) !handlers in
+    let (_, _, ph) as h =
+      List.find (fun (_, _, ph) -> ph.ph_detect ()) !handlers in
     handler := Some h;
     ph.ph_init settings
   with Not_found ->
@@ -119,12 +122,12 @@ supermin, do:
 
 let rec get_package_handler () =
   match !handler with
-  | Some (_, ph) -> ph
+  | Some (_, _, ph) -> ph
   | None -> assert false
 
 let rec get_package_handler_name () =
   match !handler with
-  | Some (name, _) -> name
+  | Some (system, packager, _) -> sprintf "%s/%s" system packager
   | None -> assert false
 
 let get_all_requires pkgs =

@@ -177,4 +177,4 @@ let () =
     ph_get_files = PHGetAllFiles dpkg_get_all_files;
     ph_download_package = PHDownloadAllPackages dpkg_download_all_packages;
   } in
-  register_package_handler "dpkg" ph
+  register_package_handler "debian" "dpkg" ph

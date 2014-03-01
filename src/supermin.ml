@@ -166,7 +166,7 @@ let main () =
     (copy_kernel, dtb_wildcard, format, host_cpu,
      packager_config, tmpdir, use_installed) in
 
-  if debug >= 1 then printf "supermin: %s\n" Config.package_version;
+  if debug >= 1 then printf "supermin: version: %s\n" Config.package_version;
 
   (* Try to find out which package management system we're using.
    * This fails with an error if one could not be located.
@@ -179,6 +179,9 @@ let main () =
       packager_config = packager_config;
     } in
     check_system settings in
+
+  if debug >= 1 then
+    printf "supermin: package handler: %s\n" (get_package_handler_name ());
 
   (* Grab the lock file, is using.  Note it is released automatically
    * when the program exits for any reason.

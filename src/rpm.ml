@@ -290,16 +290,16 @@ let () =
     ph_get_files = PHGetAllFiles rpm_get_all_files;
     ph_download_package = PHDownloadAllPackages fedora_download_all_packages;
   } in
-  register_package_handler "rpm-fedora" fedora;
+  register_package_handler "fedora" "rpm" fedora;
   let opensuse = {
     fedora with
     ph_detect = opensuse_detect;
     ph_download_package = PHDownloadAllPackages opensuse_download_all_packages;
   } in
-  register_package_handler "rpm-opensuse" opensuse;
+  register_package_handler "opensuse" "rpm" opensuse;
   let mageia = {
     fedora with
     ph_detect = mageia_detect;
     ph_download_package = PHDownloadAllPackages mageia_download_all_packages;
   } in
-  register_package_handler "rpm-mageia" mageia
+  register_package_handler "mageia" "rpm" mageia

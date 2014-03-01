@@ -226,4 +226,4 @@ let () =
     ph_get_files = PHGetAllFiles pacman_get_all_files;
     ph_download_package = PHDownloadAllPackages pacman_download_all_packages;
   } in
-  register_package_handler "pacman" ph
+  register_package_handler "arch" "pacman" ph
