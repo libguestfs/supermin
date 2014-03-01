@@ -92,12 +92,10 @@ AC_PATH_PROG(DPKG_QUERY,[dpkg-query],[no])
 dnl For FrugalWare handler (currently disabled).
 AC_PATH_PROG(PACMAN_G2,[pacman-g2],[no])
 
-if test "x$pacman_g2" = "xno"; then
-    dnl For ArchLinux handler.
-    AC_PATH_PROG(PACMAN,[pacman],[no])
-    AC_PATH_PROG(PACTREE,[pactree],[no])
-    AC_PATH_PROG(MAKEPKG,[makepkg],[no])
-fi
+dnl For ArchLinux handler.
+AC_PATH_PROG(PACMAN,[pacman],[no])
+AC_PATH_PROG(PACTREE,[pactree],[no])
+AC_PATH_PROG(MAKEPKG,[makepkg],[no])
 
 dnl Check for fakeroot, only used a few drivers where the host package
 dnl manager contains broken/unnecessary tests for root privs.
