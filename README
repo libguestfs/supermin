@@ -39,6 +39,8 @@ Requirements
   perldoc
     - This is just used to generate the manpage.
 
+  static libc
+
   bash
 
   gcc
