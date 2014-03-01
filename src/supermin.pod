@@ -8,7 +8,7 @@ supermin - Tool for creating and building supermin appliances
 
  supermin --prepare -o OUTPUTDIR PACKAGE [PACKAGE ...]
 
- supermin --build -o OUTPUTDIR --format chroot|ext2 INPUT [INPUT ...]
+ supermin --build -o OUTPUTDIR -f chroot|ext2 INPUT [INPUT ...]
 
 =head1 DESCRIPTION
 
@@ -42,7 +42,6 @@ packages has to be installed on the host machine.
 
 For example:
 
- mkdir supermin.d
  supermin --prepare bash coreutils -o supermin.d
 
 creates a supermin appliance containing the packages C<bash> and
@@ -59,7 +58,7 @@ is easy because supermin appliances are so small).
 I<--build> (previously a separate program called C<supermin-helper>)
 builds the full appliance from the supermin appliance:
 
- supermin --build -o appliance.d --format ext2 supermin.d
+ supermin --build --format ext2 supermin.d -o appliance.d
 
 This will create files called C<appliance.d/kernel>,
 C<appliance.d/root> etc, which is the full sized bootable appliance.
@@ -68,6 +67,23 @@ It is intended that the I<--build> step is done on the end user's
 machine at the last second before the appliance is needed.  The
 packages in the supermin appliance (those specified when the supermin
 appliance was prepared) must be installed on the end user's machine.
+
+=head4 Build and cache
+
+Typically you want to rebuild the appliance on the end user machine
+only on demand.  Supermin has some extra options to make this easy:
+
+ supermin --build \
+   --if-newer --lock /run/user/`id -u`/supermin.lock \
+   --format ext2 supermin.d -o appliance.d
+
+If multiple programs run this command in parallel, the instances will
+wait on the lock file.  The full appliance only gets rebuilt if it
+doesn't exist or if it is older than the input files and host package
+database.
+
+Note that the lock file B<must not> be stored inside the I<-o>
+directory.
 
 =head3 PACKAGES
 
@@ -214,16 +230,6 @@ each other.
 The lock file is used to provide mutual exclusion so only one instance
 of supermin will run at a time.
 
-Typical usage is:
-
- supermin --build -f ext2 \
-   --if-newer --lock /run/user/`id -u`/supermin.lock \
-   -o /var/tmp/random_dir/appliance.d \
-   /usr/share/your_app/supermin.d
-
-(where it is assumed that multiple applications might run the above
-command at the same time in order to build or update the appliance.)
-
 Note that the lock file B<must not> be stored inside the output
 directory.
 
@@ -319,7 +325,8 @@ appliance share many common files such as C</bin/bash> and
 C</lib/libc.so> there is no reason to ship these files in the
 appliance.  They can simply be read from the host on demand when the
 appliance is launched.  Therefore to save space we just store the
-packages we want from the host, and copy those in at build time.
+names of the packages we want from the host, and copy those in (plus
+dependencies) at build time.
 
 There are some files which cannot just be copied from the host in this
 way.  These include configuration files which the host admin might
@@ -364,9 +371,11 @@ would copy all of the C<*.repo> files into the appliance.
 
 Each pathname in the file should start with a C</> character.
 
-Supermin itself does not create hostfiles (although before
-S<version 5>, this was the main mechanism used to create the full
-appliance).
+Supermin itself does not create hostfiles (although before S<version
+5>, this was the main mechanism used to create the full appliance).
+However you may drop one or more of these files into the supermin
+appliance directory if you want to copy random unpackaged files into
+the full appliance.
 
 =item B<excludefiles>
 
@@ -377,7 +386,9 @@ This is rather brutal since it just removes things, potentially
 breaking packages.  However it can be used as a convenient way to
 minimize the size of the final appliance.
 
-Supermin itself does not create excludefiles.
+Supermin itself does not create excludefiles.  However you may drop
+one of more of these files into the supermin appliance directory to
+stop packaged files from being copied into the full appliance.
 
 =back
 
@@ -418,9 +429,9 @@ skipped when the full appliance is built.
 
  -/boot/*
  -/lib/modules/*
- -/usr/share/man/*
  -/usr/share/doc/*
  -/usr/share/info/*
+ -/usr/share/man/*
 
 Be careful what you remove because files may be necessary for correct
 operation of the appliance.
@@ -437,17 +448,11 @@ Supermin is able to choose the best host kernel available to boot the
 appliance.  Users can override this by setting environment variables
 (see L</ENVIRONMENT VARIABLES> below).
 
-=head2 BOOTING AND CACHING THE SUPERMIN APPLIANCE
-
-For fastest boot times you should cache the output of supermin
-I<--build>.  See the libguestfs source file C<src/appliance.c> for an
-example of how this is done.
-
 =head2 ENFORCING AVAILABILITY OF HOSTFILES
 
-Supermin builds the appliance by copying in host files as listed in
-C<hostfiles>.  For this to work those host files must be available.
-We usually enforce this by adding requirements (eg. RPM C<Requires:>
+Supermin builds the appliance by copying in the packages listed in
+C<packages>.  For this to work those packages must be available.  We
+usually enforce this by adding requirements (eg. RPM C<Requires:>
 lines) on the package that uses the supermin appliance, so that
 package cannot be installed without pulling in the dependent packages
 and thus making sure the host files are available.
