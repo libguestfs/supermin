@@ -22,6 +22,7 @@ AM_INIT_AUTOMAKE(foreign)
 
 dnl Check for basic C environment.
 AC_PROG_CC_STDC
+gl_EARLY
 
 AC_PROG_INSTALL
 AC_PROG_CPP
@@ -30,6 +31,9 @@ AC_C_PROTOTYPES
 test "x$U" != "x" && AC_MSG_ERROR([Compiler not ANSI compliant])
 
 AM_PROG_CC_C_O
+
+dnl Gnulib
+gl_INIT
 
 dnl Check support for 64 bit file offsets.
 AC_SYS_LARGEFILE
@@ -232,6 +236,7 @@ AC_CONFIG_FILES([src/supermin-link.sh],
 		[chmod +x,-w src/supermin-link.sh])
 AC_CONFIG_FILES([Makefile
         examples/Makefile
+        lib/Makefile
         src/config.ml
         src/Makefile
         tests/Makefile])

@@ -26,7 +26,6 @@
 #include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fts.h>
 #include <limits.h>
 #include <errno.h>
 #include <assert.h>
@@ -47,6 +46,9 @@
 #include <caml/memory.h>
 #include <caml/mlvalues.h>
 #include <caml/unixsupport.h>
+
+/* fts.h in glibc is broken, forcing us to use the GNUlib alternative. */
+#include "fts_.h"
 
 static void initialize (void) __attribute__((constructor));
 

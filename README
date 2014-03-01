@@ -78,8 +78,22 @@ are building:
 Building and installing
 -----------------------
 
+If you're cloning this from git the first time, do:
+
+  ./bootstrap
+  ./autogen.sh
+
+For normal builds, and building from the tarball:
+
   ./configure
   make
+
+You can run supermin without installing:
+
+  ./src/supermin --help
+
+To install the software:
+
   sudo make install
 
 Tests

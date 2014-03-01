@@ -98,7 +98,8 @@ bin_PROGRAMS = supermin
 supermin_SOURCES = $(SOURCES_C)
 supermin_CFLAGS = \
 	-I$(shell $(OCAMLC) -where) \
-	$(EXT2FS_CFLAGS) $(COM_ERR_CFLAGS)
+	$(EXT2FS_CFLAGS) $(COM_ERR_CFLAGS) \
+	-I$(srcdir)/lib -I../lib
 
 BOBJECTS = $(SOURCES_ML:.ml=.cmo)
 XOBJECTS = $(SOURCES_ML:.ml=.cmx)
@@ -116,7 +117,7 @@ OCAMLFLAGS = -warn-error CDEFLMPSUVXYZ
 
 supermin_DEPENDENCIES = $(OBJECTS) ext2init-bin.o
 
-supermin_LDADD = ext2init-bin.o
+supermin_LDADD = ext2init-bin.o ../lib/libgnu.a
 
 supermin_LINK = \
 	./supermin-link.sh \
