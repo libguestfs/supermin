@@ -196,7 +196,7 @@ directory.  The operation is only carried out if either the host
 package database or the input supermin files are newer than the output
 directory.
 
-See also I<--lock> above.
+See also I<--lock> below.
 
 =item B<--lock> LOCKFILE
 
