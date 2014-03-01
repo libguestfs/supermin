@@ -79,7 +79,7 @@ AC_PATH_PROG(URPMI,[urpmi],[no], [$PATH$PATH_SEPARATOR/usr/sbin])
 dnl For Debian handler.
 AC_CHECK_PROG(DPKG,[dpkg],[dpkg],[no])
 
-dnl For FrugalWare handler.
+dnl For FrugalWare handler (currently disabled).
 AC_CHECK_PROG(PACMAN_G2,[pacman-g2],[pacman-g2],[no])
 
 if test "x$pacman_g2" = "xno"; then
