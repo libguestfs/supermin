@@ -99,9 +99,18 @@ let rec build debug
     printf "supermin: build: %d packages, including dependencies\n%!"
       (PackageSet.cardinal packages);
 
-  (* List the files in each package. *)
+  (* List the files in each package.  We only want to copy non-config
+   * files to the full appliance, since config files are included in
+   * the base image that we saved when preparing the supermin
+   * appliance.
+   *)
   let files = get_all_files packages in
-  let files = List.map (fun { ft_path = path } -> path) files in
+  let files =
+    filter_map (
+      function
+      | { ft_config = false; ft_path = path } -> Some path
+      | { ft_config = true } -> None
+    ) files in
 
   if debug >= 1 then
     printf "supermin: build: %d files\n%!" (List.length files);
