@@ -104,16 +104,17 @@ supermin_CFLAGS = \
 BOBJECTS = $(SOURCES_ML:.ml=.cmo)
 XOBJECTS = $(SOURCES_ML:.ml=.cmx)
 
+OCAMLPACKAGES = -package unix,str
+OCAMLFLAGS = -warn-error CDEFLMPSUVXYZ
+
 if !HAVE_OCAMLOPT
 OBJECTS = $(BOBJECTS)
 BEST    = c
+OCAMLFLAGS += -custom
 else
 OBJECTS = $(XOBJECTS)
 BEST    = opt
 endif
-
-OCAMLPACKAGES = -package unix,str
-OCAMLFLAGS = -warn-error CDEFLMPSUVXYZ
 
 supermin_DEPENDENCIES = $(OBJECTS) ext2init-bin.o
 
