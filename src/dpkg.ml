@@ -29,6 +29,15 @@ let dpkg_detect () =
     Config.apt_get <> "no" &&
     file_exists "/etc/debian_version"
 
+let dpkg_primary_arch =
+  let cmd = sprintf "%s --print-architecture" Config.dpkg in
+  let lines = run_command_get_lines cmd in
+  match lines with
+  | [] ->
+    eprintf "supermin: dpkg: expecting %s to return some output\n" cmd;
+    exit 1
+  | arch :: _ -> arch
+
 let settings = ref no_settings
 
 let dpkg_init s = settings := s
@@ -58,17 +67,22 @@ let dpkg_package_of_string str =
         (quote str) in
     let lines = run_command_get_lines cmd in
 
-    (* AFAIK on Debian only a single package with a particular name
-     * may be installed (ie no multilib etc crap).  Hence:
-     *)
-    if List.length lines <> 1 then assert false;
-    let line = List.hd lines in
-    let line = string_split " " line in
-    match line with
-    | [ name; version; arch ] ->
-      assert (version <> "");
-      { name = name; version = version; arch = arch }
-    | xs -> assert false
+    let pkgs = List.map (
+      fun line ->
+        let line = string_split " " line in
+        match line with
+        | [ name; version; arch ] ->
+          assert (version <> "");
+          { name = name; version = version; arch = arch }
+        | xs -> assert false)
+      lines in
+
+    (* On multiarch setups, only consider the primary architecture *)
+    try
+      List.find (fun pkg ->
+        pkg.arch = dpkg_primary_arch || pkg.arch = "all") pkgs
+    with
+      Not_found -> assert false
 
   (* Check if a package is installed. *)
   and check_dpkg_installed name =
@@ -110,6 +124,10 @@ let dpkg_package_name pkg =
   let dpkg = dpkg_of_pkg pkg in
   dpkg.name
 
+let dpkg_package_name_arch pkg =
+  let dpkg = dpkg_of_pkg pkg in
+  sprintf "%s:%s" dpkg.name dpkg.arch
+
 let dpkg_get_package_database_mtime () =
   (lstat "/var/lib/dpkg/status").st_mtime
 
@@ -137,9 +155,9 @@ let dpkg_get_all_requires pkgs =
 
 let dpkg_get_all_files pkgs =
   let cmd =
-    sprintf "%s -L %s | grep '^/' | grep -v '^/.$' | sort -u"
-      Config.dpkg
-      (quoted_list (List.map dpkg_package_name
+    sprintf "%s --listfiles %s | grep '^/' | grep -v '^/.$' | sort -u"
+      Config.dpkg_query
+      (quoted_list (List.map dpkg_package_name_arch
 		      (PackageSet.elements pkgs))) in
   let lines = run_command_get_lines cmd in
   List.map (
