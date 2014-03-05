@@ -29,7 +29,7 @@ let dpkg_detect () =
     Config.apt_get <> "no" &&
     file_exists "/etc/debian_version"
 
-let dpkg_primary_arch =
+let dpkg_primary_arch () =
   let cmd = sprintf "%s --print-architecture" Config.dpkg in
   let lines = run_command_get_lines cmd in
   match lines with
@@ -80,7 +80,7 @@ let dpkg_package_of_string str =
     (* On multiarch setups, only consider the primary architecture *)
     try
       List.find (fun pkg ->
-        pkg.arch = dpkg_primary_arch || pkg.arch = "all") pkgs
+        pkg.arch = dpkg_primary_arch () || pkg.arch = "all") pkgs
     with
       Not_found -> assert false
 
