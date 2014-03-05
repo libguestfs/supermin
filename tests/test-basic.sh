@@ -1,5 +1,6 @@
-# supermin Makefile.am
-# (C) Copyright 2013-2014 Red Hat Inc.
+#!/bin/bash -
+# supermin
+# (C) Copyright 2014 Red Hat Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,17 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-#
-# Written by Richard W.M. Jones <rjones@redhat.com>
 
-EXTRA_DIST = $(TESTS)
+set -e
 
-TESTS = \
-	test-basic.sh
+# Test the basic run of supermin
+../src/supermin --help
 
-if NETWORK_TESTS
-TESTS += \
-	test-build-bash.sh \
-	test-binaries-exist.sh \
-	test-harder.sh
-endif
+# Very simple test for the version string
+../src/supermin --version | grep ^supermin
+
+# Check that listing drivers work
+../src/supermin --list-drivers
