@@ -233,7 +233,7 @@ supermin_ext2fs_copy_dir_recursively_from_host (value fsv,
       break;
 
     /* Ignore directories being visited in post-order. */
-    if (entry->fts_info & FTS_DP)
+    if (entry->fts_info == FTS_DP)
       continue;
 
     /* Copy the file. */
