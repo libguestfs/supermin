@@ -17,7 +17,9 @@
 #
 # Written by Richard W.M. Jones <rjones@redhat.com>
 
-EXTRA_DIST = $(TESTS)
+EXTRA_DIST = \
+	automake2junit.ml \
+	$(TESTS)
 
 TESTS = \
 	test-basic.sh
