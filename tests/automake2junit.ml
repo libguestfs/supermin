@@ -81,9 +81,9 @@ let iterate_results trs_files =
               let name = String.concat " " rest in
               let name = if String.length name > 0 then name else testname in
               let print_tag_with_log tag =
-                Buffer.add_string buf (sprintf "    <testcase name=\"%s\">\n" name);
-                Buffer.add_string buf (sprintf "      <%s><![CDATA[%s]]></%s>\n" tag log tag);
-                Buffer.add_string buf (sprintf "    </testcase>\n")
+                Buffer.add_string buf (sprintf "  <testcase name=\"%s\">\n" name);
+                Buffer.add_string buf (sprintf "    <%s><![CDATA[%s]]></%s>\n" tag log tag);
+                Buffer.add_string buf (sprintf "  </testcase>\n")
               in
               (match result with
               | "PASS" ->
@@ -123,8 +123,6 @@ let () =
   let buf, total, failures, errors, skipped =
     iterate_results trs_files in
   printf "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<testsuites>
-  <testsuite name=\"%s\" tests=\"%d\" failures=\"%d\" skipped=\"%d\" errors=\"%d\">
-%s  </testsuite>
-</testsuites>
+<testsuite name=\"%s\" tests=\"%d\" failures=\"%d\" skipped=\"%d\" errors=\"%d\">
+%s</testsuite>
 " name total failures skipped errors buf
