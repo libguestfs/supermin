@@ -54,6 +54,15 @@ let set_packager_config filename =
 
   packager_config := Some filename
 
+let error_supermin_4 () =
+  eprintf "supermin: *** error: This is supermin version 4.\n";
+  eprintf "supermin: *** It looks like you are looking for supermin version >= 5.\n";
+  eprintf "\n";
+  eprintf "This version of supermin will not work.  You need to update to a\n";
+  eprintf "newer version.\n";
+  eprintf "\n";
+  exit 1
+
 let argspec = Arg.align [
   "--exclude", Arg.String add_exclude,
     "regexp Exclude packages matching regexp";
@@ -83,6 +92,10 @@ let argspec = Arg.align [
     " Print package name and version, and exit";
   "--yum-config", Arg.String set_packager_config,
     "file Deprecated alias for `--packager-config file'";
+  "--build", Arg.Unit error_supermin_4,
+    " Give an error for people needing supermin 5";
+  "--prepare", Arg.Unit error_supermin_4,
+    " Give an error for people needing supermin 5";
 ]
 let anon_fn str =
   packages := str :: !packages
