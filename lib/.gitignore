@@ -3,6 +3,7 @@
 /asprintf.c
 /at-func.c
 /basename-lgpl.c
+/bitrotate.c
 /bitrotate.h
 /c-ctype.c
 /c-ctype.h
@@ -73,6 +74,7 @@
 /getopt.in.h
 /getopt_int.h
 /gettext.h
+/gettimeofday.c
 /hash.c
 /hash.h
 /hash-pjw.c
@@ -142,9 +144,11 @@
 /string.in.h
 /stripslash.c
 /sys_stat.in.h
+/sys_time.in.h
 /sys_types.in.h
 /sys_wait.in.h
 /time.in.h
+/unistd.c
 /unistd--.h
 /unistd.in.h
 /unistd-safer.h
@@ -163,6 +167,7 @@
 /xgetcwd.c
 /xgetcwd.h
 /xmalloc.c
+/xsize.c
 /xsize.h
 /xstrtol.c
 /xstrtol-error.c
@@ -170,6 +175,3 @@
 /xstrtoul.c
 /xvasprintf.c
 /xvasprintf.h
-/bitrotate.c
-/unistd.c
-/xsize.c

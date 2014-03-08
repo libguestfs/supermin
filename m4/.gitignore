@@ -1,4 +1,5 @@
 /00gnulib.m4
+/absolute-header.m4
 /alloca.m4
 /asm-underscore.m4
 /chdir-long.m4
@@ -21,6 +22,7 @@
 /error.m4
 /exponentd.m4
 /extensions.m4
+/extern-inline.m4
 /fchdir.m4
 /fclose.m4
 /fcntl_h.m4
@@ -37,6 +39,7 @@
 /getcwd-path-max.m4
 /getdtablesize.m4
 /getopt.m4
+/gettimeofday.m4
 /gnulib-common.m4
 /gnulib-comp.m4
 /gnulib-tool.m4
@@ -93,6 +96,7 @@
 /string_h.m4
 /sys_socket_h.m4
 /sys_stat_h.m4
+/sys_time_h.m4
 /sys_types_h.m4
 /sys_wait_h.m4
 /time_h.m4
@@ -111,4 +115,3 @@
 /xsize.m4
 /xstrtol.m4
 /xvasprintf.m4
-/extern-inline.m4
