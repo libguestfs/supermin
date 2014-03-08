@@ -109,6 +109,16 @@ let main () =
       exit 1
     in
 
+    let error_supermin_5 () =
+      eprintf "supermin: *** error: This is supermin version 5.\n";
+      eprintf "supermin: *** It looks like you are looking for supermin version 4.\n";
+      eprintf "\n";
+      eprintf "This version of supermin will not work.  You need to find the old version\n";
+      eprintf "or upgrade to libguestfs >= 1.26.\n";
+      eprintf "\n";
+      exit 1
+    in
+
     let ditto = " -\"-" in
     let argspec = Arg.align [
       "--build",   Arg.Unit set_build_mode,   " Build a full appliance";
@@ -120,6 +130,7 @@ let main () =
       "--if-newer", Arg.Set if_newer,             " Only build if needed";
       "--list-drivers", Arg.Unit display_drivers, " Display list of drivers and exit";
       "--lock",    Arg.Set_string lockfile,   "LOCKFILE Use a lock file";
+      "--names",   Arg.Unit error_supermin_5, " Give an error for people needing supermin 4";
       "-o",        Arg.Set_string outputdir,  "OUTPUTDIR Set output directory";
       "--packager-config", Arg.Set_string packager_config, "CONFIGFILE Set packager config file";
       "--prepare", Arg.Unit set_prepare_mode, " Prepare a supermin appliance";
