@@ -20,12 +20,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/statvfs.h>
 #include <limits.h>
 #include <errno.h>
 #include <assert.h>
@@ -528,9 +530,23 @@ ext2_copy_file (ext2_filsys fs, const char *src, const char *dest)
 {
   errcode_t err;
   struct stat statbuf;
+  struct statvfs statvfsbuf;
 
   if (lstat (src, &statbuf) == -1)
     unix_error (errno, (char *) "lstat", caml_copy_string (src));
+
+  /* Check we're not about to run out of space on the output device.
+   * Note we cheat by looking at fs->device_name (which is the output
+   * file).  We could store this filename separately.
+   */
+  if (fs->device_name && statvfs (fs->device_name, &statvfsbuf) == 0) {
+    uint64_t space = statvfsbuf.f_bavail * statvfsbuf.f_bsize;
+    uint64_t estimate = 128*1024 + 2 * statbuf.st_size;
+
+    if (space < estimate)
+      unix_error (ENOSPC, (char *) "statvfs",
+                  caml_copy_string (fs->device_name));
+  }
 
 #if 0
   /* if debug >= 3 */
