@@ -92,6 +92,7 @@ AC_PATH_PROG(APT_GET,[apt-get],[no])
 AC_PATH_PROG(DPKG,[dpkg],[no])
 AC_PATH_PROG(DPKG_DEB,[dpkg-deb],[no])
 AC_PATH_PROG(DPKG_QUERY,[dpkg-query],[no])
+AC_PATH_PROG(DPKG_DIVERT,[[dpkg-divert]],[no])
 
 dnl For FrugalWare handler (currently disabled).
 AC_PATH_PROG(PACMAN_G2,[pacman-g2],[no])

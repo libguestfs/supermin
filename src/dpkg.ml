@@ -26,6 +26,7 @@ let dpkg_detect () =
   Config.dpkg <> "no" &&
     Config.dpkg_deb <> "no" &&
     Config.dpkg_query <> "no" &&
+    Config.dpkg_divert <> "no" &&
     Config.apt_get <> "no" &&
     file_exists "/etc/debian_version"
 
