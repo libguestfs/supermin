@@ -60,7 +60,7 @@ For Fedora/RHEL:
 For Debian/Ubuntu:
 
   dpkg
-  aptitude
+  apt-get
 
 Optional
 --------
