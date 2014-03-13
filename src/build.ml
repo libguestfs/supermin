@@ -95,9 +95,17 @@ let rec build debug
     let packages = package_set_of_list packages in
     get_all_requires packages in
 
-  if debug >= 1 then
+  if debug >= 1 then (
     printf "supermin: build: %d packages, including dependencies\n%!"
       (PackageSet.cardinal packages);
+    if debug >= 2 then (
+      let pkg_names = PackageSet.elements packages in
+      let pkg_names = List.map ph.ph_package_to_string pkg_names in
+      let pkg_names = List.sort compare pkg_names in
+      List.iter (printf "  - %s\n") pkg_names;
+      flush Pervasives.stdout
+    )
+  );
 
   (* List the files in each package.  We only want to copy non-config
    * files to the full appliance, since config files are included in
@@ -140,9 +148,13 @@ let rec build debug
       let fn_flags = [FNM_NOESCAPE] in
       List.filter (
         fun path ->
-          List.for_all (
-            fun pattern -> not (fnmatch pattern path fn_flags)
-          ) appliance.excludefiles
+          let include_ =
+            List.for_all (
+              fun pattern -> not (fnmatch pattern path fn_flags)
+            ) appliance.excludefiles in
+          if debug >= 2 && not include_ then
+	    printf "supermin: build: excluding %s\n%!" path;
+          include_
       ) files
     ) in
 
@@ -169,9 +181,14 @@ let rec build debug
   (* Difficult to explain what this does.  See comment below. *)
   let files = munge files in
 
-  if debug >= 1 then
+  if debug >= 1 then (
     printf "supermin: build: %d files, after munging\n%!"
       (List.length files);
+    if debug >= 2 then (
+      List.iter (printf "  - %s\n") files;
+      flush Pervasives.stdout
+    )
+  );
 
   (* Depending on the format, we build the appliance in different ways. *)
   match format with
