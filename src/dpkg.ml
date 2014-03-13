@@ -155,6 +155,17 @@ let dpkg_get_all_requires pkgs =
   loop pkgs
 
 let dpkg_get_all_files pkgs =
+  let cmd = sprintf "%s --list" Config.dpkg_divert in
+  let lines = run_command_get_lines cmd in
+  let diversions = Hashtbl.create (List.length lines) in
+  List.iter (
+    fun line ->
+    let items = string_split " " line in
+    match items with
+    | ["diversion"; "of"; path; "to"; real_path; "by"; pkg] ->
+      Hashtbl.add diversions path real_path
+    | _ -> ()
+  ) lines;
   let cmd =
     sprintf "%s --listfiles %s | grep '^/' | grep -v '^/.$' | sort -u"
       Config.dpkg_query
@@ -166,7 +177,10 @@ let dpkg_get_all_files pkgs =
       let config =
 	try string_prefix "/etc/" path && (lstat path).st_kind = S_REG
 	with Unix_error _ -> false in
-      { ft_path = path; ft_source_path = path; ft_config = config }
+      let source_path =
+        try Hashtbl.find diversions path
+        with Not_found -> path in
+      { ft_path = path; ft_source_path = source_path; ft_config = config }
   ) lines
 
 let dpkg_download_all_packages pkgs dir =

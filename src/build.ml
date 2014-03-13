@@ -114,11 +114,7 @@ let rec build debug
    *)
   let files = get_all_files packages in
   let files =
-    filter_map (
-      function
-      | { ft_config = false; ft_path = path } -> Some path
-      | { ft_config = true } -> None
-    ) files in
+    List.filter (fun file -> not file.ft_config) files in
 
   if debug >= 1 then
     printf "supermin: build: %d files\n%!" (List.length files);
@@ -128,9 +124,11 @@ let rec build debug
    *)
   let files =
     List.filter (
-      fun path ->
-        try ignore (lstat path); true
-        with Unix_error (err, fn, _) -> false
+      fun file ->
+        try ignore (lstat file.ft_source_path); true
+        with Unix_error (err, fn, _) ->
+          try ignore (lstat file.ft_path); true
+          with Unix_error (err, fn, _) -> false
     ) files in
 
   if debug >= 1 then
@@ -147,7 +145,7 @@ let rec build debug
     else (
       let fn_flags = [FNM_NOESCAPE] in
       List.filter (
-        fun path ->
+        fun { ft_path = path } ->
           let include_ =
             List.for_all (
               fun pattern -> not (fnmatch pattern path fn_flags)
@@ -171,6 +169,9 @@ let rec build debug
       ) appliance.hostfiles in
       let hostfiles = List.map Array.to_list hostfiles in
       let hostfiles = List.flatten hostfiles in
+      let hostfiles = List.map (
+        fun path -> {ft_path = path; ft_source_path = path; ft_config = false}
+      ) hostfiles in
       files @ hostfiles
     ) in
 
@@ -185,7 +186,7 @@ let rec build debug
     printf "supermin: build: %d files, after munging\n%!"
       (List.length files);
     if debug >= 2 then (
-      List.iter (printf "  - %s\n") files;
+      List.iter (fun { ft_path = path } -> printf "  - %s\n" path) files;
       flush Pervasives.stdout
     )
   );
@@ -343,7 +344,8 @@ and isalnum = function
  * symlink.
  *)
 and munge files =
-  let files = List.sort compare files in
+  let files =
+    List.sort (fun f1 f2 -> compare f1.ft_path f2.ft_path) files in
 
   let rec stat_is_dir dir =
     try (stat dir).st_kind = S_DIR with Unix_error _ -> false
@@ -362,47 +364,55 @@ and munge files =
   let rec loop = function
     | [] -> []
 
-    | "/" :: rest ->
+    | { ft_path = "/" } :: rest ->
       (* This is just to avoid a corner-case in subsequent rules. *)
       loop rest
 
-    | dir :: rest when stat_is_dir dir && dir_seen dir ->
+    | dir :: rest when stat_is_dir dir.ft_path && dir_seen dir.ft_path ->
       dir :: loop rest
 
-    | dir :: rest when is_lnk_to_dir dir ->
-      insert_dir dir;
+    | dir :: rest when is_lnk_to_dir dir.ft_path ->
+      insert_dir dir.ft_path;
 
       (* Symlink to a directory.  Insert the target directory before
        * if we've not seen it yet.
        *)
-      let target = readlink dir in
-      let parent = Filename.dirname dir in
+      let target = readlink dir.ft_path in
+      let parent = Filename.dirname dir.ft_path in
       (* Make the target an absolute path. *)
       let target =
         if String.length target < 1 || target.[0] <> '/' then
           realpath (parent // target)
         else
           target in
-      if not (dir_seen target) then
+      if not (dir_seen target) then (
+        let target =
+          {ft_path = target; ft_source_path = target; ft_config = false} in
         loop (target :: dir :: rest)
+      )
       else
         dir :: loop rest
 
-    | dir :: rest when stat_is_dir dir ->
-      insert_dir dir;
+    | dir :: rest when stat_is_dir dir.ft_path ->
+      insert_dir dir.ft_path;
 
       (* Have we seen the parent? *)
-      let parent = Filename.dirname dir in
-      if not (dir_seen parent) then
+      let parent = Filename.dirname dir.ft_path in
+      if not (dir_seen parent) then (
+        let parent =
+          {ft_path = parent; ft_source_path = parent; ft_config = false} in
         loop (parent :: dir :: rest)
+      )
       else
         dir :: loop rest
 
     | file :: rest ->
       (* Have we seen this parent directory before? *)
-      let dir = Filename.dirname file in
-      if not (dir_seen dir) then
+      let dir = Filename.dirname file.ft_path in
+      if not (dir_seen dir) then (
+        let dir = {ft_path = dir; ft_source_path = dir; ft_config = false} in
         loop (dir :: file :: rest)
+      )
       else
         file :: loop rest
   in

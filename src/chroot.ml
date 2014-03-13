@@ -20,13 +20,15 @@ open Unix
 open Printf
 
 open Utils
+open Package_handler
 
 let build_chroot debug files outputdir =
   List.iter (
-    fun path ->
+    fun file ->
       try
+        let path = file.ft_source_path in
         let st = lstat path in
-        let opath = outputdir // path in
+        let opath = outputdir // file.ft_path in
         match st.st_kind with
         | S_DIR ->
           (* Note we fix up the permissions of directories in a second
@@ -65,9 +67,9 @@ let build_chroot debug files outputdir =
 
   (* Second pass: fix up directory permissions in reverse. *)
   let dirs = filter_map (
-    fun path ->
-      let st = lstat path in
-      if st.st_kind = S_DIR then Some (path, st) else None
+    fun file ->
+      let st = lstat file.ft_source_path in
+      if st.st_kind = S_DIR then Some (file.ft_path, st) else None
   ) files in
   List.iter (
     fun (path, st) ->

@@ -21,6 +21,7 @@ open Printf
 
 open Utils
 open Ext2fs
+open Package_handler
 
 (* The ext2 image that we build always has a fixed size, and we 'hope'
  * that the files fit in (otherwise we'll get an error).  Note that
@@ -66,7 +67,12 @@ let build_ext2 debug basedir files modpath kernel_version appliance =
     printf "supermin: ext2: copying files from host filesystem\n%!";
 
   (* Copy files from host filesystem. *)
-  List.iter (fun path -> ext2fs_copy_file_from_host fs path path) files;
+  List.iter (fun file ->
+    if file_exists file.ft_source_path then
+      ext2fs_copy_file_from_host fs file.ft_source_path file.ft_path
+    else
+      ext2fs_copy_file_from_host fs file.ft_path file.ft_path
+  ) files;
 
   if debug >= 1 then
     printf "supermin: ext2: copying kernel modules\n%!";
