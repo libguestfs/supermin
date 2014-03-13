@@ -39,8 +39,39 @@ let mageia_detect () =
     file_exists "/etc/mageia-release"
 
 let settings = ref no_settings
+let rpm_major, rpm_minor = ref 0, ref 0
 
-let rpm_init s = settings := s
+let rpm_init s =
+  settings := s;
+
+  (* Get RPM version. We have to adjust some RPM commands based on
+   * the version.
+   *)
+  let cmd = sprintf "%s --version | awk '{print $3}'" Config.rpm in
+  let lines = run_command_get_lines cmd in
+  let major, minor =
+    match lines with
+    | [] ->
+      eprintf "supermin: rpm --version command had no output\n";
+      exit 1
+    | line :: _ ->
+      let line = string_split "." line in
+      match line with
+      | [] ->
+        eprintf "supermin: unable to parse empty output of rpm --version\n";
+        exit 1
+      | [x] ->
+        eprintf "supermin: unable to parse output of rpm --version: %s\n" x;
+        exit 1
+      | major :: minor :: _ ->
+        try int_of_string major, int_of_string minor
+        with Failure "int_of_string" ->
+          eprintf "supermin: unable to parse output of rpm --version: non-numeric\n";
+          exit 1 in
+  rpm_major := major;
+  rpm_minor := minor;
+  if !settings.debug >= 1 then
+    printf "supermin: rpm: detected RPM version %d.%d\n" major minor
 
 type rpm_t = {
   name : string;
@@ -122,8 +153,23 @@ let rpm_package_of_string str =
       r
 
 let rpm_package_to_string pkg =
+  (* In RPM < 4.11 query commands that use the epoch number in the
+   * package name did not work.
+   *
+   * For example:
+   * RHEL 6 (rpm 4.8.0):
+   *   $ rpm -q tar-2:1.23-11.el6.x86_64
+   *   package tar-2:1.23-11.el6.x86_64 is not installed
+   * Fedora 20 (rpm 4.11.2):
+   *   $ rpm -q tar-2:1.26-30.fc20.x86_64
+   *   tar-1.26-30.fc20.x86_64
+   *
+   *)
+  let is_rpm_lt_4_11 =
+    !rpm_major < 4 || (!rpm_major = 4 && !rpm_minor < 11) in
+
   let rpm = rpm_of_pkg pkg in
-  if rpm.epoch = 0_l then
+  if is_rpm_lt_4_11 || rpm.epoch = 0_l then
     sprintf "%s-%s-%s.%s" rpm.name rpm.version rpm.release rpm.arch
   else
     sprintf "%s-%ld:%s-%s.%s"
