@@ -166,7 +166,7 @@ let dpkg_get_all_files pkgs =
       let config =
 	try string_prefix "/etc/" path && (lstat path).st_kind = S_REG
 	with Unix_error _ -> false in
-      { ft_path = path; ft_config = config }
+      { ft_path = path; ft_source_path = path; ft_config = config }
   ) lines
 
 let dpkg_download_all_packages pkgs dir =

@@ -43,6 +43,7 @@ let no_settings =
 
 type file = {
   ft_path : string;
+  ft_source_path : string;
   ft_config : bool;
 }
 

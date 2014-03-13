@@ -220,7 +220,7 @@ let rpm_get_all_files pkgs =
     function
     | [ path; flags ] ->
       let config = String.contains flags 'c' in
-      { ft_path = path; ft_config = config }
+      { ft_path = path; ft_source_path = path; ft_config = config }
     | _ -> assert false
   ) lines
 

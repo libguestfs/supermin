@@ -74,6 +74,10 @@ type file = {
   ft_path : string;
   (** File path. *)
 
+  ft_source_path : string;
+  (** File's source path.  dpkg has a mechanism called "dpkg-divert"
+      can be used to override a package's version of a file. *)
+
   ft_config : bool;
   (** Flag to indicate this is a configuration file.  In some package
       managers (RPM) this is stored in package metadata.  In others
