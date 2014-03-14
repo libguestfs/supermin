@@ -444,9 +444,24 @@ supermin appliance.
 When the full appliance is built, the kernel modules from the host are
 copied in, and it is booted using the host kernel.
 
+=head3 USING A CUSTOM KERNEL AND KERNEL MODULES
+
 Supermin is able to choose the best host kernel available to boot the
-appliance.  Users can override this by setting environment variables
-(see L</ENVIRONMENT VARIABLES> below).
+appliance.  However you can override this by setting environment
+variables (see L</ENVIRONMENT VARIABLES> below).
+
+If you build a custom kernel (eg. by compiling Linux from source),
+then you should do something like this:
+
+ mkdir /tmp/kmods
+ make bzImage
+ make modules
+ make modules_install INSTALL_MOD_PATH=/tmp/kmods
+ 
+ export SUPERMIN_KERNEL=/path/to/linux.git/arch/x86/boot/bzImage
+ export SUPERMIN_MODULES=/tmp/kmods/lib/modules/3.xx.yy
+ 
+ supermin --build -f ext2 [etc]
 
 =head2 ENFORCING AVAILABILITY OF HOSTFILES
 
