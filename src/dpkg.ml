@@ -52,70 +52,31 @@ type dpkg_t = {
 (* Memo from package type to internal dpkg_t. *)
 let dpkg_of_pkg, pkg_of_dpkg = get_memo_functions ()
 
-(* Memo of dpkg_package_of_string. *)
-let dpkgh = Hashtbl.create 13
-
+let dpkg_packages = Hashtbl.create 13
 let dpkg_package_of_string str =
-  (* Parse an dpkg name into the fields like name and version.  Since
-   * the package is installed (see check below), it's easier to use
-   * dpkg-query itself to do this parsing rather than haphazardly
-   * parsing it ourselves.
-   *)
-  let parse_dpkg str =
+  if Hashtbl.length dpkg_packages == 0 then (
     let cmd =
-      sprintf "%s --show --showformat='${Package} ${Version} ${Architecture}\\n' %s"
-        Config.dpkg_query
-        (quote str) in
+      sprintf "%s --show --showformat='${Package} ${Version} ${Architecture} ${Status}\\n'"
+        Config.dpkg_query in
     let lines = run_command_get_lines cmd in
-
-    let pkgs = List.map (
+    List.iter (
       fun line ->
-        let line = string_split " " line in
-        match line with
-        | [ name; version; arch ] ->
-          assert (version <> "");
-          { name = name; version = version; arch = arch }
-        | xs -> assert false)
-      lines in
-
-    (* On multiarch setups, only consider the primary architecture *)
-    try
-      List.find (fun pkg ->
-        pkg.arch = dpkg_primary_arch () || pkg.arch = "all") pkgs
-    with
-      Not_found -> assert false
-
-  (* Check if a package is installed. *)
-  and check_dpkg_installed name =
-    let cmd =
-      sprintf "%s --show %s >/dev/null 2>&1" Config.dpkg_query (quote name) in
-    if 0 <> Sys.command cmd then false
-    else (
-      (* dpkg-query --show can return information about packages which
-       * are not installed.  These have no version information.
-       *)
-      let cmd =
-	sprintf "%s --show --showformat='${Version}' %s"
-          Config.dpkg_query (quote name) in
-      let lines = run_command_get_lines cmd in
-      match lines with
-      | [] | [""] -> false
-      | _ -> true
-    )
-  in
-
+        match string_split " " line with
+        | [ name; version; arch; _; _; "installed" ] ->
+          Hashtbl.add dpkg_packages name { name; version; arch }
+        | _ -> ();
+    ) lines
+  );
+  let candidates = Hashtbl.find_all dpkg_packages str in
+  (* On multiarch setups, only consider the primary architecture *)
   try
-    Hashtbl.find dpkgh str
+    let pkg = List.find (
+      fun cand ->
+        cand.arch = dpkg_primary_arch () || cand.arch = "all"
+    ) candidates in
+    Some (pkg_of_dpkg pkg)
   with
-    Not_found ->
-      let r =
-        if check_dpkg_installed str then (
-          let dpkg = parse_dpkg str in
-          Some (pkg_of_dpkg dpkg)
-        )
-        else None in
-      Hashtbl.add dpkgh str r;
-      r
+    Not_found -> None
 
 let dpkg_package_to_string pkg =
   let dpkg = dpkg_of_pkg pkg in
