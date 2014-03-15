@@ -35,9 +35,10 @@ else
     exit 77
 fi
 
-d1=test-harder.d1
-d2=test-harder.d2
-rm -rf $d1 $d2
+tmpdir=`mktemp -d`
+
+d1=$tmpdir/d1
+d2=$tmpdir/d2
 
 case $distro in
     arch)
@@ -126,6 +127,4 @@ case $distro in
 	;;
 esac
 
-# Need to chmod $d2 since rm -r can't remove unwritable directories.
-chmod -R +w $d2 ||:
-rm -r $d1 $d2
+rm -rf $tmpdir ||:

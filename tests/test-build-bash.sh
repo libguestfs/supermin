@@ -23,9 +23,10 @@ if [ -f /etc/arch-release ]; then
     export SUPERMIN_KERNEL=/boot/vmlinuz-linux
 fi
 
-d1=test-build-bash.d1
-d2=test-build-bash.d2
-rm -rf $d1 $d2
+tmpdir=`mktemp -d`
+
+d1=$tmpdir/d1
+d2=$tmpdir/d2
 
 test "$USE_NETWORK" = 1 || USE_INSTALLED=--use-installed
 
@@ -38,4 +39,4 @@ arch="$(uname -m)"
 ../src/supermin -v --build -f chroot --host-cpu $arch $d1 -o $d2
 ../src/supermin -v --build -f ext2 --host-cpu $arch $d1 -o $d2
 
-rm -r $d1 $d2
+rm -rf $tmpdir ||:

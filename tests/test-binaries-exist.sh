@@ -18,9 +18,10 @@
 
 set -e
 
-d1=test-binaries-exist.d1
-d2=test-binaries-exist.d2
-rm -rf $d1 $d2
+tmpdir=`mktemp -d`
+
+d1=$tmpdir/d1
+d2=$tmpdir/d2
 
 test "$USE_NETWORK" = 1 || USE_INSTALLED=--use-installed
 
@@ -57,6 +58,4 @@ fi
 # These binaries should be runnable (since they are the same as the host).
 `find $d2 -name sync | head`
 
-# Need to chmod $d2 since rm -r can't remove unwritable directories.
-chmod -R +w $d2 ||:
-rm -r $d1 $d2
+rm -rf $tmpdir ||:
