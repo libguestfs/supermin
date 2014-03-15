@@ -26,7 +26,9 @@ let build_chroot debug files outputdir =
   List.iter (
     fun file ->
       try
-        let path = file.ft_source_path in
+        let path = if file_exists file.ft_source_path
+          then file.ft_source_path
+          else file.ft_path in
         let st = lstat path in
         let opath = outputdir // file.ft_path in
         match st.st_kind with
@@ -68,7 +70,10 @@ let build_chroot debug files outputdir =
   (* Second pass: fix up directory permissions in reverse. *)
   let dirs = filter_map (
     fun file ->
-      let st = lstat file.ft_source_path in
+      let path =
+        if file_exists file.ft_source_path then file.ft_source_path
+        else file.ft_path in
+      let st = lstat path in
       if st.st_kind = S_DIR then Some (file.ft_path, st) else None
   ) files in
   List.iter (
