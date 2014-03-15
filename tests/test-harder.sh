@@ -54,7 +54,9 @@ case $distro in
 	;;
 esac
 
-../src/supermin -v --prepare $pkgs -o $d1
+test "$USE_NETWORK" = 1 || USE_INSTALLED=--use-installed
+
+../src/supermin -v --prepare $USE_INSTALLED $pkgs -o $d1
 
 # Build a chroot.
 ../src/supermin -v --build -f chroot $d1 -o $d2

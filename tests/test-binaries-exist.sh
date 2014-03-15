@@ -22,8 +22,10 @@ d1=test-binaries-exist.d1
 d2=test-binaries-exist.d2
 rm -rf $d1 $d2
 
+test "$USE_NETWORK" = 1 || USE_INSTALLED=--use-installed
+
 # We assume that 'bash' and 'coreutils' package names exist in every distro.
-../src/supermin -v --prepare bash coreutils -o $d1
+../src/supermin -v --prepare $USE_INSTALLED bash coreutils -o $d1
 
 # Build a chroot.
 ../src/supermin -v --build -f chroot $d1 -o $d2

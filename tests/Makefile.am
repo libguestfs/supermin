@@ -22,11 +22,14 @@ EXTRA_DIST = \
 	$(TESTS)
 
 TESTS = \
-	test-basic.sh
-
-if NETWORK_TESTS
-TESTS += \
+	test-basic.sh \
 	test-build-bash.sh \
 	test-binaries-exist.sh \
 	test-harder.sh
+
+if NETWORK_TESTS
+TESTS += \
+	test-build-bash-network.sh \
+	test-binaries-exist-network.sh \
+	test-harder-network.sh
 endif
