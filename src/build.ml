@@ -296,6 +296,16 @@ and get_file_content file buf len =
       buf.[259] = 't' && buf.[260] = 'a' && buf.[261] = 'r'
   then                                  (* tar file *)
     Base_image
+  else if len >= 6 &&
+      buf.[0] = '0' && buf.[1] = '7' &&
+      buf.[2] = '0' && buf.[3] = '7' &&
+      buf.[4] = '0' && buf.[5] = '1' then (
+    (* However we intend to support them in future for both input
+     * and output.
+     *)
+    eprintf "supermin: %s: cpio files are not supported in this version of supermin\n" file;
+    exit 1
+  )
   else if len >= 2 && buf.[0] = '/' then Hostfiles
   else if len >= 2 && buf.[0] = '-' then Excludefiles
   else if len >= 1 && isalnum buf.[0] then Packages
