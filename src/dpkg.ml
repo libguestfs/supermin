@@ -94,16 +94,31 @@ let dpkg_get_package_database_mtime () =
   (lstat "/var/lib/dpkg/status").st_mtime
 
 let dpkg_get_all_requires pkgs =
+  let dpkg_requires = Hashtbl.create 13 in
+  (* Prepare dpkg_requires hashtbl with depends, pre-depends from all
+     packages. Strip version information and discard alternative
+     dependencies *)
+  let cmd = sprintf "\
+      %s --show --showformat='${Package} ${Depends} ${Pre-Depends}\n' | \
+      sed -e 's/ *([^)]*) */ /g' \
+          -e 's/ *, */ /g' \
+          -e 's/ *| *[^ ]* */ /g'"
+    Config.dpkg_query in
+  let lines = run_command_get_lines cmd in
+  List.iter (
+    fun line ->
+      match string_split " " line with
+      | [] -> ()
+      | pkgname :: [] -> ()
+      | pkgname :: deps -> Hashtbl.add dpkg_requires pkgname deps
+  ) lines;
+
   let get pkgs =
-    let cmd = sprintf "\
-        %s --show --showformat='${Depends} ${Pre-Depends} ' %s |
-        sed -e 's/([^)]*)//g' -e 's/,//g' -e 's/ \\+/\\n/g' |
-        sort -u"
-      Config.dpkg_query
-      (quoted_list (List.map dpkg_package_name (PackageSet.elements pkgs))) in
-    let lines = run_command_get_lines cmd in
-    let lines = filter_map dpkg_package_of_string lines in
-    PackageSet.union pkgs (package_set_of_list lines)
+    let pkgnames = List.map dpkg_package_name (PackageSet.elements pkgs) in
+    let deps = List.map (Hashtbl.find_all dpkg_requires) pkgnames in
+    let deps = List.flatten (List.flatten deps) in
+    let deps = filter_map dpkg_package_of_string deps in
+    PackageSet.union pkgs (package_set_of_list deps)
   in
   (* The command above only gets one level of dependencies.  We need
    * to keep iterating until we reach a fixpoint.
