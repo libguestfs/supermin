@@ -30,18 +30,19 @@ let dpkg_detect () =
     Config.apt_get <> "no" &&
     file_exists "/etc/debian_version"
 
-let dpkg_primary_arch () =
+let dpkg_primary_arch = ref ""
+let settings = ref no_settings
+
+let dpkg_init s =
+  settings := s;
+
   let cmd = sprintf "%s --print-architecture" Config.dpkg in
   let lines = run_command_get_lines cmd in
   match lines with
   | [] ->
     eprintf "supermin: dpkg: expecting %s to return some output\n" cmd;
     exit 1
-  | arch :: _ -> arch
-
-let settings = ref no_settings
-
-let dpkg_init s = settings := s
+  | arch :: _ -> dpkg_primary_arch := arch
 
 type dpkg_t = {
   name : string;
@@ -72,7 +73,7 @@ let dpkg_package_of_string str =
   try
     let pkg = List.find (
       fun cand ->
-        cand.arch = dpkg_primary_arch () || cand.arch = "all"
+        cand.arch = !dpkg_primary_arch || cand.arch = "all"
     ) candidates in
     Some (pkg_of_dpkg pkg)
   with
