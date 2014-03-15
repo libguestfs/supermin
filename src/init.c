@@ -34,6 +34,7 @@
 #include <fcntl.h>
 #include <dirent.h>
 #include <time.h>
+#include <termios.h>
 #include <sys/types.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
@@ -218,6 +219,13 @@ main ()
     perror ("umount: /sys");
     exit (EXIT_FAILURE);
   }
+
+  /* Make current process the controlling process of the tty. */
+  setsid ();
+#ifdef TIOCSCTTY
+  if (ioctl (0, TIOCSCTTY, 1) == -1)
+    perror ("ioctl: TIOCSCTTY");
+#endif
 
   if (verbose)
     fprintf (stderr, "supermin: creating /dev/root as block special %d:%d\n",
