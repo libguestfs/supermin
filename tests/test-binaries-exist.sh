@@ -58,4 +58,6 @@ fi
 # These binaries should be runnable (since they are the same as the host).
 `find $d2 -name sync | head`
 
-rm -rf $tmpdir ||:
+# Need to chmod $d2 since rm -r can't remove unwritable directories.
+chmod -R +w $d2 ||:
+rm -rf $tmpdir

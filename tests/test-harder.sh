@@ -127,4 +127,6 @@ case $distro in
 	;;
 esac
 
-rm -rf $tmpdir ||:
+# Need to chmod $d2 since rm -r can't remove unwritable directories.
+chmod -R +w $d2 ||:
+rm -rf $tmpdir
