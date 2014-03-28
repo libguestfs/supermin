@@ -25,18 +25,21 @@ open Package_handler
 let fedora_detect () =
   Config.rpm <> "no" && Config.rpm2cpio <> "no" &&
     Config.yumdownloader <> "no" &&
-    (file_exists "/etc/redhat-release" || file_exists "/etc/fedora-release")
+    try
+      (stat "/etc/redhat-release").st_kind = S_REG ||
+      (stat "/etc/fedora-release").st_kind = S_REG
+    with Unix_error _ -> false
 
 let opensuse_detect () =
   Config.rpm <> "no" && Config.rpm2cpio <> "no" &&
     Config.zypper <> "no" &&
-    file_exists "/etc/SuSE-release"
+    try (stat "/etc/SuSE-release").st_kind = S_REG with Unix_error _ -> false
 
 let mageia_detect () =
   Config.rpm <> "no" && Config.rpm2cpio <> "no" &&
     Config.urpmi <> "no" &&
     Config.fakeroot <> "no" &&
-    file_exists "/etc/mageia-release"
+    try (stat "/etc/mageia-release").st_kind = S_REG with Unix_error _ -> false
 
 let settings = ref no_settings
 let rpm_major, rpm_minor = ref 0, ref 0

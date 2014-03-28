@@ -24,7 +24,7 @@ open Package_handler
 
 let pacman_detect () =
   Config.pacman <> "no" && Config.fakeroot <> "no" &&
-    file_exists "/etc/arch-release" &&
+    (stat "/etc/arch-release").st_kind = S_REG &&
     Config.pacman_g2 = "no" (* not Frugalware with pacman-g2 *)
 
 let settings = ref no_settings

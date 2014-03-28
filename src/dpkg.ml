@@ -28,7 +28,7 @@ let dpkg_detect () =
     Config.dpkg_query <> "no" &&
     Config.dpkg_divert <> "no" &&
     Config.apt_get <> "no" &&
-    file_exists "/etc/debian_version"
+    try (stat "/etc/debian_version").st_kind = S_REG with Unix_error _ -> false
 
 let dpkg_primary_arch = ref ""
 let settings = ref no_settings
