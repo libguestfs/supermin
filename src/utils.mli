@@ -24,9 +24,6 @@ val ( *^ ) : int64 -> int64 -> int64
 val (/^) : int64 -> int64 -> int64
   (** Int64 operators. *)
 
-val file_exists : string -> bool
-  (** Return [true] iff file exists. *)
-
 val dir_exists : string -> bool
   (** Return [true] iff dir exists. *)
 

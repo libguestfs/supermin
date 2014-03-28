@@ -28,10 +28,6 @@ let (//) = Filename.concat
 let quote = Filename.quote
 let quoted_list names = String.concat " " (List.map quote names)
 
-let file_exists name =
-  try access name [F_OK]; true
-  with Unix_error _ -> false
-
 let dir_exists name =
   try (stat name).st_kind = S_DIR
   with Unix_error _ -> false
