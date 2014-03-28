@@ -195,16 +195,20 @@ and find_modpath debug kernel_version =
 and has_modpath kernel_name =
   try
     let kv = get_kernel_version kernel_name in
-    file_exists ("/lib/modules/" ^ kv ^ "/modules.dep")
+    modules_dep_exists kv
   with
   | Not_found -> false
 
 and get_kernel_version kernel_name =
   if string_prefix "vmlinuz-" kernel_name then (
     let kv = String.sub kernel_name 8 (String.length kernel_name - 8) in
-    if file_exists ("/lib/modules/" ^ kv ^ "/modules.dep") then kv
+    if modules_dep_exists kv then kv
     else get_kernel_version_from_name kernel_name
   ) else get_kernel_version_from_name kernel_name
+
+and modules_dep_exists kv =
+  try (lstat ("/lib/modules/" ^ kv ^ "/modules.dep")).st_kind = S_REG
+  with Unix_error _ -> false
 
 and get_kernel_version_from_name kernel_name =
   get_kernel_version_from_file ("/boot" // kernel_name)
