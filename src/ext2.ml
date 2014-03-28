@@ -67,11 +67,10 @@ let build_ext2 debug basedir files modpath kernel_version appliance =
     printf "supermin: ext2: copying files from host filesystem\n%!";
 
   (* Copy files from host filesystem. *)
-  List.iter (fun file ->
-    if file_exists file.ft_source_path then
-      ext2fs_copy_file_from_host fs file.ft_source_path file.ft_path
-    else
-      ext2fs_copy_file_from_host fs file.ft_path file.ft_path
+  List.iter (
+    fun file ->
+      let src = file_source file in
+      ext2fs_copy_file_from_host fs src file.ft_path
   ) files;
 
   if debug >= 1 then

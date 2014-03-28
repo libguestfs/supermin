@@ -84,6 +84,9 @@ type file = {
       (dpkg) we guess it based on the filename. *)
 }
 
+val file_source : file -> string
+(** Get the source path, taking into account diversions. *)
+
 (** Package handlers are modules that implement this structure and
     call {!register_package_handler}. *)
 type package_handler = {

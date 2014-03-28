@@ -16,6 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *)
 
+open Unix
 open Printf
 
 open Utils
@@ -46,6 +47,14 @@ type file = {
   ft_source_path : string;
   ft_config : bool;
 }
+
+let file_source file =
+  try
+    if (lstat file.ft_source_path).st_kind = S_REG then
+      file.ft_source_path
+    else
+      file.ft_path
+  with Unix_error _ -> file.ft_path
 
 type package_handler = {
   ph_detect : unit -> bool;
