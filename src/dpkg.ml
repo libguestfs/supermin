@@ -64,7 +64,8 @@ let dpkg_package_of_string str =
       fun line ->
         match string_split " " line with
         | [ name; version; arch; _; _; "installed" ] ->
-          Hashtbl.add dpkg_packages name { name; version; arch }
+          let dpkg = { name = name; version = version; arch = arch } in
+          Hashtbl.add dpkg_packages name dpkg
         | _ -> ();
     ) lines
   );
