@@ -49,7 +49,7 @@ let build_ext2 debug basedir files modpath kernel_version appliance =
     sprintf "%s %s ext2 -F%s %s"
       Config.mke2fs Config.mke2fs_t_option
       (if debug >= 2 then "" else "q")
-      appliance in
+      (quote appliance) in
   run_command cmd;
 
   let fs = ext2fs_open appliance in
