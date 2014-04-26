@@ -23,6 +23,19 @@ open Utils
 open Ext2fs
 open Fnmatch
 
+let patt_of_cpu host_cpu =
+  let models =
+    match host_cpu with
+    | "mips" | "mips64" -> [host_cpu; "*-malta"]
+    | "ppc" | "powerpc" | "powerpc64" -> ["ppc"; "powerpc"; "powerpc64"]
+    | "sparc" | "sparc64" -> ["sparc"; "sparc64"]
+    | "amd64" | "x86_64" -> ["amd64"; "x86_64"]
+    | _ when host_cpu.[0] = 'i' && host_cpu.[2] = '8' && host_cpu.[3] = '6' -> ["?86"]
+    | _ when String.length host_cpu >= 5 && String.sub host_cpu 0 5 = "armv7" ->  ["armmp"]
+    | _ -> [host_cpu]
+  in
+  List.map (fun model -> sprintf "vmlinu?-*-%s" model) models
+
 let rec build_kernel debug host_cpu dtb_wildcard copy_kernel kernel dtb =
   (* Locate the kernel. *)
   let kernel_name, kernel_version =
@@ -59,9 +72,6 @@ and find_kernel debug host_cpu copy_kernel kernel =
       let kernel_name = Filename.basename kernel_env in
       kernel_env, kernel_name, kernel_version
     with Not_found ->
-      let is_x86 =
-        String.length host_cpu = 4 &&
-        host_cpu.[0] = 'i' && host_cpu.[2] = '8' && host_cpu.[3] = '6' in
       let is_arm =
         String.length host_cpu >= 3 &&
         host_cpu.[0] = 'a' && host_cpu.[1] = 'r' && host_cpu.[2] = 'm' in
@@ -70,18 +80,16 @@ and find_kernel debug host_cpu copy_kernel kernel =
       let all_files = Array.to_list all_files in
 
       (* In original: ls -1dvr /boot/vmlinuz-*.$arch* 2>/dev/null | grep -v xen *)
-      let patt =
-        if is_x86 then "vmlinuz-*.i?86*"
-        else "vmlinuz-*." ^ host_cpu ^ "*" in
-      let files = kernel_filter patt is_arm all_files in
+      let patterns = patt_of_cpu host_cpu in
+      let files = kernel_filter patterns is_arm all_files in
 
       let files =
         if files <> [] then files
         else
           (* In original: ls -1dvr /boot/vmlinuz-* 2>/dev/null | grep -v xen *)
-          kernel_filter "vmlinuz-*" is_arm all_files in
+          kernel_filter ["vmlinu?-*"] is_arm all_files in
 
-      if files = [] then no_kernels ();
+      if files = [] then no_kernels host_cpu;
 
       let files = List.sort (fun a b -> compare_version b a) files in
       let kernel_name = List.hd files in
@@ -95,10 +103,13 @@ and find_kernel debug host_cpu copy_kernel kernel =
   copy_or_symlink_file copy_kernel kernel_file kernel;
   kernel_name, kernel_version
 
-and kernel_filter patt is_arm all_files =
+and kernel_filter patterns is_arm all_files =
   let files =
     List.filter
-      (fun filename -> fnmatch patt filename [FNM_NOESCAPE]) all_files in
+      (fun filename ->
+        List.exists
+          (fun patt -> fnmatch patt filename [FNM_NOESCAPE]) patterns
+      ) all_files in
   let files =
     List.filter (fun filename -> find filename "xen" = -1) files in
   let files =
@@ -110,15 +121,16 @@ and kernel_filter patt is_arm all_files =
     ) in
   List.filter (fun filename -> has_modpath filename) files
 
-and no_kernels () =
+and no_kernels host_cpu =
   eprintf "\
-supermin: failed to find a suitable kernel.
+supermin: failed to find a suitable kernel (host_cpu=%s).
 
 I looked for kernels in /boot and modules in /lib/modules.
 
 If this is a Xen guest, and you only have Xen domU kernels
 installed, try installing a fullvirt kernel (only for
-supermin use, you shouldn't boot the Xen guest with it).\n";
+supermin use, you shouldn't boot the Xen guest with it).\n"
+    host_cpu;
   exit 1
 
 and find_dtb debug copy_kernel kernel_name wildcard dtb =
@@ -131,13 +143,18 @@ and find_dtb debug copy_kernel kernel_name wildcard dtb =
       dtb_file
     with Not_found ->
       (* Replace vmlinuz- with dtb- *)
-      if not (string_prefix "vmlinuz-" kernel_name) then
+      if not (string_prefix "vmlinuz-" kernel_name) &&
+        not (string_prefix "vmlinuz-" kernel_name) then
         no_dtb_dir kernel_name;
       let dtb_dir =
-        "/boot/dtb-" ^
-          String.sub kernel_name 8 (String.length kernel_name - 8) in
-      if not (dir_exists dtb_dir) then
-        no_dtb_dir kernel_name;
+        try
+          List.find dir_exists (
+            List.map (fun prefix ->
+              prefix ^ String.sub kernel_name 8 (String.length kernel_name - 8)
+            ) ["/boot/dtb-"; "/usr/lib/linux-image-"])
+        with Not_found ->
+          no_dtb_dir kernel_name; ""
+      in
 
       let all_files = Sys.readdir dtb_dir in
       let all_files = Array.to_list all_files in
@@ -200,7 +217,8 @@ and has_modpath kernel_name =
   | Not_found -> false
 
 and get_kernel_version kernel_name =
-  if string_prefix "vmlinuz-" kernel_name then (
+  if (string_prefix "vmlinuz-" kernel_name) ||
+    (string_prefix "vmlinux-" kernel_name) then (
     let kv = String.sub kernel_name 8 (String.length kernel_name - 8) in
     if modules_dep_exists kv then kv
     else get_kernel_version_from_name kernel_name
