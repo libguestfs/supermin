@@ -99,7 +99,7 @@ supermin_SOURCES = $(SOURCES_C)
 supermin_CFLAGS = \
 	-I$(shell $(OCAMLC) -where) \
 	$(EXT2FS_CFLAGS) $(COM_ERR_CFLAGS) \
-	-I$(srcdir)/lib -I../lib
+	-I$(top_srcdir)/lib -I../lib
 
 BOBJECTS = $(SOURCES_ML:.ml=.cmo)
 XOBJECTS = $(SOURCES_ML:.ml=.cmx)
@@ -148,16 +148,16 @@ ext2init-bin.S: init
 	strip --strip-all $<
 	@file $< | grep -isq static || \
 	  (echo "*** error: init is not staticly linked"; exit 1)
-	./bin2s.pl $< $@
+	$(srcdir)/bin2s.pl $< $@
 
 depend: .depend
 
-.depend: $(SOURCES)
+.depend: $(wildcard $(abs_srcdir)/*.mli) $(wildcard $(abs_srcdir)/*.ml) config.ml
 	rm -f $@ $@-t
-	$(OCAMLFIND) ocamldep $^ | \
+	$(OCAMLFIND) ocamldep -I $(abs_srcdir) -I $(builddir) $^ | \
 	  $(SED) 's/ *$$//' | \
 	  $(SED) -e :a -e '/ *\\$$/N; s/ *\\\n */ /; ta' | \
-	  $(SED) 's/ :/:/' | \
+	  $(SED) -e 's,$(abs_srcdir)/,$(builddir)/,g' | \
 	  sort > $@-t
 	mv $@-t $@
 
@@ -167,7 +167,7 @@ SUFFIXES = .cmo .cmi .cmx .ml .mli .mll .mly
 
 if HAVE_PERLDOC
 
-supermin.1: supermin.pod
+supermin.1: $(srcdir)/supermin.pod
 	pod2man \
 	  -u \
 	  --section 1 \
@@ -178,12 +178,12 @@ supermin.1: supermin.pod
 noinst_DATA = \
 	../html/supermin.1.html
 
-../html/supermin.1.html: supermin.pod
+../html/supermin.1.html: $(srcdir)/supermin.pod
 	mkdir -p ../html
 	pod2html \
 	  --css 'pod.css' \
 	  --htmldir ../html \
 	  --outfile ../html/supermin.1.html \
-	  supermin.pod
+	  $<
 
 endif
