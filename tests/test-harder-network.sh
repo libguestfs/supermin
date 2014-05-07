@@ -1,3 +1,3 @@
 #!/bin/sh
 
-USE_NETWORK=1 ./test-harder.sh
+USE_NETWORK=1 $srcdir/test-harder.sh

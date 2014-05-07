@@ -1,3 +1,3 @@
 #!/bin/sh
 
-USE_NETWORK=1 ./test-build-bash.sh
+USE_NETWORK=1 $srcdir/test-build-bash.sh
