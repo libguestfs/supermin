@@ -1,5 +1,6 @@
-# supermin Makefile.am
-# (C) Copyright 2013-2014 Red Hat Inc.
+#!/bin/bash -
+# supermin
+# (C) Copyright 2014 Red Hat Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,23 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-#
-# Written by Richard W.M. Jones <rjones@redhat.com>
 
-EXTRA_DIST = \
-	automake2junit.ml \
-	$(TESTS)
+set -e
 
-TESTS = \
-	test-basic.sh \
-	test-execstack.sh \
-	test-build-bash.sh \
-	test-binaries-exist.sh \
-	test-harder.sh
-
-if NETWORK_TESTS
-TESTS += \
-	test-build-bash-network.sh \
-	test-binaries-exist-network.sh \
-	test-harder-network.sh
-endif
+if scanelf --help >/dev/null 2>&1; then
+    echo "using scanelf"
+    scanelf -e ../src/supermin
+    test `scanelf -qe ../src/supermin | wc -l` -eq 0
+elif readelf --help >/dev/null 2>&1; then
+    echo "using readelf"
+    readelf -lW ../src/supermin | grep GNU_STACK
+    ! readelf -lW ../src/supermin | grep GNU_STACK | grep 'E ' >/dev/null 2>&1
+else
+    echo "$0: test skipped because none of the following tools is installed: scanelf, readelf"
+    exit 77
+fi
