@@ -144,7 +144,7 @@ CLEANFILES += ext2init-bin.S
 ext2init-bin.o: ext2init-bin.S
 	$(CC) -o $@ -c $<
 
-ext2init-bin.S: init
+ext2init-bin.S: init $(srcdir)/bin2s.pl
 	strip --strip-all $<
 	@file $< | grep -isq static || \
 	  (echo "*** error: init is not staticly linked"; exit 1)
