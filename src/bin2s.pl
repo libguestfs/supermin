@@ -43,7 +43,11 @@ print $ofh <<"EOF";
 
 _binary_${infile}_end:
 
+#if defined(__hppa__)
+\t_binary_${infile}_size: .equ $sz
+#else
 \t.equ _binary_${infile}_size, $sz
+#endif
 EOF
 
 close $ofh;
