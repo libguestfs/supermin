@@ -18,6 +18,11 @@
 
 set -e
 
+if [ -n "$SKIP_TEST_EXECSTACK" ]; then
+    echo "$0: test skipped because SKIP_TEST_EXECSTACK is set."
+    exit 77
+fi
+
 if scanelf --help >/dev/null 2>&1; then
     echo "using scanelf"
     scanelf -e ../src/supermin
