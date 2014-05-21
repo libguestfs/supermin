@@ -212,13 +212,13 @@ let rpm_get_all_requires pkgs =
 
 let rpm_get_all_files pkgs =
   let cmd = sprintf "\
-      %s -q --qf '[%%{FILENAMES} %%{FILEFLAGS:fflags}\\n]' %s |
+      %s -q --qf '[%%{FILENAMES}\\t%%{FILEFLAGS:fflags}\\n]' %s |
       grep '^/' |
       sort -u"
     Config.rpm
     (quoted_list (List.map rpm_package_to_string (PackageSet.elements pkgs))) in
   let lines = run_command_get_lines cmd in
-  let lines = List.map (string_split " ") lines in
+  let lines = List.map (string_split "\t") lines in
   List.map (
     function
     | [ path; flags ] ->
