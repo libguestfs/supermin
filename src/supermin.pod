@@ -303,7 +303,7 @@ Detailed information within each stage.
 
 =item I<-v -v -v>
 
-Massive amounts of debugging (far too much more normal use, but good
+Massive amounts of debugging (far too much for normal use, but good
 if you are trying to diagnose a bug in supermin).
 
 =back
