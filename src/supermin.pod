@@ -463,14 +463,14 @@ then you should do something like this:
  
  supermin --build -f ext2 [etc]
 
-=head2 ENFORCING AVAILABILITY OF HOSTFILES
+=head2 ENFORCING AVAILABILITY OF PACKAGES
 
 Supermin builds the appliance by copying in the packages listed in
 C<packages>.  For this to work those packages must be available.  We
 usually enforce this by adding requirements (eg. RPM C<Requires:>
 lines) on the package that uses the supermin appliance, so that
 package cannot be installed without pulling in the dependent packages
-and thus making sure the host files are available.
+and thus making sure the packages are installed for supermin to use.
 
 =head1 ENVIRONMENT VARIABLES
 
