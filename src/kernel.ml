@@ -65,7 +65,13 @@ and find_kernel debug host_cpu copy_kernel kernel =
       if debug >= 1 then
         printf "supermin: kernel: SUPERMIN_KERNEL environment variable %s\n%!"
           kernel_env;
-      let kernel_version = get_kernel_version_from_file kernel_env in
+      let kernel_version =
+        try
+          let v = getenv "SUPERMIN_KERNEL_VERSION" in
+          if debug >= 1 then
+            printf "supermin: kernel: SUPERMIN_KERNEL_VERSION environment variable %s\n%!" v;
+          v
+        with Not_found -> get_kernel_version_from_file kernel_env in
       if debug >= 1 then
         printf "supermin: kernel: SUPERMIN_KERNEL version %s\n%!"
           kernel_version;
