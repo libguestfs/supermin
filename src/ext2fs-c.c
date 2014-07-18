@@ -213,7 +213,7 @@ supermin_ext2fs_copy_dir_recursively_from_host (value fsv,
   FTSENT *entry;
   const char *srcpath;
   char *destpath;
-  size_t n;
+  size_t i, n;
   int r;
 
   fs = Ext2fs_val (fsv);
@@ -244,12 +244,12 @@ supermin_ext2fs_copy_dir_recursively_from_host (value fsv,
       if (srcpath[0] == '\0')
         r = asprintf (&destpath, "/");
       else
-        r = asprintf (&destpath, "/%s", srcpath + 1);
+        r = asprintf (&destpath, "/%s", srcpath);
     } else {
       if (srcpath[0] == '\0')
         r = asprintf (&destpath, "%s", destdir);
       else
-        r = asprintf (&destpath, "%s/%s", destdir, srcpath + 1);
+        r = asprintf (&destpath, "%s/%s", destdir, srcpath);
     }
     if (r == -1)
       caml_raise_out_of_memory ();
@@ -257,6 +257,17 @@ supermin_ext2fs_copy_dir_recursively_from_host (value fsv,
     /* Destpath must not have a trailing '/' (except for root dir "/"). */
     n = strlen (destpath);
     if (n >= 2 && destpath[n-1] == '/') destpath[n-1] = '\0';
+
+    /* Remove any double // from within destpath. */
+    n = strlen (destpath);
+    for (i = 0; i < n-1; ++i) {
+      if (destpath[i] == '/' && destpath[i+1] == '/') {
+        memmove (&destpath[i], &destpath[i+1], n-(i+1));
+        destpath[n-1] = '\0';
+        i--;
+        n--;
+      }
+    }
 
     ext2_copy_file (fs, entry->fts_path, destpath);
     free (destpath);
