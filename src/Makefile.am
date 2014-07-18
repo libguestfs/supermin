@@ -96,7 +96,7 @@ OCAMLPACKAGES = -package unix,str
 if HAVE_OCAML_INIFILES
 OCAMLPACKAGES += -package inifiles
 endif
-OCAMLFLAGS = -warn-error CDEFLMPSUVXYZ
+OCAMLFLAGS = -warn-error CDEFLMPSUVXYZ-3
 
 supermin: $(OBJECTS)
 	$(OCAMLFIND) $(BEST) $(OCAMLFLAGS) $(OCAMLPACKAGES) -linkpkg \
