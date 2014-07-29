@@ -615,6 +615,10 @@ ext2_copy_file (ext2_filsys fs, const char *src, const char *dest)
       if (fp == NULL)
 	goto cont;
       new_dirname = malloc (PATH_MAX+1);
+      if (new_dirname == NULL) {
+	pclose (fp);
+	goto cont;
+      }
       if (fgets (new_dirname, PATH_MAX, fp) == NULL) {
 	pclose (fp);
 	goto cont;

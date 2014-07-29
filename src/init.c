@@ -307,6 +307,11 @@ insmod (const char *filename)
   errno = 0;
   size = 0;
 
+  if (!buf) {
+    perror("malloc");
+    exit (EXIT_FAILURE);
+  }
+
 #ifdef HAVE_LZMA_STATIC
   if (ends_with(filename, ".xz")) {
     lzma_stream strm = LZMA_STREAM_INIT;
@@ -350,6 +355,10 @@ insmod (const char *filename)
           const size_t num =  tmpsize - strm.avail_out;
           if (num > capacity) {
                buf = (char*) realloc (buf, size*2);
+               if (!buf) {
+                    perror("realloc");
+                    exit (EXIT_FAILURE);
+               }
                capacity = size;
           }
           memcpy (buf+size, tmp_out, num);
@@ -380,6 +389,10 @@ insmod (const char *filename)
   while ((num = gzread (gzfp, tmp, tmpsize)) > 0) {
     if (num > capacity) {
       buf = (char*) realloc (buf, size*2);
+      if (!buf) {
+        perror("realloc");
+        exit (EXIT_FAILURE);
+      }
       capacity = size;
     }
     memcpy (buf+size, tmp, num);
