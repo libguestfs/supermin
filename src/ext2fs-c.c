@@ -511,6 +511,7 @@ read_whole_file (const char *filename, size_t size)
   if (fd == -1) {
     /* Skip unreadable files. */
     fprintf (stderr, "supermin: open: %s: %m\n", filename);
+    free (buf);
     return NULL;
   }
 
@@ -585,11 +586,12 @@ ext2_copy_file (ext2_filsys fs, const char *src, const char *dest)
    * is because the code was copied and pasted from supermin 4 where
    * there was no such distinction.
    */
-  const char *dirname, *basename;
+  char *dirname;
+  const char *basename;
   const char *p = strrchr (dest, '/');
   ext2_ino_t dir_ino;
   if (dest == p) {     /* "/foo" */
-    dirname = "/";
+    dirname = strdup ("/");
     basename = dest+1;
     dir_ino = EXT2_ROOT_INO;
   } else {                      /* "/foo/bar" */
@@ -630,6 +632,7 @@ ext2_copy_file (ext2_filsys fs, const char *src, const char *dest)
 	  new_dirname[len-1] == '\n')
 	new_dirname[len-1] = '\0';
 
+      free (dirname);
       dirname = new_dirname;
     }
   cont:
@@ -717,4 +720,6 @@ ext2_copy_file (ext2_filsys fs, const char *src, const char *dest)
                       major (statbuf.st_rdev), minor (statbuf.st_rdev),
                       dir_ft, NULL);
   }
+
+  free (dirname);
 }
