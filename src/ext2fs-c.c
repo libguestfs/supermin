@@ -554,6 +554,9 @@ ext2_copy_file (struct ext2_data *data, const char *src, const char *dest)
   struct stat statbuf;
   struct statvfs statvfsbuf;
 
+  if (data->debug >= 3)
+    printf ("supermin: ext2: copy_file %s -> %s\n", src, dest);
+
   if (lstat (src, &statbuf) == -1)
     unix_error (errno, (char *) "lstat", caml_copy_string (src));
 
@@ -569,11 +572,6 @@ ext2_copy_file (struct ext2_data *data, const char *src, const char *dest)
       unix_error (ENOSPC, (char *) "statvfs",
                   caml_copy_string (data->fs->device_name));
   }
-
-#if 0
-  /* if debug >= 3 */
-  fprintf (stderr, "ext2_copy_file %s %s 0%o\n", src, dest, statbuf.st_mode);
-#endif
 
   /* Sanity check the path.  These rules are always true for the paths
    * passed to us here from the appliance layer.  The assertions just
