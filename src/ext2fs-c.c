@@ -55,6 +55,7 @@
 struct ext2_data
 {
   ext2_filsys fs;
+  int debug;
 };
 
 static void initialize (void) __attribute__((constructor));
@@ -84,6 +85,8 @@ ext2_handle_closed (void)
 }
 
 #define Ext2fs_val(v) (*((struct ext2_data *)Data_custom_val(v)))
+#define Val_none Val_int(0)
+#define Some_val(v) Field(v,0)
 
 static void
 ext2_finalize (value fsv)
@@ -121,7 +124,7 @@ Val_ext2fs (struct ext2_data *data)
 }
 
 value
-supermin_ext2fs_open (value filev)
+supermin_ext2fs_open (value filev, value debugv)
 {
   CAMLparam1 (filev);
   CAMLlocal1 (fsv);
@@ -137,6 +140,8 @@ supermin_ext2fs_open (value filev)
                      unix_io_manager, &data.fs);
   if (err != 0)
     ext2_error_to_exception ("ext2fs_open", err, String_val (filev));
+
+  data.debug = debugv == Val_none ? 0 : Int_val (Some_val (debugv));
 
   fsv = Val_ext2fs (&data);
   CAMLreturn (fsv);

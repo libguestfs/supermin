@@ -25,7 +25,7 @@
 
 type t
 
-val ext2fs_open : string -> t
+val ext2fs_open : string -> ?debug:int -> t
 val ext2fs_close : t -> unit
 
 val ext2fs_read_bitmaps : t -> unit

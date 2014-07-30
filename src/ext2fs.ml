@@ -18,7 +18,7 @@
 
 type t
 
-external ext2fs_open : string -> t = "supermin_ext2fs_open"
+external ext2fs_open : string -> ?debug:int -> t = "supermin_ext2fs_open"
 external ext2fs_close : t -> unit = "supermin_ext2fs_close"
 
 external ext2fs_read_bitmaps : t -> unit = "supermin_ext2fs_read_bitmaps"

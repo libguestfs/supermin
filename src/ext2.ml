@@ -52,7 +52,7 @@ let build_ext2 debug basedir files modpath kernel_version appliance =
       (quote appliance) in
   run_command cmd;
 
-  let fs = ext2fs_open appliance in
+  let fs = ext2fs_open ~debug appliance in
   ext2fs_read_bitmaps fs;
 
   if debug >= 1 then
