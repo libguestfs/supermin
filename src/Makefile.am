@@ -99,6 +99,7 @@ supermin_SOURCES = $(SOURCES_C)
 supermin_CFLAGS = \
 	-I$(shell $(OCAMLC) -where) \
 	$(EXT2FS_CFLAGS) $(COM_ERR_CFLAGS) \
+	-Wall $(WERROR_CFLAGS) \
 	-I$(top_srcdir)/lib -I../lib
 
 BOBJECTS = $(SOURCES_ML:.ml=.cmo)

@@ -52,6 +52,21 @@ m4_ifdef([AC_PROG_SED],[
     AC_SUBST([SED], "sed")
 ])
 
+AC_ARG_ENABLE([werror],
+    [AS_HELP_STRING([--enable-werror],
+                    [turn GCC warnings into errors (for developers)])],
+    [case $enableval in
+     yes|no) ;;
+     *)      AC_MSG_ERROR([bad value $enableval for werror option]) ;;
+     esac
+     gcc_werror=$enableval],
+    [gcc_werror=no]
+)
+if test "$gcc_werror" = "yes"; then
+    WERROR_CFLAGS="-Werror"
+    AC_SUBST([WERROR_CFLAGS])
+fi
+
 # OCaml and ocamlfind are required to compile.
 AC_PROG_OCAML
 if test "$OCAMLC" = "no"; then
