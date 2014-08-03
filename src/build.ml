@@ -376,6 +376,7 @@ and munge files =
 
     | { ft_path = "/" } :: rest ->
       (* This is just to avoid a corner-case in subsequent rules. *)
+      insert_dir "/";
       loop rest
 
     | dir :: rest when stat_is_dir dir.ft_path && dir_seen dir.ft_path ->
