@@ -126,9 +126,9 @@ let rec build debug
     List.filter (
       fun file ->
         try ignore (lstat file.ft_source_path); true
-        with Unix_error (err, fn, _) ->
+        with Unix_error _ ->
           try ignore (lstat file.ft_path); true
-          with Unix_error (err, fn, _) -> false
+          with Unix_error _ -> false
     ) files in
 
   if debug >= 1 then
