@@ -49,6 +49,7 @@ let pacman_package_of_string str =
   (* Parse a package name into the fields like name and version. *)
   let parse_pac str =
     let cmd = sprintf "%s -Qi %s" Config.pacman (quote str) in
+    if !settings.debug >= 2 then printf "%s" cmd;
     let lines = run_command_get_lines cmd in
 
     let name = ref "" and evr = ref "" and arch = ref "" in
@@ -97,6 +98,7 @@ let pacman_package_of_string str =
   (* Check if a package is installed. *)
   and check_pac_installed name =
     let cmd = sprintf "%s -Qq %s >/dev/null 2>&1" Config.pacman (quote name) in
+    if !settings.debug >= 2 then printf "%s" cmd;
     0 = Sys.command cmd
   in
 
@@ -133,6 +135,7 @@ let pacman_get_all_requires pkgs =
     for p in %s; do %s -u $p; done | awk '{print $1}' | sort -u
   " (quoted_list (List.map pacman_package_name (PackageSet.elements pkgs)))
     Config.pactree in
+  if !settings.debug >= 2 then printf "%s" cmd;
   let lines = run_command_get_lines cmd in
   let lines = filter_map pacman_package_of_string lines in
   PackageSet.union pkgs (package_set_of_list lines)
@@ -142,6 +145,7 @@ let pacman_get_all_files pkgs =
     sprintf "%s -Ql %s | awk '{print $2}'"
       Config.pacman
       (quoted_list (List.map pacman_package_name (PackageSet.elements pkgs))) in
+  if !settings.debug >= 2 then printf "%s" cmd;
   let lines = run_command_get_lines cmd in
   List.map (
     fun path ->
@@ -183,6 +187,7 @@ let pacman_download_all_packages pkgs dir =
          | None -> ""
          | Some filename -> " --config " ^ (quote filename))
         (quoted_list names) in
+      if !settings.debug >= 2 then printf "%s" cmd;
       if Sys.command cmd <> 0 then (
         (* The package may not be in the main repos, check the AUR. *)
         let cmd = sprintf "\
@@ -203,6 +208,7 @@ let pacman_download_all_packages pkgs dir =
           (quote name) (* cd *)
           Config.makepkg
           (quote name) (quote tdir) (* mv *) in
+        if !settings.debug >= 2 then printf "%s" cmd;
         run_command cmd
       );
   ) names;
@@ -214,6 +220,7 @@ let pacman_download_all_packages pkgs dir =
       for f in %s/*.pkg.tar.xz; do tar -xf \"$f\" -C %s; done
     "
       (quote tdir) (quote dir) in
+  if !settings.debug >= 2 then printf "%s" cmd;
   run_command cmd
 
 let () =
