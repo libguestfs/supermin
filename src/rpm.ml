@@ -306,28 +306,48 @@ and opensuse_download_all_packages pkgs dir =
       sprintf "%s.%s" name arch
   ) rpms in
 
-  (* This isn't quite right because zypper will resolve the dependencies
-   * of the listed packages against the public repos and download all the
-   * dependencies too.  We only really want it to download the named
-   * packages. XXX
-   *)
+  let is_zypper_1_9_14 =
+    !zypper_major > 1
+    || (!zypper_major = 1 && !zypper_minor > 9)
+    || (!zypper_major = 1 && !zypper_minor = 9 && !zypper_patch >= 14) in
+
   let cmd =
-    sprintf "
-      %s%s \\
-        --root %s \\
-        --reposd-dir /etc/zypp/repos.d \\
-        --cache-dir %s \\
-        --pkg-cache-dir %s \\
-        --gpg-auto-import-keys --no-gpg-checks --non-interactive \\
-        install \\
-        --auto-agree-with-licenses --download-only \\
-        %s"
-      Config.zypper
-      (if !settings.debug >= 1 then " --verbose --verbose" else " --quiet")
-      (quote tdir)
-      (quote tdir)
-      (quote tdir)
-      (quoted_list rpms) in
+    if is_zypper_1_9_14 then
+      sprintf "
+        %s%s \\
+          --reposd-dir /etc/zypp/repos.d \\
+          --cache-dir %s \\
+          --pkg-cache-dir %s \\
+          --gpg-auto-import-keys --no-gpg-checks --non-interactive \\
+          download \\
+          %s"
+        Config.zypper
+        (if !settings.debug >= 1 then " --verbose --verbose" else " --quiet")
+        (quote tdir)
+        (quote tdir)
+        (quoted_list rpms)
+    else
+      (* This isn't quite right because zypper will resolve the dependencies
+       * of the listed packages against the public repos and download all the
+       * dependencies too.  We only really want it to download the named
+       * packages. XXX
+       *)
+      sprintf "
+        %s%s \\
+          --root %s \\
+          --reposd-dir /etc/zypp/repos.d \\
+          --cache-dir %s \\
+          --pkg-cache-dir %s \\
+          --gpg-auto-import-keys --no-gpg-checks --non-interactive \\
+          install \\
+          --auto-agree-with-licenses --download-only \\
+          %s"
+        Config.zypper
+        (if !settings.debug >= 1 then " --verbose --verbose" else " --quiet")
+        (quote tdir)
+        (quote tdir)
+        (quote tdir)
+        (quoted_list rpms) in
   run_command cmd;
 
   rpm_unpack tdir dir
