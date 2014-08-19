@@ -43,8 +43,9 @@ let mageia_detect () =
 
 let settings = ref no_settings
 let rpm_major, rpm_minor = ref 0, ref 0
+let zypper_major, zypper_minor, zypper_patch = ref 0, ref 0, ref 0
 
-let rpm_init s =
+let rec rpm_init s =
   settings := s;
 
   (* Get RPM version. We have to adjust some RPM commands based on
@@ -75,6 +76,44 @@ let rpm_init s =
   rpm_minor := minor;
   if !settings.debug >= 1 then
     printf "supermin: rpm: detected RPM version %d.%d\n" major minor
+
+and opensuse_init s =
+  rpm_init s;
+
+  (* Get zypper version. We can use better zypper commands with more
+   * recent versions.
+   *)
+  let cmd = sprintf "%s --version | awk '{print $2}'" Config.zypper in
+  let lines = run_command_get_lines cmd in
+  let major, minor, patch =
+    match lines with
+    | [] ->
+      eprintf "supermin: zypper --version command had no output\n";
+      exit 1
+    | line :: _ ->
+      let line = string_split "." line in
+      match line with
+      | [] ->
+        eprintf "supermin: unable to parse empty output of zypper --version\n";
+        exit 1
+      | [x] ->
+        eprintf "supermin: unable to parse output of zypper --version: %s\n" x;
+        exit 1
+      | major :: minor :: [] ->
+        (try int_of_string major, int_of_string minor, 0
+        with Failure "int_of_string" ->
+          eprintf "supermin: unable to parse output of zypper --version: non-numeric\n";
+          exit 1)
+      | major :: minor :: patch :: _ ->
+        (try int_of_string major, int_of_string minor, int_of_string patch
+        with Failure "int_of_string" ->
+          eprintf "supermin: unable to parse output of zypper --version: non-numeric\n";
+          exit 1) in
+  zypper_major := major;
+  zypper_minor := minor;
+  zypper_patch := patch;
+  if !settings.debug >= 1 then
+    printf "supermin: rpm: detected zypper version %d.%d.%d\n" major minor patch
 
 type rpm_t = {
   name : string;
@@ -346,6 +385,7 @@ let () =
   let opensuse = {
     fedora with
     ph_detect = opensuse_detect;
+    ph_init = opensuse_init;
     ph_download_package = PHDownloadAllPackages opensuse_download_all_packages;
   } in
   register_package_handler "opensuse" "rpm" opensuse;
