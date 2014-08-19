@@ -340,7 +340,7 @@ and opensuse_download_all_packages pkgs dir =
           --pkg-cache-dir %s \\
           --gpg-auto-import-keys --no-gpg-checks --non-interactive \\
           install \\
-          --auto-agree-with-licenses --download-only \\
+          --auto-agree-with-licenses --download-only --no-recommends \\
           %s"
         Config.zypper
         (if !settings.debug >= 1 then " --verbose --verbose" else " --quiet")
