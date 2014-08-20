@@ -26,3 +26,7 @@ set -e
 
 # Check that listing drivers work
 ../src/supermin --list-drivers
+
+# Check at least one driver is detected
+echo
+../src/supermin --list-drivers | grep -v not-detected
