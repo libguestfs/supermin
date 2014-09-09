@@ -631,6 +631,7 @@ ext2_copy_file (struct ext2_data *data, const char *src, const char *dest)
       }
       if (fgets (new_dirname, PATH_MAX, fp) == NULL) {
 	pclose (fp);
+	free (new_dirname);
 	goto cont;
       }
       pclose (fp);
