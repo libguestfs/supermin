@@ -86,11 +86,17 @@ let rec build debug
   (* Read the supermin appliance, ie. the input files and/or
    * directories that make up the appliance.
    *)
+  if debug >= 1 then
+    printf "supermin: reading the supermin appliance\n%!";
   let appliance = read_appliance debug basedir empty_appliance inputs in
 
   (* Resolve dependencies in the list of packages. *)
   let ph = get_package_handler () in
+  if debug >= 1 then
+    printf "supermin: mapping package names to installed packages\n%!";
   let packages = filter_map ph.ph_package_of_string appliance.packages in
+  if debug >= 1 then
+    printf "supermin: resolving full list of package dependencies\n%!";
   let packages =
     let packages = package_set_of_list packages in
     get_all_requires packages in
