@@ -136,7 +136,7 @@ let rpm_package_of_string str =
    * ourselves.  *)
   let parse_rpm str =
     let cmd =
-      sprintf "%s -q --qf '%%{name} %%{epoch} %%{version} %%{release} %%{arch}\\n' %s"
+      sprintf "%s --nosignature --nodigest -q --qf '%%{name} %%{epoch} %%{version} %%{release} %%{arch}\\n' %s"
         Config.rpm
         (quote str) in
     let lines = run_command_get_lines cmd in
@@ -177,7 +177,8 @@ let rpm_package_of_string str =
 
   (* Check if an RPM is installed. *)
   and check_rpm_installed name =
-    let cmd = sprintf "%s -q %s >/dev/null" Config.rpm (quote name) in
+    let cmd = sprintf "%s --nosignature --nodigest -q %s >/dev/null"
+      Config.rpm (quote name) in
     0 = Sys.command cmd
   in
 
@@ -227,9 +228,9 @@ let rpm_get_package_database_mtime () =
 let rpm_get_all_requires pkgs =
   let get pkgs =
     let cmd = sprintf "\
-        %s -qR %s |
+        %s --nosignature --nodigest -qR %s |
         awk '{print $1}' |
-        xargs rpm -q --qf '%%{name}\\n' --whatprovides |
+        xargs rpm --nosignature --nodigest -q --qf '%%{name}\\n' --whatprovides |
         grep -v 'no package provides' |
         sort -u"
       Config.rpm
@@ -251,7 +252,7 @@ let rpm_get_all_requires pkgs =
 
 let rpm_get_all_files pkgs =
   let cmd = sprintf "\
-      %s -q --qf '[%%{FILENAMES}\\t%%{FILEFLAGS:fflags}\\n]' %s |
+      %s --nosignature --nodigest -q --qf '[%%{FILENAMES}\\t%%{FILEFLAGS:fflags}\\n]' %s |
       grep '^/' |
       sort -u"
     Config.rpm
