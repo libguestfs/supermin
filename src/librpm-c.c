@@ -463,7 +463,7 @@ supermin_rpm_installed (value rpmv, value pkgv)
 }
 
 value
-supermin_rpm_pkg_required (value rpmv, value pkgv)
+supermin_rpm_pkg_requires (value rpmv, value pkgv)
 {
   abort ();
 }
