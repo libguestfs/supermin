@@ -42,6 +42,9 @@ SOURCES = \
 	realpath-c.c \
 	realpath.ml \
 	realpath.mli \
+	librpm-c.c \
+	librpm.ml \
+	librpm.mli \
 	config.ml \
 	utils.ml \
 	utils.mli \
@@ -66,6 +69,7 @@ SOURCES_ML = \
 	fnmatch.ml \
 	glob.ml \
 	realpath.ml \
+	librpm.ml \
 	config.ml \
 	utils.ml \
 	types.ml \
@@ -86,6 +90,7 @@ SOURCES_C = \
 	ext2init-c.c \
 	fnmatch-c.c \
 	glob-c.c \
+	librpm-c.c \
 	realpath-c.c
 
 CLEANFILES = *~ *.cmi *.cmo *.cmx *.o supermin
@@ -98,7 +103,7 @@ bin_PROGRAMS = supermin
 supermin_SOURCES = $(SOURCES_C)
 supermin_CFLAGS = \
 	-I$(shell $(OCAMLC) -where) \
-	$(EXT2FS_CFLAGS) $(COM_ERR_CFLAGS) \
+	$(EXT2FS_CFLAGS) $(COM_ERR_CFLAGS) $(LIBRPM_CFLAGS) \
 	-Wall $(WERROR_CFLAGS) \
 	-I$(top_srcdir)/lib -I../lib
 

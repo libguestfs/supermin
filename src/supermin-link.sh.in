@@ -21,4 +21,4 @@
 # Hack automake to link 'supermin' binary properly.  There is no other
 # way to add the -cclib parameter to the end of the command line.
 
-exec "$@" -linkpkg -cclib '@EXT2FS_LIBS@ @COM_ERR_LIBS@'
+exec "$@" -linkpkg -cclib '@EXT2FS_LIBS@ @COM_ERR_LIBS@ @LIBRPM_LIBS@'
