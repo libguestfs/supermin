@@ -322,13 +322,13 @@ and get_file_content file buf len =
 
 and get_compressed_file_content zcat file =
   let cmd = sprintf "%s %s" zcat (quote file) in
-  let chan = open_process_in cmd in
+  let chan_out, chan_in, chan_err = open_process_full cmd [||] in
   let buf = String.create 512 in
-  let len = input chan buf 0 (String.length buf) in
+  let len = input chan_out buf 0 (String.length buf) in
   (* We're expecting the subprocess to fail because we close the pipe
    * early, so:
    *)
-  ignore (close_process_in chan);
+  ignore (Unix.close_process_full (chan_out, chan_in, chan_err));
 
   get_file_content file buf len
 
