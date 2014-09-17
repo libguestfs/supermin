@@ -191,6 +191,7 @@ let () =
   let ph = {
     ph_detect = dpkg_detect;
     ph_init = dpkg_init;
+    ph_fini = (fun () -> ());
     ph_package_of_string = dpkg_package_of_string;
     ph_package_to_string = dpkg_package_to_string;
     ph_package_name = dpkg_package_name;

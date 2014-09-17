@@ -99,6 +99,11 @@ type package_handler = {
       initializes.  The [settings] parameter is a struct of general
       settings and configuration. *)
 
+  ph_fini : unit -> unit;
+  (** This is called at the end of the supermin processing.  It can
+      be used to do teardown operations for the package handler,
+      when no more package-related operations are going to be done. *)
+
   ph_package_of_string : string -> package option;
   (** Convert a string (from user input) into a package object.  If
       the package is not installed or the string is otherwise
@@ -171,6 +176,8 @@ val register_package_handler : string -> string -> package_handler -> unit
 val list_package_handlers : unit -> unit
 
 val check_system : settings -> unit
+
+val package_handler_shutdown : unit -> unit
 
 val get_package_handler : unit -> package_handler
 

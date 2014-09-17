@@ -227,6 +227,7 @@ let () =
   let ph = {
     ph_detect = pacman_detect;
     ph_init = pacman_init;
+    ph_fini = (fun () -> ());
     ph_package_of_string = pacman_package_of_string;
     ph_package_to_string = pacman_package_to_string;
     ph_package_name = pacman_package_name;

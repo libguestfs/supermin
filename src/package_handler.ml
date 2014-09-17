@@ -59,6 +59,7 @@ let file_source file =
 type package_handler = {
   ph_detect : unit -> bool;
   ph_init : settings -> unit;
+  ph_fini : unit -> unit;
   ph_package_of_string : string -> package option;
   ph_package_to_string : package -> string;
   ph_package_name : package -> string;
@@ -139,6 +140,10 @@ let rec get_package_handler_name () =
   match !handler with
   | Some (system, packager, _) -> sprintf "%s/%s" system packager
   | None -> assert false
+
+let package_handler_shutdown () =
+  let ph = get_package_handler () in
+  ph.ph_fini ()
 
 let get_all_requires pkgs =
   let ph = get_package_handler () in

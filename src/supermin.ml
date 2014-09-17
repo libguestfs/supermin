@@ -261,7 +261,9 @@ let main () =
        *)
       sprintf "( chmod -R +w %s ; rm -rf %s ) 2>/dev/null &"
         (quote old_outputdir) (quote old_outputdir) in
-    ignore (Sys.command cmd)
+    ignore (Sys.command cmd);
+
+  package_handler_shutdown ()
 
 let () =
   try main ()

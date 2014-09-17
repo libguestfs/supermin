@@ -394,6 +394,7 @@ let () =
   let fedora = {
     ph_detect = fedora_detect;
     ph_init = rpm_init;
+    ph_fini = (fun () -> ());
     ph_package_of_string = rpm_package_of_string;
     ph_package_to_string = rpm_package_to_string;
     ph_package_name = rpm_package_name;
