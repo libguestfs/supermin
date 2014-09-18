@@ -212,13 +212,12 @@ let rpm_get_all_requires pkgs =
           let provides =
             try Hashtbl.find rpm_providers x
             with Not_found -> rpm_pkg_whatprovides (get_rpm ()) x in
-          let newset = Array.fold_left (
+          Array.fold_left (
             fun newset p ->
               match rpm_package_of_string p with
                 | None -> newset
                 | Some x -> StringSet.add p newset
-          ) StringSet.empty provides in
-          StringSet.union set newset
+          ) set provides
         with Not_found -> set
     ) StringSet.empty reqs in
     pkgs'
