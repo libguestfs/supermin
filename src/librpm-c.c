@@ -185,6 +185,7 @@ supermin_rpm_installed (value rpmv, value pkgv)
   rpmdbMatchIterator iter;
   int count, i;
   Header h;
+  rpmtd td;
 
   data = Librpm_val (rpmv);
   if (data.ts == NULL)
@@ -200,16 +201,15 @@ supermin_rpm_installed (value rpmv, value pkgv)
 
   rv = caml_alloc (count, 0);
   i = 0;
+  td = rpmtdNew ();
 
   while ((h = rpmdbNextIterator (iter)) != NULL) {
     HeaderIterator hi;
-    rpmtd td;
     uint32_t *val;
     bool stored_vals[5] = { false };
 
     v = caml_alloc (5, 0);
     hi = headerInitIterator (h);
-    td = rpmtdNew ();
     while (headerNext (hi, td) == 1) {
       switch (rpmtdTag (td)) {
       case RPMTAG_NAME:
@@ -251,11 +251,11 @@ supermin_rpm_installed (value rpmv, value pkgv)
       Store_field (v, 4, caml_copy_string ("unknown"));
     Store_field (rv, i, v);
 
-    rpmtdFree (td);
     headerFreeIterator (hi);
     ++i;
   }
 
+  rpmtdFree (td);
   rpmdbFreeIterator (iter);
 
   CAMLreturn (rv);
@@ -334,6 +334,7 @@ supermin_rpm_pkg_whatprovides (value rpmv, value pkgv)
   rpmdbMatchIterator iter;
   int count, i;
   Header h;
+  rpmtd td;
 
   data = Librpm_val (rpmv);
   if (data.ts == NULL)
@@ -349,12 +350,11 @@ supermin_rpm_pkg_whatprovides (value rpmv, value pkgv)
 
   rv = caml_alloc (count, 0);
   i = 0;
+  td = rpmtdNew ();
 
   while ((h = rpmdbNextIterator (iter)) != NULL) {
-    rpmtd td;
     int ret;
 
-    td = rpmtdNew ();
     ret = headerGet (h, RPMTAG_NAME, td, HEADERGET_MINMEM);
     if (ret != 1)
       caml_failwith ("rpm_pkg_whatprovides: headerGet failed");
@@ -362,10 +362,10 @@ supermin_rpm_pkg_whatprovides (value rpmv, value pkgv)
     Store_field (rv, i, caml_copy_string (rpmtdGetString (td)));
 
     rpmtdFreeData (td);
-    rpmtdFree (td);
     ++i;
   }
 
+  rpmtdFree (td);
   rpmdbFreeIterator (iter);
 
   CAMLreturn (rv);
