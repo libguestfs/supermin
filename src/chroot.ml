@@ -60,7 +60,7 @@ let build_chroot debug files outputdir =
 
         | S_REG | S_CHR | S_BLK | S_FIFO | S_SOCK ->
           if debug >= 2 then printf "supermin: chroot: copy %s\n%!" opath;
-          let cmd = sprintf "cp -p %s %s" path opath in
+          let cmd = sprintf "cp -p %s %s" (quote path) (quote opath) in
           ignore (Sys.command cmd)
       with Unix_error _ -> ()
   ) files;
