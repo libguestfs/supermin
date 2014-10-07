@@ -158,7 +158,18 @@ let rpm_package_of_string str =
     Not_found ->
       let r =
         try Some (pkg_of_rpm (query str))
-        with Not_found -> None in
+        with Not_found ->
+          try
+            let p = rpm_pkg_whatprovides (get_rpm ()) str in
+            (* Pick only a provided package when there is just one of them,
+             * otherwise there is no reliable way to know which one to pick
+             * if there are multiple providers.
+             *)
+            if Array.length p = 1 then
+              Some (pkg_of_rpm (query p.(0)))
+            else
+              None
+          with Not_found -> None in
       Hashtbl.add rpmh str r;
       r
 
