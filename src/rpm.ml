@@ -137,7 +137,7 @@ let rpmh = Hashtbl.create 13
 
 let rpm_package_of_string str =
   let query rpm =
-    let rpms = Array.to_list (rpm_installed (get_rpm ()) str) in
+    let rpms = Array.to_list (rpm_installed (get_rpm ()) rpm) in
     (* RPM will return multiple hits when either multiple versions or
      * multiple arches are installed at the same time.  We are only
      * interested in the highest version with the best
