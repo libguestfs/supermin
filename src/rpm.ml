@@ -211,7 +211,10 @@ let rpm_get_all_requires pkgs =
         try
           let provides =
             try Hashtbl.find rpm_providers x
-            with Not_found -> rpm_pkg_whatprovides (get_rpm ()) x in
+            with Not_found ->
+              let p = rpm_pkg_whatprovides (get_rpm ()) x in
+              Hashtbl.add rpm_providers x p;
+              p in
           Array.fold_left (
             fun newset p ->
               match rpm_package_of_string p with
