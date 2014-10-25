@@ -402,6 +402,13 @@ and munge files =
           realpath (parent // target)
         else
           target in
+      (* Remove trailing slash from filenames (RHBZ#1155586). *)
+      let target =
+        let len = String.length target in
+        if len >= 2 && target.[len-1] = '/' then
+          String.sub target 0 (len-1)
+        else
+          target in
       if not (dir_seen target) then (
         let target =
           {ft_path = target; ft_source_path = target; ft_config = false} in
