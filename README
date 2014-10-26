@@ -55,6 +55,7 @@ Requirements
 For Fedora/RHEL:
 
   rpm
+  librpm
   yumdownloader (from yum-utils)
 
 For Debian/Ubuntu:
