@@ -30,7 +30,7 @@ let stringset_of_list pkgs =
 
 let fedora_detect () =
   Config.rpm <> "no" && Config.rpm2cpio <> "no" && rpm_is_available () &&
-    Config.yumdownloader <> "no" &&
+    (Config.yumdownloader <> "no" || Config.dnf <> "no") &&
     try
       (stat "/etc/redhat-release").st_kind = S_REG ||
       (stat "/etc/fedora-release").st_kind = S_REG
@@ -278,31 +278,48 @@ let rpm_get_all_files pkgs =
 let rec fedora_download_all_packages pkgs dir =
   let tdir = !settings.tmpdir // string_random8 () in
 
-  (* It's quite complex to get yumdownloader to download specific
-   * RPMs.  If we use the full NVR, then it will refuse if an installed
-   * RPM is older than whatever is currently in the repo.  If we use
-   * just name, it will download all architectures (even with
-   * --archlist).
-   * 
-   * Use name.arch so it can download any version but only the specific
-   * architecture.
-   *)
-  let rpms = List.map rpm_of_pkg (PackageSet.elements pkgs) in
-  let rpms = List.map (
-    fun { name = name; arch = arch } ->
-      sprintf "%s.%s" name arch
-  ) rpms in
+  if Config.yumdownloader <> "no" then (
+    (* It's quite complex to get yumdownloader to download specific
+     * RPMs.  If we use the full NVR, then it will refuse if an installed
+     * RPM is older than whatever is currently in the repo.  If we use
+     * just name, it will download all architectures (even with
+     * --archlist).
+     * 
+     * Use name.arch so it can download any version but only the specific
+     * architecture.
+     *)
+    let rpms = List.map rpm_of_pkg (PackageSet.elements pkgs) in
+    let rpms = List.map (
+      fun { name = name; arch = arch } ->
+        sprintf "%s.%s" name arch
+    ) rpms in
 
-  let cmd =
-    sprintf "%s%s%s --destdir %s %s"
-      Config.yumdownloader
-      (if !settings.debug >= 1 then "" else " --quiet")
-      (match !settings.packager_config with
-      | None -> ""
-      | Some filename -> sprintf " -c %s" (quote filename))
-      (quote tdir)
-      (quoted_list rpms) in
-  run_command cmd;
+    let cmd =
+      sprintf "%s%s%s --destdir %s %s"
+        Config.yumdownloader
+        (if !settings.debug >= 1 then "" else " --quiet")
+        (match !settings.packager_config with
+        | None -> ""
+        | Some filename -> sprintf " -c %s" (quote filename))
+        (quote tdir)
+        (quoted_list rpms) in
+    run_command cmd
+  )
+  else (* Config.dnf <> "no" *) (
+    (* dnf doesn't create the download directory. *)
+    mkdir tdir 0o700;
+
+    let rpms = List.map rpm_of_pkg (PackageSet.elements pkgs) in
+    let rpms = List.map (
+      fun { name = name; arch = arch } ->
+        sprintf "%s.%s" name arch
+    ) rpms in
+
+    let cmd =
+      sprintf "%s download --destdir %s %s"
+        Config.dnf (quote tdir) (quoted_list rpms) in
+    run_command cmd
+  );
 
   rpm_unpack tdir dir
 

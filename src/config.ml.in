@@ -23,6 +23,7 @@ let host_cpu = "@host_cpu@"
 
 let apt_get = "@APT_GET@"
 let cpio = "@CPIO@"
+let dnf = "@DNF@"
 let dpkg = "@DPKG@"
 let dpkg_deb = "@DPKG_DEB@"
 let dpkg_query = "@DPKG_QUERY@"

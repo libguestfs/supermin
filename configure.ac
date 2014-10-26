@@ -95,6 +95,7 @@ dnl For yum-rpm handler.
 AC_PATH_PROG(RPM,[rpm],[no])
 AC_PATH_PROG(RPM2CPIO,[rpm2cpio],[no])
 AC_PATH_PROG(YUMDOWNLOADER,[yumdownloader],[no])
+AC_PATH_PROG(DNF,[dnf],[no])
 PKG_CHECK_MODULES([LIBRPM], [rpm], [librpm=yes], [:])
 if test "x$librpm" = "xyes"; then
   AC_DEFINE([HAVE_LIBRPM], [1], [Define if you have librpm])

@@ -56,7 +56,7 @@ For Fedora/RHEL:
 
   rpm
   librpm
-  yumdownloader (from yum-utils)
+  yumdownloader (from yum-utils) or 'dnf download' plugin
 
 For Debian/Ubuntu:
 
