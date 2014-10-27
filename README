@@ -63,6 +63,25 @@ For Debian/Ubuntu:
   dpkg
   apt-get
 
+For openSUSE:
+
+  rpm
+  librpm
+  zypper
+
+For Mageia:
+
+  rpm
+  librpm
+  urpmi
+  fakeroot
+
+For Arch Linux:
+
+  pacman
+  fakeroot
+  makepkg
+
 Optional
 --------
 
