@@ -122,6 +122,12 @@ supermin_rpm_version (value unit)
 }
 
 value
+supermin_rpm_vercmp (value av, value bv)
+{
+  return Val_int (rpmvercmp (String_val (av), String_val (bv)));
+}
+
+value
 supermin_rpm_open (value debugv)
 {
   CAMLparam1 (debugv);
@@ -440,6 +446,12 @@ supermin_rpm_is_available (value unit)
 
 value
 supermin_rpm_version (value unit)
+{
+  abort ();
+}
+
+value
+supermin_rpm_vercmp (value av, value bv)
 {
   abort ();
 }

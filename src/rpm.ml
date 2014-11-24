@@ -144,7 +144,7 @@ let rpm_package_of_string str =
      * architecture.
      *)
     let cmp { version = v1; arch = a1 } { version = v2; arch = a2 } =
-      let i = compare_version v2 v1 in
+      let i = rpm_vercmp v2 v1 in
       if i <> 0 then i
       else compare_architecture a2 a1
     in

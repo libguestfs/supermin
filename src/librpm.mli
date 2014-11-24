@@ -19,6 +19,7 @@
 val rpm_is_available : unit -> bool
 
 val rpm_version : unit -> string
+val rpm_vercmp : string -> string -> int
 
 type t
 

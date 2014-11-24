@@ -19,6 +19,7 @@
 external rpm_is_available : unit -> bool = "supermin_rpm_is_available"
 
 external rpm_version : unit -> string = "supermin_rpm_version"
+external rpm_vercmp : string -> string -> int = "supermin_rpm_vercmp" "noalloc"
 
 type t
 
