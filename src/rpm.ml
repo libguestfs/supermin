@@ -308,8 +308,14 @@ let rec fedora_download_all_packages pkgs dir =
     let rpms = pkgs_as_NA_rpms pkgs in
 
     let cmd =
-      sprintf "%s download --destdir %s %s"
-        Config.dnf (quote tdir) (quoted_list rpms) in
+      sprintf "%s download%s%s --destdir %s %s"
+        Config.dnf
+        (if !settings.debug >= 1 then " -v" else " -q")
+        (match !settings.packager_config with
+        | None -> ""
+        | Some filename -> sprintf " -c %s" (quote filename))
+        (quote tdir)
+        (quoted_list rpms) in
     run_command cmd
   );
 
