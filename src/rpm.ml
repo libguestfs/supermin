@@ -288,11 +288,7 @@ let rec fedora_download_all_packages pkgs dir =
      * Use name.arch so it can download any version but only the specific
      * architecture.
      *)
-    let rpms = List.map rpm_of_pkg (PackageSet.elements pkgs) in
-    let rpms = List.map (
-      fun { name = name; arch = arch } ->
-        sprintf "%s.%s" name arch
-    ) rpms in
+    let rpms = pkgs_as_NA_rpms pkgs in
 
     let cmd =
       sprintf "%s%s%s --destdir %s %s"
@@ -309,11 +305,7 @@ let rec fedora_download_all_packages pkgs dir =
     (* dnf doesn't create the download directory. *)
     mkdir tdir 0o700;
 
-    let rpms = List.map rpm_of_pkg (PackageSet.elements pkgs) in
-    let rpms = List.map (
-      fun { name = name; arch = arch } ->
-        sprintf "%s.%s" name arch
-    ) rpms in
+    let rpms = pkgs_as_NA_rpms pkgs in
 
     let cmd =
       sprintf "%s download --destdir %s %s"
@@ -326,11 +318,7 @@ let rec fedora_download_all_packages pkgs dir =
 and opensuse_download_all_packages pkgs dir =
   let tdir = !settings.tmpdir // string_random8 () in
 
-  let rpms = List.map rpm_of_pkg (PackageSet.elements pkgs) in
-  let rpms = List.map (
-    fun { name = name; arch = arch } ->
-      sprintf "%s.%s" name arch
-  ) rpms in
+  let rpms = pkgs_as_NA_rpms pkgs in
 
   let is_zypper_1_9_14 =
     !zypper_major > 1
@@ -398,6 +386,13 @@ and mageia_download_all_packages pkgs dir =
   run_command cmd;
 
   rpm_unpack tdir dir
+
+and pkgs_as_NA_rpms pkgs =
+  let rpms = List.map rpm_of_pkg (PackageSet.elements pkgs) in
+  List.map (
+    fun { name = name; arch = arch } ->
+      sprintf "%s.%s" name arch
+  ) rpms
 
 and rpm_unpack tdir dir =
   (* Unpack each downloaded package.
