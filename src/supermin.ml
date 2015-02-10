@@ -50,6 +50,15 @@ let main () =
    *)
   putenv "LANG" "C";
 
+  (* Refuse to run if TMPDIR is a relative path.  See RHBZ#1190754.
+   * This is untested and will break in some way or another later, so
+   * better to die now with a meaningful error message.
+   *)
+  if try Filename.is_relative (getenv "TMPDIR") with Not_found -> false then (
+    eprintf "supermin: error: environment variable $TMPDIR must be an absolute path\n";
+    exit 1
+  );
+
   (* Create a temporary directory for scratch storage. *)
   let tmpdir =
     let tmpdir = Filename.temp_file "supermin" ".tmpdir" in
