@@ -278,48 +278,52 @@ let rpm_get_all_files pkgs =
 let rec fedora_download_all_packages pkgs dir =
   let tdir = !settings.tmpdir // string_random8 () in
 
-  if Config.yumdownloader <> "no" then (
-    (* It's quite complex to get yumdownloader to download specific
-     * RPMs.  If we use the full NVR, then it will refuse if an installed
-     * RPM is older than whatever is currently in the repo.  If we use
-     * just name, it will download all architectures (even with
-     * --archlist).
-     * 
-     * Use name.arch so it can download any version but only the specific
-     * architecture.
-     *)
-    let rpms = pkgs_as_NA_rpms pkgs in
-
-    let cmd =
-      sprintf "%s%s%s --destdir %s %s"
-        Config.yumdownloader
-        (if !settings.debug >= 1 then "" else " --quiet")
-        (match !settings.packager_config with
-        | None -> ""
-        | Some filename -> sprintf " -c %s" (quote filename))
-        (quote tdir)
-        (quoted_list rpms) in
-    run_command cmd
-  )
-  else (* Config.dnf <> "no" *) (
-    (* dnf doesn't create the download directory. *)
-    mkdir tdir 0o700;
-
-    let rpms = pkgs_as_NA_rpms pkgs in
-
-    let cmd =
-      sprintf "%s download%s%s --destdir %s %s"
-        Config.dnf
-        (if !settings.debug >= 1 then " -v" else " -q")
-        (match !settings.packager_config with
-        | None -> ""
-        | Some filename -> sprintf " -c %s" (quote filename))
-        (quote tdir)
-        (quoted_list rpms) in
-    run_command cmd
-  );
+  if Config.yumdownloader <> "no" then
+    fedora_download_all_packages_with_yum pkgs dir tdir
+  else (* Config.dnf <> "no" *)
+    fedora_download_all_packages_with_dnf pkgs dir tdir;
 
   rpm_unpack tdir dir
+
+and fedora_download_all_packages_with_dnf pkgs dir tdir =
+  (* dnf doesn't create the download directory. *)
+  mkdir tdir 0o700;
+
+  let rpms = pkgs_as_NA_rpms pkgs in
+
+  let cmd =
+    sprintf "%s download%s%s --destdir %s %s"
+      Config.dnf
+      (if !settings.debug >= 1 then " -v" else " -q")
+      (match !settings.packager_config with
+      | None -> ""
+      | Some filename -> sprintf " -c %s" (quote filename))
+      (quote tdir)
+      (quoted_list rpms) in
+  run_command cmd
+
+and fedora_download_all_packages_with_yum pkgs dir tdir =
+  (* It's quite complex to get yumdownloader to download specific
+   * RPMs.  If we use the full NVR, then it will refuse if an installed
+   * RPM is older than whatever is currently in the repo.  If we use
+   * just name, it will download all architectures (even with
+   * --archlist).
+   *
+   * Use name.arch so it can download any version but only the specific
+   * architecture.
+   *)
+  let rpms = pkgs_as_NA_rpms pkgs in
+
+  let cmd =
+    sprintf "%s%s%s --destdir %s %s"
+      Config.yumdownloader
+      (if !settings.debug >= 1 then "" else " --quiet")
+      (match !settings.packager_config with
+      | None -> ""
+      | Some filename -> sprintf " -c %s" (quote filename))
+      (quote tdir)
+      (quoted_list rpms) in
+  run_command cmd
 
 and opensuse_download_all_packages pkgs dir =
   let tdir = !settings.tmpdir // string_random8 () in
