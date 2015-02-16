@@ -285,10 +285,10 @@ let rpm_get_all_files pkgs =
 let rec fedora_download_all_packages pkgs dir =
   let tdir = !settings.tmpdir // string_random8 () in
 
-  if Config.yumdownloader <> "no" then
-    fedora_download_all_packages_with_yum pkgs dir tdir
-  else (* Config.dnf <> "no" *)
-    fedora_download_all_packages_with_dnf pkgs dir tdir;
+  if Config.dnf <> "no" then
+    fedora_download_all_packages_with_dnf pkgs dir tdir
+  else (* Config.yumdownloader <> "no" *)
+    fedora_download_all_packages_with_yum pkgs dir tdir;
 
   rpm_unpack tdir dir
 
