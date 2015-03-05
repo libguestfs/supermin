@@ -122,7 +122,7 @@ and kernel_filter patterns is_arm all_files =
     if not is_arm then files
     else (
       List.filter (fun filename ->
-        find filename "lpae" = -1 && find filename "tegra" = -1
+	find filename "tegra" = -1
       ) files
     ) in
   List.filter (fun filename -> has_modpath filename) files
