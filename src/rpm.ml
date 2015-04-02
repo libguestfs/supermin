@@ -48,7 +48,7 @@ let mageia_detect () =
     try (stat "/etc/mageia-release").st_kind = S_REG with Unix_error _ -> false
 
 let ibm_powerkvm_detect () =
-  Config.rpm <> "no" && Config.rpm2cpio <> "no" &&
+  Config.rpm <> "no" && Config.rpm2cpio <> "no" && rpm_is_available () &&
     Config.yumdownloader <> "no" &&
     try
       (stat "/etc/ibm_powerkvm-release").st_kind = S_REG
