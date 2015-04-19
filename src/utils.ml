@@ -32,13 +32,16 @@ let dir_exists name =
   try (stat name).st_kind = S_DIR
   with Unix_error _ -> false
 
-let rec uniq ?(cmp = Pervasives.compare) = function
-  | [] -> []
-  | [x] -> [x]
-  | x :: y :: xs when cmp x y = 0 ->
-      uniq ~cmp (x :: xs)
-  | x :: y :: xs ->
-      x :: uniq ~cmp (y :: xs)
+let uniq ?(cmp = Pervasives.compare) xs =
+  let rec loop acc = function
+    | [] -> acc
+    | [x] -> x :: acc
+    | x :: (y :: _ as xs) when cmp x y = 0 ->
+       loop acc xs
+    | x :: (y :: _ as xs) ->
+       loop (x :: acc) xs
+  in
+  List.rev (loop [] xs)
 
 let sort_uniq ?(cmp = Pervasives.compare) xs =
   let xs = List.sort cmp xs in
