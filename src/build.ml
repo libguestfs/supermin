@@ -125,22 +125,6 @@ let rec build debug
   if debug >= 1 then
     printf "supermin: build: %d files\n%!" (List.length files);
 
-  (* Remove files from the list which don't exist on the host or are
-   * unreadable to us.
-   *)
-  let files =
-    List.filter (
-      fun file ->
-        try ignore (lstat file.ft_source_path); true
-        with Unix_error _ ->
-          try ignore (lstat file.ft_path); true
-          with Unix_error _ -> false
-    ) files in
-
-  if debug >= 1 then
-    printf "supermin: build: %d files, after removing unreadable files\n%!"
-      (List.length files);
-
   (* Remove excludefiles from the list.  Notes: (1) The current
    * implementation does not apply excludefiles to the base image.  (2)
    * The current implementation does not apply excludefiles to the
@@ -183,6 +167,22 @@ let rec build debug
 
   if debug >= 1 then
     printf "supermin: build: %d files, after adding hostfiles\n%!"
+      (List.length files);
+
+  (* Remove files from the list which don't exist on the host or are
+   * unreadable to us.
+   *)
+  let files =
+    List.filter (
+      fun file ->
+        try ignore (lstat file.ft_source_path); true
+        with Unix_error _ ->
+          try ignore (lstat file.ft_path); true
+          with Unix_error _ -> false
+    ) files in
+
+  if debug >= 1 then
+    printf "supermin: build: %d files, after removing unreadable files\n%!"
       (List.length files);
 
   (* Difficult to explain what this does.  See comment below. *)
