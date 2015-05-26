@@ -492,7 +492,10 @@ print_uptime (void)
 static void
 read_cmdline (void)
 {
-  FILE *fp = fopen ("/proc/cmdline", "r");
+  FILE *fp;
+  size_t len;
+
+  fp = fopen ("/proc/cmdline", "r");
   if (fp == NULL) {
     perror ("/proc/cmdline");
     return;
@@ -501,7 +504,11 @@ read_cmdline (void)
   fgets (cmdline, sizeof cmdline, fp);
   fclose (fp);
 
-  fprintf (stderr, "supermin: cmdline: %s", cmdline);
+  len = strlen (cmdline);
+  if (len >= 1 && cmdline[len-1] == '\n')
+    cmdline[len-1] = '\0';
+
+  fprintf (stderr, "supermin: cmdline: %s\n", cmdline);
 }
 
 /* Display a directory on stderr.  This is used for debugging only. */
