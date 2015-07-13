@@ -22,7 +22,7 @@ open Package_handler
 open Utils
 
 let prepare debug (copy_kernel, dtb_wildcard, format, host_cpu,
-             packager_config, tmpdir, use_installed)
+             packager_config, tmpdir, use_installed, size)
     inputs outputdir =
   if debug >= 1 then
     printf "supermin: prepare: %s\n%!" (String.concat " " inputs);

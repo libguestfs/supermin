@@ -59,7 +59,7 @@ and string_of_file_content = function
 
 let rec build debug
     (copy_kernel, dtb_wildcard, format, host_cpu,
-     packager_config, tmpdir, use_installed)
+     packager_config, tmpdir, use_installed, size)
     inputs outputdir =
   if debug >= 1 then
     printf "supermin: build: %s\n%!" (String.concat " " inputs);
@@ -210,7 +210,7 @@ let rec build debug
     and initrd = outputdir // "initrd" in
     let kernel_version, modpath =
       Kernel.build_kernel debug host_cpu dtb_wildcard copy_kernel kernel dtb in
-    Ext2.build_ext2 debug basedir files modpath kernel_version appliance;
+    Ext2.build_ext2 debug basedir files modpath kernel_version appliance size;
     Ext2_initrd.build_initrd debug tmpdir modpath initrd
 
 and read_appliance debug basedir appliance = function

@@ -94,6 +94,7 @@ let main () =
     let outputdir = ref "" in
     let packager_config = ref "" in
     let use_installed = ref false in
+    let size = ref None in
 
     let set_debug () = incr debug in
 
@@ -117,6 +118,8 @@ let main () =
       eprintf "supermin: you must use --prepare or --build to select the mode\n";
       exit 1
     in
+
+    let set_size arg = size := Some (parse_size arg) in
 
     let error_supermin_5 () =
       eprintf "supermin: *** error: This is supermin version 5.\n";
@@ -143,6 +146,7 @@ let main () =
       "-o",        Arg.Set_string outputdir,  "OUTPUTDIR Set output directory";
       "--packager-config", Arg.Set_string packager_config, "CONFIGFILE Set packager config file";
       "--prepare", Arg.Unit set_prepare_mode, " Prepare a supermin appliance";
+      "--size",    Arg.String set_size,       " Set the size of the ext2 filesystem";
       "--use-installed", Arg.Set use_installed, " Use installed files instead of accessing network";
       "-v",        Arg.Unit set_debug,        " Enable debugging messages";
       "--verbose", Arg.Unit set_debug,        ditto;
@@ -165,6 +169,7 @@ let main () =
     let packager_config =
       match !packager_config with "" -> None | s -> Some s in
     let use_installed = !use_installed in
+    let size = !size in
 
     let format =
       match mode, !format with
@@ -184,7 +189,7 @@ let main () =
 
     debug, mode, if_newer, inputs, lockfile, outputdir,
     (copy_kernel, dtb_wildcard, format, host_cpu,
-     packager_config, tmpdir, use_installed) in
+     packager_config, tmpdir, use_installed, size) in
 
   if debug >= 1 then printf "supermin: version: %s\n" Config.package_version;
 
@@ -192,7 +197,7 @@ let main () =
    * This fails with an error if one could not be located.
    *)
   let () =
-    let (_, _, _, _, packager_config, tmpdir, _) = args in
+    let (_, _, _, _, packager_config, tmpdir, _, _) = args in
     let settings = {
       debug = debug;
       tmpdir = tmpdir;

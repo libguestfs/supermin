@@ -189,6 +189,9 @@ appliance to C<OUTPUTDIR/initrd>, and the ext2 filesystem image to
 C<OUTPUTDIR/root>.  (Where C<OUTPUTDIR> is specified by the I<-o>
 option).
 
+The filesystem (C<OUTPUTDIR/root>) has a default size of 4 GB
+(see also the I<--size> option).
+
 =back
 
 =item B<--host-cpu> CPU
@@ -282,6 +285,18 @@ a problem for configuration files.
 However this option is useful in some controlled situations: for
 example when using supermin inside a freshly installed chroot, or if
 you have no network access during the build.
+
+=item B<--size> SIZE
+
+(I<--build> mode only)
+
+Select the size of the output ext2 filesystem, where the size can be
+specified using common names such as C<32G> (32 gigabytes) etc.
+
+If the size is not specified, a default size of 4 GB is used.
+
+To specify size in bytes, the number must be followed by the lowercase
+letter I<b>, eg: S<C<--size 10737418240b>>.
 
 =item B<-v>
 

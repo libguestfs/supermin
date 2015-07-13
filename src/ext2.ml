@@ -23,26 +23,27 @@ open Utils
 open Ext2fs
 open Package_handler
 
-(* The ext2 image that we build always has a fixed size, and we 'hope'
- * that the files fit in (otherwise we'll get an error).  Note that
- * the file is sparsely allocated.
+(* The ext2 image that we build has a size of 4GB if not specified,
+ * and we 'hope' that the files fit in (otherwise we'll get an error).
+ * Note that the file is sparsely allocated.
  *
  * The downside of allocating a very large initial disk is that the
  * fixed overhead of ext2 is larger (since ext2 calculates it based on
  * the size of the disk).  For a 4GB disk the overhead is
  * approximately 66MB.
- *
- * In future, make this configurable, or determine it from the input
- * files (XXX).
  *)
-let appliance_size = 4L *^ 1024L *^ 1024L *^ 1024L
+let default_appliance_size = 4L *^ 1024L *^ 1024L *^ 1024L
 
-let build_ext2 debug basedir files modpath kernel_version appliance =
+let build_ext2 debug basedir files modpath kernel_version appliance size =
   if debug >= 1 then
     printf "supermin: ext2: creating empty ext2 filesystem '%s'\n%!" appliance;
 
   let fd = openfile appliance [O_WRONLY;O_CREAT;O_TRUNC;O_NOCTTY] 0o644 in
-  LargeFile.ftruncate fd appliance_size;
+  let size =
+    match size with
+    | None -> default_appliance_size
+    | Some s -> s in
+  LargeFile.ftruncate fd size;
   close fd;
 
   let cmd =
