@@ -204,3 +204,24 @@ let compare_architecture a1 a2 =
       exit 1
   in
   compare (index_of_architecture a1) (index_of_architecture a2)
+
+(* Parse a size field, eg. "10G". *)
+let parse_size =
+  let const_re = Str.regexp "^\\([.0-9]+\\)\\([bKMG]\\)$" in
+  fun field ->
+    let matches rex = Str.string_match rex field 0 in
+    let sub i = Str.matched_group i field in
+    let size_scaled f = function
+      | "b" -> Int64.of_float f
+      | "K" -> Int64.of_float (f *. 1024.)
+      | "M" -> Int64.of_float (f *. 1024. *. 1024.)
+      | "G" -> Int64.of_float (f *. 1024. *. 1024. *. 1024.)
+      | _ -> assert false
+    in
+
+    if matches const_re then (
+      size_scaled (float_of_string (sub 1)) (sub 2)
+    ) else (
+      eprintf "supermin: cannot parse size field '%s'\n" field;
+      exit 1
+    )
