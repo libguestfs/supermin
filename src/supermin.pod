@@ -46,7 +46,7 @@ For example:
 
 creates a supermin appliance containing the packages C<bash> and
 C<coreutils>.  Specifically, it creates some files in directory
-C<supermin.d>.  This directory I<is> the supermin appliance.  (See
+F<supermin.d>.  This directory I<is> the supermin appliance.  (See
 L</SUPERMIN APPLIANCES> below).
 
 It is intended that the I<--prepare> step is done on a central build
@@ -60,8 +60,8 @@ builds the full appliance from the supermin appliance:
 
  supermin --build --format ext2 supermin.d -o appliance.d
 
-This will create files called C<appliance.d/kernel>,
-C<appliance.d/root> etc, which is the full sized bootable appliance.
+This will create files called F<appliance.d/kernel>,
+F<appliance.d/root> etc, which is the full sized bootable appliance.
 
 It is intended that the I<--build> step is done on the end user's
 machine at the last second before the appliance is needed.  The
@@ -112,7 +112,7 @@ a separate program called C<supermin-helper>.
 (I<--build> mode only)
 
 Copy the kernel (and device tree, if created) instead of symlinking to
-the kernel in C</boot>.
+the kernel in F</boot>.
 
 This is fractionally slower, but is necessary if you want to change
 the permissions or SELinux label on the kernel or device tree.
@@ -124,7 +124,7 @@ the permissions or SELinux label on the kernel or device tree.
 If specified, search for a device tree which is compatible with the
 selected kernel and the name of which matches the given wildcard.  You
 can use a wildcard such as C<vexpress-*a9*.dtb> which would match
-C<vexpress-v2p-ca9.dtb>.
+F<vexpress-v2p-ca9.dtb>.
 
 Notes:
 
@@ -170,7 +170,7 @@ Possible formats are:
 
 A directory tree in the host filesystem.
 
-The filesystem tree is written to C<OUTPUTDIR> (ie. the I<-o> option).
+The filesystem tree is written to F<OUTPUTDIR> (ie. the I<-o> option).
 
 This is called a C<chroot> because you could literally L<chroot(1)>
 into this directory afterwards, although it's a better idea to use a
@@ -183,13 +183,13 @@ assumed that you will be running the appliance using the host kernel.
 
 An ext2 filesystem disk image.
 
-The output kernel is written to C<OUTPUTDIR/kernel>, the device tree
-(if using) to C<OUTPUTDIR/dtb>, a small initramfs which can mount the
-appliance to C<OUTPUTDIR/initrd>, and the ext2 filesystem image to
-C<OUTPUTDIR/root>.  (Where C<OUTPUTDIR> is specified by the I<-o>
+The output kernel is written to F<OUTPUTDIR/kernel>, the device tree
+(if using) to F<OUTPUTDIR/dtb>, a small initramfs which can mount the
+appliance to F<OUTPUTDIR/initrd>, and the ext2 filesystem image to
+F<OUTPUTDIR/root>.  (Where F<OUTPUTDIR> is specified by the I<-o>
 option).
 
-The filesystem (C<OUTPUTDIR/root>) has a default size of 4 GB
+The filesystem (F<OUTPUTDIR/root>) has a default size of 4 GB
 (see also the I<--size> option).
 
 =back
@@ -210,7 +210,7 @@ The output directory is checked and it is I<not> rebuilt unless it
 needs to be.
 
 This is done by consulting the dates of the host package database
-(C</var/lib/rpm> etc), the input supermin files, and the output
+(F</var/lib/rpm> etc), the input supermin files, and the output
 directory.  The operation is only carried out if either the host
 package database or the input supermin files are newer than the output
 directory.
@@ -248,9 +248,9 @@ B<Any previous contents of the output directory are deleted>, and a
 new output directory is created.
 
 The output directory is created (nearly) atomically by constructing a
-temporary directory called something like C<OUTPUTDIR.abc543>, then
+temporary directory called something like F<OUTPUTDIR.abc543>, then
 renaming the old output directory (if present) and deleting it, and
-then renaming the temporary directory to C<OUTPUTDIR>.  By combining
+then renaming the temporary directory to F<OUTPUTDIR>.  By combining
 this option with I<--lock> you can ensure that multiple parallel runs
 of supermin do not conflict with each other.
 
@@ -262,10 +262,10 @@ Set the configuration file for the package manager.  This allows you
 to specify alternate software repositories.
 
 For ArchLinux, this sets the pacman configuration file (default
-C</etc/pacman.conf>).  See L<pacman.conf(5)>.
+F</etc/pacman.conf>).  See L<pacman.conf(5)>.
 
 For Yum/RPM distributions, this sets the yum configuration file
-(default C</etc/yum.conf>).  See L<yum.conf(5)>.
+(default F</etc/yum.conf>).  See L<yum.conf(5)>.
 
 =item B<--prepare>
 
@@ -336,8 +336,8 @@ Print the package name and version number, and exit.
 Supermin appliances consist of just enough information to be able to
 build an appliance containing the same operating system (Linux
 version, distro, release etc) as the host OS.  Since the host and
-appliance share many common files such as C</bin/bash> and
-C</lib/libc.so> there is no reason to ship these files in the
+appliance share many common files such as F</bin/bash> and
+F</lib/libc.so> there is no reason to ship these files in the
 appliance.  They can simply be read from the host on demand when the
 appliance is launched.  Therefore to save space we just store the
 names of the packages we want from the host, and copy those in (plus
@@ -350,20 +350,20 @@ skeleton base image which contains these files and the outline
 directory structure.
 
 Therefore the supermin appliance normally consists of at least two
-control files (C<packages> and C<base.tar.gz>).
+control files (F<packages> and F<base.tar.gz>).
 
 =over 4
 
-=item B<packages>
+=item F<packages>
 
 The list of packages to be copied from the host.  Dependencies are
 resolved automatically.
 
 The file is plain text, one package name per line.
 
-=item B<base.tar>
+=item F<base.tar>
 
-=item B<base.tar.gz>
+=item F<base.tar.gz>
 
 This tar file (which may be compressed) contains the skeleton
 filesystem.  Mostly it contains directories and a few configuration
@@ -372,7 +372,7 @@ files.
 All paths in the tar file should be relative to the root directory of
 the appliance.
 
-=item B<hostfiles>
+=item F<hostfiles>
 
 Any other files that are to be copied from the host.  This is a plain
 text file with one pathname per line.
@@ -382,7 +382,7 @@ is created, eg:
 
  /etc/yum.repos.d/*.repo
 
-would copy all of the C<*.repo> files into the appliance.
+would copy all of the F<*.repo> files into the appliance.
 
 Each pathname in the file should start with a C</> character.
 
@@ -392,7 +392,7 @@ However you may drop one or more of these files into the supermin
 appliance directory if you want to copy random unpackaged files into
 the full appliance.
 
-=item B<excludefiles>
+=item F<excludefiles>
 
 A list of filenames, directory names, or wildcards prefixed by C<->
 which are excluded from the final appliance.
@@ -427,9 +427,9 @@ directories passed to it.  A common layout could look like this:
  supermin.d/zz-hostfiles
 
 In this way extra files can be added to the appliance just by creating
-another tar file (C<extra.tar.gz> in the example above) and dropping
+another tar file (F<extra.tar.gz> in the example above) and dropping
 it into the directory, and additional host files can be added
-(C<zz-hostfiles> in the example above).  When the appliance is
+(F<zz-hostfiles> in the example above).  When the appliance is
 constructed, the extra files will appear in the appliance.
 
 =head2 MINIMIZING THE SUPERMIN APPLIANCE
@@ -481,7 +481,7 @@ then you should do something like this:
 =head2 ENFORCING AVAILABILITY OF PACKAGES
 
 Supermin builds the appliance by copying in the packages listed in
-C<packages>.  For this to work those packages must be available.  We
+F<packages>.  For this to work those packages must be available.  We
 usually enforce this by adding requirements (eg. RPM C<Requires:>
 lines) on the package that uses the supermin appliance, so that
 package cannot be installed without pulling in the dependent packages
@@ -497,14 +497,14 @@ If this environment variable is set, then automatic selection of the
 kernel is bypassed and this kernel is used.
 
 The environment variable should point to a kernel file,
-eg. C</boot/vmlinuz-3.0.x86_64>
+eg. F</boot/vmlinuz-3.0.x86_64>
 
 =item SUPERMIN_MODULES
 
 This specifies the kernel modules directory to use.
 
 The environment variable should point to a module directory,
-eg. C</lib/modules/3.0.x86_64/>
+eg. F</lib/modules/3.0.x86_64/>
 
 =item SUPERMIN_DTB
 
