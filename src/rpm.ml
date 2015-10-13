@@ -210,8 +210,51 @@ let rpm_package_name pkg =
 let rpm_get_package_database_mtime () =
   (lstat "/var/lib/rpm/Packages").st_mtime
 
-(* Memo of resolved provides. *)
-let rpm_providers = Hashtbl.create 13
+(* Return the best provider of a particular RPM requirement.
+ *
+ * There may be multiple, or no providers.  In case there are multiple,
+ * choose the one with the shortest name (as yum used to).
+ *
+ * We could do better here: http://yum.baseurl.org/wiki/CompareProviders
+ *)
+let provider =
+  (* Memo of resolved provides. *)
+  let rpm_providers = Hashtbl.create 13 in
+  fun req ->
+    try Hashtbl.find rpm_providers req
+    with Not_found ->
+      let ret =
+        try
+          (* 'providers' here is an array of just package names. *)
+          let providers = rpm_pkg_whatprovides (get_rpm ()) req in
+          let providers = Array.to_list providers in
+          (* --whatprovides will return duplicate identical packages, so: *)
+          let providers = sort_uniq providers in
+          (* Only packages which are actually installed: *)
+          let providers =
+            List.filter (fun name -> rpm_package_of_string name <> None)
+                        providers in
+
+          match providers with
+          | [] -> None
+          | [name] ->
+             Some name
+          | names ->
+             if !settings.debug >= 2 then
+               printf "supermin: rpm: multiple providers: requirement %s: providers: %s\n"
+                      req (String.concat " " names);
+             let cmp name1 name2 =
+               let len1 = String.length name1 and len2 = String.length name2 in
+               if len1 <> len2 then compare len1 len2
+               else compare name1 name2 in
+             let names = List.sort cmp names in
+             let best_name = List.hd names in
+             if !settings.debug >= 2 then
+               printf "supermin: rpm: multiple providers: picked %s\n" best_name;
+             Some best_name
+        with Not_found -> None in
+      Hashtbl.add rpm_providers req ret;
+      ret
 
 let rpm_get_all_requires pkgs =
   let get pkg =
@@ -226,20 +269,9 @@ let rpm_get_all_requires pkgs =
               rpm_pkg_requires (get_rpm ()) (rpm_package_to_string pkg) in
     let pkgs' = Array.fold_left (
       fun set x ->
-        try
-          let provides =
-            try Hashtbl.find rpm_providers x
-            with Not_found ->
-              let p = rpm_pkg_whatprovides (get_rpm ()) x in
-              Hashtbl.add rpm_providers x p;
-              p in
-          Array.fold_left (
-            fun newset p ->
-              match rpm_package_of_string p with
-                | None -> newset
-                | Some x -> StringSet.add p newset
-          ) set provides
-        with Not_found -> set
+        match provider x with
+        | None -> set
+        | Some p -> StringSet.add p set
     ) StringSet.empty reqs in
     pkgs'
   in
