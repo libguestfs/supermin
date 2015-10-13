@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *)
 
-external rpm_is_available : unit -> bool = "supermin_rpm_is_available"
+external rpm_is_available : unit -> bool = "supermin_rpm_is_available" "noalloc"
 
 external rpm_version : unit -> string = "supermin_rpm_version"
 external rpm_vercmp : string -> string -> int = "supermin_rpm_vercmp" "noalloc"
