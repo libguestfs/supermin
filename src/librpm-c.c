@@ -202,8 +202,11 @@ supermin_rpm_installed (value rpmv, value pkgv)
     caml_raise_not_found ();
 
   count = rpmdbGetIteratorCount (iter);
-  if (data.debug >= 2)
-    printf ("supermin: rpm: installed: %d occurrences for '%s'\n", count, String_val (pkgv));
+  if (data.debug >= 2) {
+    printf ("supermin: rpm: installed: %d occurrences for '%s'\n",
+            count, String_val (pkgv));
+    fflush (stdout);
+  }
 
   rv = caml_alloc (count, 0);
   i = 0;
@@ -287,8 +290,11 @@ supermin_rpm_pkg_requires (value rpmv, value pkgv)
     caml_raise_not_found ();
 
   count = rpmdbGetIteratorCount (iter);
-  if (data.debug >= 2)
-    printf ("supermin: rpm: pkg_requires: %d occurrences for '%s'\n", count, String_val (pkgv));
+  if (data.debug >= 2) {
+    printf ("supermin: rpm: pkg_requires: %d occurrences for '%s'\n",
+            count, String_val (pkgv));
+    fflush (stdout);
+  }
   if (count != 1)
     librpm_raise_multiple_matches (count);
 
@@ -351,8 +357,11 @@ supermin_rpm_pkg_whatprovides (value rpmv, value pkgv)
     caml_raise_not_found ();
 
   count = rpmdbGetIteratorCount (iter);
-  if (data.debug >= 2)
-    printf ("supermin: rpm: pkg_whatprovides: %d occurrences for '%s'\n", count, String_val (pkgv));
+  if (data.debug >= 2) {
+    printf ("supermin: rpm: pkg_whatprovides: %d occurrences for '%s'\n",
+            count, String_val (pkgv));
+    fflush (stdout);
+  }
 
   rv = caml_alloc (count, 0);
   i = 0;
@@ -398,8 +407,11 @@ supermin_rpm_pkg_filelist (value rpmv, value pkgv)
     caml_raise_not_found ();
 
   count = rpmdbGetIteratorCount (iter);
-  if (data.debug >= 2)
-    printf ("supermin: rpm: pkg_filelist: %d occurrences for '%s'\n", count, String_val (pkgv));
+  if (data.debug >= 2) {
+    printf ("supermin: rpm: pkg_filelist: %d occurrences for '%s'\n",
+            count, String_val (pkgv));
+    fflush (stdout);
+  }
   if (count != 1)
     librpm_raise_multiple_matches (count);
 
