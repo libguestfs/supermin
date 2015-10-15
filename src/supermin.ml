@@ -186,6 +186,11 @@ let main () =
       eprintf "supermin: output directory (-o option) must be supplied\n";
       exit 1
     );
+    (* Chop final '/' in output directory (RHBZ#1146753). *)
+    let outputdir =
+      let len = String.length outputdir in
+      if outputdir.[len - 1] == '/' then String.sub outputdir 0 (len - 1)
+      else outputdir in
 
     debug, mode, if_newer, inputs, lockfile, outputdir,
     (copy_kernel, dtb_wildcard, format, host_cpu,
