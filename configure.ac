@@ -19,6 +19,7 @@ dnl Written by Richard W.M. Jones <rjones@redhat.com>
 
 AC_INIT([supermin],[5.1.13])
 AM_INIT_AUTOMAKE(foreign)
+AC_REQUIRE_AUX_FILE([supermin-test-driver])
 
 dnl Check for basic C environment.
 AC_PROG_CC_STDC

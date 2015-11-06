@@ -17,6 +17,8 @@
 #
 # Written by Richard W.M. Jones <rjones@redhat.com>
 
+LOG_DRIVER = env $(SHELL) $(top_srcdir)/supermin-test-driver
+
 EXTRA_DIST = \
 	automake2junit.ml \
 	$(TESTS)
