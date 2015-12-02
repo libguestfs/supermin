@@ -34,7 +34,8 @@ open Package_handler
  *)
 let default_appliance_size = 4L *^ 1024L *^ 1024L *^ 1024L
 
-let build_ext2 debug basedir files modpath kernel_version appliance size =
+let build_ext2 debug basedir files modpath kernel_version appliance size
+    packagelist_file =
   if debug >= 1 then
     printf "supermin: ext2: creating empty ext2 filesystem '%s'\n%!" appliance;
 
@@ -73,6 +74,21 @@ let build_ext2 debug basedir files modpath kernel_version appliance size =
       let src = file_source file in
       ext2fs_copy_file_from_host fs src file.ft_path
   ) files;
+
+  (* Add packagelist file, if requested. *)
+  (match packagelist_file with
+  | None -> ()
+  | Some filename ->
+    if debug >= 1 then
+      printf "supermin: ext2: creating /packagelist\n%!";
+
+    ext2fs_copy_file_from_host fs filename "/packagelist";
+    (* Change the permissions and ownership of the file, to be sure
+     * it is root-owned, and readable by everyone.
+     *)
+    ext2fs_chmod fs "/packagelist" 0o644;
+    ext2fs_chown fs "/packagelist" 0 0
+  );
 
   if debug >= 1 then
     printf "supermin: ext2: copying kernel modules\n%!";

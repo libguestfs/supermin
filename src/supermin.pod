@@ -217,6 +217,17 @@ directory.
 
 See also I<--lock> below.
 
+=item B<"--include-packagelist>
+
+(I<--build> mode only)
+
+Add a F</packagelist> file inside the generated chroot or ext2
+filesystem, containing a sorted list of all the packages used to
+build the appliance.
+
+Mostly useful for debugging, as it makes it easier to find out e.g.
+which version of a package was copied in the appliance.
+
 =item B<--list-drivers>
 
 List the package manager drivers compiled into supermin, and whether

@@ -59,7 +59,8 @@ and string_of_file_content = function
 
 let rec build debug
     (copy_kernel, dtb_wildcard, format, host_cpu,
-     packager_config, tmpdir, use_installed, size)
+     packager_config, tmpdir, use_installed, size,
+     include_packagelist)
     inputs outputdir =
   if debug >= 1 then
     printf "supermin: build: %s\n%!" (String.concat " " inputs);
@@ -101,14 +102,22 @@ let rec build debug
     let packages = package_set_of_list packages in
     get_all_requires packages in
 
+  (* Get the list of packages only if we need to, i.e. when creating
+   * /packagelist in the appliance, when printing all the packages
+   * for debug, or in both cases.
+   *)
+  let pretty_packages =
+    if include_packagelist || debug >= 2 then (
+      let pkg_names = PackageSet.elements packages in
+      let pkg_names = List.map ph.ph_package_to_string pkg_names in
+      List.sort compare pkg_names
+    ) else [] in
+
   if debug >= 1 then (
     printf "supermin: build: %d packages, including dependencies\n%!"
       (PackageSet.cardinal packages);
     if debug >= 2 then (
-      let pkg_names = PackageSet.elements packages in
-      let pkg_names = List.map ph.ph_package_to_string pkg_names in
-      let pkg_names = List.sort compare pkg_names in
-      List.iter (printf "  - %s\n") pkg_names;
+      List.iter (printf "  - %s\n") pretty_packages;
       flush Pervasives.stdout
     )
   );
@@ -197,11 +206,21 @@ let rec build debug
     )
   );
 
+  (* Create a temporary file for packagelist, if requested. *)
+  let packagelist_file =
+    if include_packagelist then (
+      let filename, chan = Filename.open_temp_file "packagelist." "" in
+      List.iter (fprintf chan "%s\n") pretty_packages;
+      flush chan;
+      close_out chan;
+      Some filename
+    ) else None in
+
   (* Depending on the format, we build the appliance in different ways. *)
-  match format with
+  (match format with
   | Chroot ->
     (* chroot doesn't need an external kernel or initrd *)
-    Chroot.build_chroot debug files outputdir
+    Chroot.build_chroot debug files outputdir packagelist_file
 
   | Ext2 ->
     let kernel = outputdir // "kernel"
@@ -210,8 +229,15 @@ let rec build debug
     and initrd = outputdir // "initrd" in
     let kernel_version, modpath =
       Kernel.build_kernel debug host_cpu dtb_wildcard copy_kernel kernel dtb in
-    Ext2.build_ext2 debug basedir files modpath kernel_version appliance size;
+    Ext2.build_ext2 debug basedir files modpath kernel_version appliance size
+      packagelist_file;
     Ext2_initrd.build_initrd debug tmpdir modpath initrd
+  );
+
+  (match packagelist_file with
+  | None -> ()
+  | Some filename -> Sys.remove filename
+  )
 
 and read_appliance debug basedir appliance = function
   | [] -> appliance

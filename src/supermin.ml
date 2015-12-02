@@ -95,6 +95,7 @@ let main () =
     let packager_config = ref "" in
     let use_installed = ref false in
     let size = ref None in
+    let include_packagelist = ref false in
 
     let set_debug () = incr debug in
 
@@ -140,6 +141,8 @@ let main () =
       "--format",  Arg.String set_format,     ditto;
       "--host-cpu", Arg.Set_string host_cpu,  "ARCH Set host CPU architecture";
       "--if-newer", Arg.Set if_newer,             " Only build if needed";
+      "--include-packagelist", Arg.Set include_packagelist,
+                                              " Add a file with the list of packages";
       "--list-drivers", Arg.Unit display_drivers, " Display list of drivers and exit";
       "--lock",    Arg.Set_string lockfile,   "LOCKFILE Use a lock file";
       "--names",   Arg.Unit error_supermin_5, " Give an error for people needing supermin 4";
@@ -170,6 +173,7 @@ let main () =
       match !packager_config with "" -> None | s -> Some s in
     let use_installed = !use_installed in
     let size = !size in
+    let include_packagelist = !include_packagelist in
 
     let format =
       match mode, !format with
@@ -194,7 +198,8 @@ let main () =
 
     debug, mode, if_newer, inputs, lockfile, outputdir,
     (copy_kernel, dtb_wildcard, format, host_cpu,
-     packager_config, tmpdir, use_installed, size) in
+     packager_config, tmpdir, use_installed, size,
+     include_packagelist) in
 
   if debug >= 1 then printf "supermin: version: %s\n" Config.package_version;
 
@@ -202,7 +207,7 @@ let main () =
    * This fails with an error if one could not be located.
    *)
   let () =
-    let (_, _, _, _, packager_config, tmpdir, _, _) = args in
+    let (_, _, _, _, packager_config, tmpdir, _, _, _) = args in
     let settings = {
       debug = debug;
       tmpdir = tmpdir;
