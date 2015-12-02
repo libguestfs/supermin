@@ -23,6 +23,12 @@ open Utils
 open Package_handler
 
 let build_chroot debug files outputdir =
+  let do_copy src dest =
+    if debug >= 2 then printf "supermin: chroot: copy %s\n%!" dest;
+    let cmd = sprintf "cp -p %s %s" (quote src) (quote dest) in
+    ignore (Sys.command cmd)
+  in
+
   List.iter (
     fun file ->
       try
@@ -59,9 +65,7 @@ let build_chroot debug files outputdir =
           symlink link opath
 
         | S_REG | S_CHR | S_BLK | S_FIFO | S_SOCK ->
-          if debug >= 2 then printf "supermin: chroot: copy %s\n%!" opath;
-          let cmd = sprintf "cp -p %s %s" (quote path) (quote opath) in
-          ignore (Sys.command cmd)
+          do_copy path opath
       with Unix_error _ -> ()
   ) files;
 
