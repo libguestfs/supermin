@@ -289,6 +289,82 @@ supermin_ext2fs_copy_dir_recursively_from_host (value fsv,
   CAMLreturn (Val_unit);
 }
 
+/* Change the permissions of 'path' to 'mode'.
+ */
+value
+supermin_ext2fs_chmod (value fsv, value pathv, value modev)
+{
+  CAMLparam3 (fsv, pathv, modev);
+  const char *path = String_val (pathv);
+  mode_t mode = Int_val (modev);
+  errcode_t err;
+  struct ext2_data data;
+
+  data = Ext2fs_val (fsv);
+  if (data.fs == NULL)
+    ext2_handle_closed ();
+
+  ext2_ino_t ino;
+  ++path;
+  if (*path == 0) {             /* "/" */
+    ino = EXT2_ROOT_INO;
+  } else {                      /* "/foo" */
+    err = ext2fs_namei (data.fs, EXT2_ROOT_INO, EXT2_ROOT_INO, path, &ino);
+    if (err != 0)
+      ext2_error_to_exception ("ext2fs_namei", err, path);
+  }
+
+  struct ext2_inode inode;
+  err = ext2fs_read_inode (data.fs, ino, &inode);
+  if (err != 0)
+    ext2_error_to_exception ("ext2fs_read_inode", err, path);
+  inode.i_mode = (inode.i_mode & ~07777) | mode;
+  err = ext2fs_write_inode (data.fs, ino, &inode);
+  if (err != 0)
+    ext2_error_to_exception ("ext2fs_write_inode", err, path);
+
+  CAMLreturn (Val_unit);
+}
+
+/* Change the ownership of 'path' to 'uid' and 'gid'.
+ */
+value
+supermin_ext2fs_chown (value fsv, value pathv, value uidv, value gidv)
+{
+  CAMLparam4 (fsv, pathv, uidv, gidv);
+  const char *path = String_val (pathv);
+  int uid = Int_val (uidv);
+  int gid = Int_val (gidv);
+  errcode_t err;
+  struct ext2_data data;
+
+  data = Ext2fs_val (fsv);
+  if (data.fs == NULL)
+    ext2_handle_closed ();
+
+  ext2_ino_t ino;
+  ++path;
+  if (*path == 0) {             /* "/" */
+    ino = EXT2_ROOT_INO;
+  } else {                      /* "/foo" */
+    err = ext2fs_namei (data.fs, EXT2_ROOT_INO, EXT2_ROOT_INO, path, &ino);
+    if (err != 0)
+      ext2_error_to_exception ("ext2fs_namei", err, path);
+  }
+
+  struct ext2_inode inode;
+  err = ext2fs_read_inode (data.fs, ino, &inode);
+  if (err != 0)
+    ext2_error_to_exception ("ext2fs_read_inode", err, path);
+  inode.i_uid = uid;
+  inode.i_gid = gid;
+  err = ext2fs_write_inode (data.fs, ino, &inode);
+  if (err != 0)
+    ext2_error_to_exception ("ext2fs_write_inode", err, path);
+
+  CAMLreturn (Val_unit);
+}
+
 static void
 ext2_mkdir (ext2_filsys fs,
             ext2_ino_t dir_ino, const char *dirname, const char *basename,

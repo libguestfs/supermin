@@ -31,3 +31,5 @@ val ext2fs_close : t -> unit
 val ext2fs_read_bitmaps : t -> unit
 val ext2fs_copy_file_from_host : t -> string -> string -> unit
 val ext2fs_copy_dir_recursively_from_host : t -> string -> string -> unit
+val ext2fs_chmod : t -> string -> Unix.file_perm -> unit
+val ext2fs_chown : t -> string -> int -> int -> unit
