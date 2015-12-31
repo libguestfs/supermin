@@ -41,7 +41,7 @@ print $ofh <<"EOF";
 \t.globl\t_binary_${infile}_end
 \t.globl\t_binary_${infile}_size
 
-\t.section\t.data
+\t.section\t.rodata
 _binary_${infile}_start:
 EOF
 
