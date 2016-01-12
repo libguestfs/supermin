@@ -39,7 +39,6 @@ print $ofh <<"EOF";
 
 \t.globl\t_binary_${infile}_start
 \t.globl\t_binary_${infile}_end
-\t.globl\t_binary_${infile}_size
 
 \t.section\t.rodata
 _binary_${infile}_start:
@@ -55,14 +54,7 @@ die "read $infile (at offset $sz): $!\n" if not defined $i;
 close $ifh;
 
 print $ofh <<"EOF";
-
 _binary_${infile}_end:
-
-#if defined(__hppa__)
-\t_binary_${infile}_size: .equ $sz
-#else
-\t.equ _binary_${infile}_size, $sz
-#endif
 EOF
 
 close $ofh;

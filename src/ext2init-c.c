@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <caml/alloc.h>
@@ -28,14 +29,14 @@
 /* The init binary.
  * See: bin2s.pl, init.c.
  */
-extern char _binary_init_start, _binary_init_end, _binary_init_size;
+extern uint8_t _binary_init_start, _binary_init_end;
 
 value
 supermin_binary_init (value unitv)
 {
   CAMLparam1 (unitv);
   CAMLlocal1 (sv);
-  size_t n = (size_t) &_binary_init_size;
+  size_t n = &_binary_init_end - &_binary_init_start;
 
   sv = caml_alloc_string (n);
   memcpy (String_val (sv), &_binary_init_start, n);
