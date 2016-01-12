@@ -1,5 +1,5 @@
 (* supermin 5
- * Copyright (C) 2009-2014 Red Hat Inc.
+ * Copyright (C) 2009-2016 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -334,7 +334,7 @@ and fedora_download_all_packages_with_dnf pkgs dir tdir =
   let rpms = pkgs_as_NA_rpms pkgs in
 
   let cmd =
-    sprintf "%s download%s%s --destdir %s %s"
+    sprintf "%s download%s%s --destdir=%s --disableexcludes=all %s"
       Config.dnf
       (if !settings.debug >= 1 then " -v" else " -q")
       (match !settings.packager_config with
