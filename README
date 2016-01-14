@@ -58,8 +58,8 @@ For Fedora/RHEL:
   librpm
   yumdownloader (from yum-utils) or 'dnf download' plugin
 
-  NB: On Fedora, use `yum-builddep supermin' to install all the
-  dependencies.
+  NB: On RHEL, use `yum-builddep supermin' to install all the
+  dependencies.  On Fedora use `dnf builddep supermin'.
 
 For Debian/Ubuntu:
 
