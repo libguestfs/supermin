@@ -52,6 +52,9 @@
 /* fts.h in glibc is broken, forcing us to use the GNUlib alternative. */
 #include "fts_.h"
 
+/* How many blocks of size S are needed for storing N bytes. */
+#define ROUND_UP(N, S) (((N) + (S) - 1) / (S))
+
 struct ext2_data
 {
   ext2_filsys fs;
@@ -629,6 +632,7 @@ ext2_copy_file (struct ext2_data *data, const char *src, const char *dest)
   errcode_t err;
   struct stat statbuf;
   struct statvfs statvfsbuf;
+  size_t blocks;
 
   if (data->debug >= 3)
     printf ("supermin: ext2: copy_file %s -> %s\n", src, dest);
@@ -647,6 +651,20 @@ ext2_copy_file (struct ext2_data *data, const char *src, const char *dest)
     if (space < estimate)
       unix_error (ENOSPC, (char *) "statvfs",
                   caml_copy_string (data->fs->device_name));
+  }
+
+  /* Check that we have enough free blocks to store the resulting blocks
+   * for this file.  The file might need more than that in the filesystem,
+   * but at least this provides a quick check to avoid failing later on.
+   */
+  blocks = ROUND_UP (statbuf.st_size, data->fs->blocksize);
+  if (blocks > ext2fs_free_blocks_count (data->fs->super)) {
+    fprintf (stderr, "supermin: %s: needed %lu blocks (%d each) for "
+                     "%lu bytes, available only %llu\n",
+             src, blocks, data->fs->blocksize, statbuf.st_size,
+             ext2fs_free_blocks_count (data->fs->super));
+    unix_error (ENOSPC, (char *) "block size",
+                data->fs->device_name ? caml_copy_string (data->fs->device_name) : Val_none);
   }
 
   /* Sanity check the path.  These rules are always true for the paths
