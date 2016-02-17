@@ -15,28 +15,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-ACLOCAL_AMFLAGS = -I m4
+# init "script" used by ext2 initrd.
 
-SUBDIRS = lib init src examples tests
+CLEANFILES = *~
 
-EXTRA_DIST = \
-	.gitignore \
-	autogen.sh \
-	bootstrap \
-	HACKING \
-	html/pod.css \
-	m4/gnulib-cache.m4 \
-	README \
-	TODO \
-	$(SOURCES)
-
-# Maintainer website update.
-HTMLFILES = \
-	html/supermin.1.html
-
-WEBSITEDIR = $(HOME)/d/redhat/websites/libguestfs
-
-website: $(HTMLFILES)
-	cp $(HTMLFILES) $(WEBSITEDIR)
-
-CLEANFILES = $(HTMLFILES) pod2*.tmp
+noinst_PROGRAMS = init
+init_SOURCES = init.c
+init_CFLAGS = -static
+init_LDFLAGS = -static

@@ -192,6 +192,7 @@ AC_CONFIG_FILES([src/supermin-link.sh],
 		[chmod +x,-w src/supermin-link.sh])
 AC_CONFIG_FILES([Makefile
         examples/Makefile
+        init/Makefile
         lib/Makefile
         src/config.ml
         src/Makefile

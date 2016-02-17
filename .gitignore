@@ -29,12 +29,9 @@ pod2htm?.tmp
 /depcomp
 /examples/basic-full-appliance
 /examples/basic-supermin.d
-/helper/ext2init.S
-/helper/supermin-helper
-/helper/supermin-helper.1
-/helper/init
 /html/supermin-helper.1.html
 /html/supermin.1.html
+/init/init
 /local*
 /INSTALL
 /install-sh
@@ -43,7 +40,6 @@ pod2htm?.tmp
 /src/.depend
 /src/config.ml
 /src/ext2init-bin.S
-/src/init
 /src/supermin
 /src/supermin.1
 /src/supermin-link.sh

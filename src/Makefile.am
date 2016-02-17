@@ -1,5 +1,5 @@
 # supermin Makefile.am
-# (C) Copyright 2009-2014 Red Hat Inc.
+# (C) Copyright 2009-2016 Red Hat Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-#
-# Written by Richard W.M. Jones <rjones@redhat.com>
 
 EXTRA_DIST = \
 	.depend \
@@ -138,18 +136,12 @@ supermin_LINK = \
 .ml.cmx:
 	$(OCAMLFIND) ocamlopt $(OCAMLFLAGS) $(OCAMLPACKAGES) -c $< -o $@
 
-# init "script" used by ext2 initrd.
-noinst_PROGRAMS = init
-init_SOURCES = init.c
-init_CFLAGS = -static
-init_LDFLAGS = -static
-
 CLEANFILES += ext2init-bin.S
 
 ext2init-bin.o: ext2init-bin.S
 	$(CC) -o $@ -c $<
 
-ext2init-bin.S: init $(srcdir)/bin2s.pl
+ext2init-bin.S: ../init/init $(srcdir)/bin2s.pl
 	strip --strip-all $<
 	@file $< | grep -isq static || \
 	  (echo "*** error: init is not statically linked"; exit 1)
