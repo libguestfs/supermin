@@ -19,6 +19,9 @@
 
 CLEANFILES = *~
 
+# You can build this using an alternate libc if you want.  See
+# README ``Alternate libc''.
+
 noinst_PROGRAMS = init
 init_SOURCES = init.c
 init_CFLAGS = -static

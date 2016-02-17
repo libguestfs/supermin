@@ -40,6 +40,8 @@ Requirements
     - This is just used to generate the manpage.
 
   static libc
+    - Can be replaced with dietlibc, musl-libc (and maybe other
+      alternate libc).  See section ``Alternate libc'' below.
 
   bash
 
@@ -144,3 +146,34 @@ Feedback and bugs
 Send feedback to libguestfs@redhat.com.  You can file bugs in
 https://bugzilla.redhat.com/ (under "Fedora", "supermin")
 
+Alternate libc
+--------------
+
+Supermin uses a small, statically linked "init" binary.  Normally this
+is linked to static glibc, but static glibc produces enormous binaries
+(800KB+).  You can use an alternate libc if you prefer.  For example,
+using dietlibc, I can build a 22K init, about 1/40th of the size.
+
+  $ ls -l init/init
+  -rwxrwxr-x. 1 rjones rjones 21736 Feb 17 14:03 init/init
+
+- Dietlibc
+
+For dietlibc, build supermin like this:
+
+  ./configure
+  make clean
+  make -C init CC="diet gcc"
+  make
+
+which builds the init using dietlibc, and then builds the rest of
+supermin with the dietlibc-using init binary.
+
+- Musl-libc
+
+For musl, build supermin like this:
+
+  ./configure
+  make clean
+  make -C init CC="musl-gcc"
+  make
