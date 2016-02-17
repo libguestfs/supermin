@@ -93,6 +93,15 @@ main ()
   print_uptime ();
   fprintf (stderr, "supermin: ext2 mini initrd starting up: "
            PACKAGE_VERSION
+#if defined(__dietlibc__)
+           " dietlibc"
+#elif defined(__NEWLIB_H__)
+           " newlib"
+#elif defined(__UCLIBC__)
+           " uClibc"
+#elif defined(__GLIBC__)
+           " glibc"
+#endif
            "\n");
 
   read_cmdline ();
