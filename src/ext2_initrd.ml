@@ -1,5 +1,5 @@
 (* supermin 5
- * Copyright (C) 2009-2014 Red Hat Inc.
+ * Copyright (C) 2009-2016 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -100,13 +100,47 @@ let rec build_initrd debug tmpdir modpath initrd =
             with Not_found -> StringSet.empty in
           visit deps;
 
-          (* Copy module to the init directory. *)
-          let cmd =
-            sprintf "cp -t %s %s" (quote initdir) (quote (modpath // modl)) in
-          run_command cmd;
+          (* Copy module to the init directory.
+           * Uncompress the module, if the name ends in .xz or .gz.
+           *)
+          let basename = Filename.basename modl in
+          let basename =
+            let len = String.length basename in
+            if Config.xzcat <> "no" &&
+                 Filename.check_suffix basename ".xz"
+            then (
+              let basename = String.sub basename 0 (len-3) in
+              let cmd = sprintf "%s %s > %s"
+                                (quote Config.xzcat)
+                                (quote (modpath // modl))
+                                (quote (initdir // basename)) in
+              if debug >= 2 then printf "supermin: %s\n" cmd;
+              run_command cmd;
+              basename
+            )
+            else if Config.zcat <> "no" &&
+                      Filename.check_suffix basename ".gz"
+            then (
+              let basename = String.sub basename 0 (len-3) in
+              let cmd = sprintf "%s %s > %s"
+                                (quote Config.zcat)
+                                (quote (modpath // modl))
+                                (quote (initdir // basename)) in
+              if debug >= 2 then printf "supermin: %s\n" cmd;
+              run_command cmd;
+              basename
+            )
+            else (
+              let cmd =
+                sprintf "cp -t %s %s"
+                        (quote initdir) (quote (modpath // modl)) in
+              if debug >= 2 then printf "supermin: %s\n" cmd;
+              run_command cmd;
+              basename
+            ) in
 
           (* Write module name to 'modules' file. *)
-          fprintf chan "%s\n" (Filename.basename modl);
+          fprintf chan "%s\n" basename;
           incr loaded
         )
     ) set

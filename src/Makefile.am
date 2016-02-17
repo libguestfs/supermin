@@ -143,7 +143,6 @@ noinst_PROGRAMS = init
 init_SOURCES = init.c
 init_CFLAGS = -static
 init_LDFLAGS = -static
-init_LDADD = $(ZLIB_STATIC_LIBS) $(LZMA_STATIC_LIBS)
 
 CLEANFILES += ext2init-bin.S
 

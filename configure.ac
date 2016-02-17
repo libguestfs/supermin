@@ -127,77 +127,11 @@ dnl Check for fakeroot, only used a few drivers where the host package
 dnl manager contains broken/unnecessary tests for root privs.
 AC_PATH_PROG(FAKEROOT,[fakeroot],[no])
 
-dnl Support for compressed input files, gzipped kernel modules.
-AC_CHECK_HEADER([zlib.h],[
-    AC_CHECK_LIB([z],[gzopen],[
-        zlib=yes
-        ZLIB_LIBS=-lz
+dnl Check for zcat, only needed if you have gzip-compressed kernel modules.
+AC_PATH_PROG(ZCAT,[zcat],[no])
 
-        AC_MSG_CHECKING([for gzip static library])
-        old_CFLAGS="$CFLAGS"
-        old_LDFLAGS="$LDFLAGS"
-        old_LIBS="$LIBS"
-        CFLAGS="$CFLAGS -static"
-        LDFLAGS="$LDFLAGS -static"
-        LIBS="$LIBS -lz"
-        AC_LINK_IFELSE([
-            #include <stdio.h>
-            #include <stdlib.h>
-            #include <zlib.h>
-            int main () { gzFile g = gzopen ("test", "rb"); exit (g ? 1 : 0); }
-        ],[
-            zlib_static=yes
-            ZLIB_STATIC_LIBS="$ZLIB_LIBS"
-            AC_MSG_RESULT([yes])
-        ],[
-            AC_MSG_RESULT([no])
-        ])
-        CFLAGS="$old_CFLAGS"
-        LDFLAGS="$old_LDFLAGS"
-        LIBS="$old_LIBS"
-    ])
-])
-if test "x$zlib" = "xyes"; then
-    AC_DEFINE([HAVE_ZLIB],[1],[Define if you have zlib])
-    AC_SUBST([ZLIB_LIBS])
-fi
-if test "x$zlib_static" = "xyes"; then
-    AC_DEFINE([HAVE_ZLIB_STATIC],[1],[Define if you have static zlib])
-    AC_SUBST([ZLIB_STATIC_LIBS])
-fi
-
-dnl Support for xzed kernel modules.
-AC_CHECK_HEADER([lzma.h],[
-    AC_CHECK_LIB([lzma],[lzma_code],[
-        AC_MSG_CHECKING([for xz static library])
-        old_CFLAGS="$CFLAGS"
-        old_LDFLAGS="$LDFLAGS"
-        old_LIBS="$LIBS"
-        CFLAGS="$CFLAGS -static"
-        LDFLAGS="$LDFLAGS -static"
-        LIBS="$LIBS -llzma"
-        AC_LINK_IFELSE([
-            #include <stdio.h>
-            #include <stdlib.h>
-            #include <lzma.h>
-            int main () { lzma_stream s = LZMA_STREAM_INIT;
-                 exit (s.next_in == NULL ? 1 : 0); }
-        ],[
-            lzma_static=yes
-            LZMA_STATIC_LIBS="-llzma"
-            AC_MSG_RESULT([yes])
-        ],[
-            AC_MSG_RESULT([no])
-        ])
-        CFLAGS="$old_CFLAGS"
-        LDFLAGS="$old_LDFLAGS"
-        LIBS="$old_LIBS"
-    ])
-])
-if test "x$lzma_static" = "xyes"; then
-    AC_DEFINE([HAVE_LZMA_STATIC],[1],[Define if you have static lzma])
-    AC_SUBST([LZMA_STATIC_LIBS])
-fi
+dnl Check for xzcat, only needed if you have xz-compressed kernel modules.
+AC_PATH_PROG(XZCAT,[xzcat],[no])
 
 dnl mke2fs.
 AC_PATH_PROG([MKE2FS],[mke2fs],[no],

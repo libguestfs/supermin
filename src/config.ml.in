@@ -37,6 +37,8 @@ let rpm = "@RPM@"
 let rpm2cpio = "@RPM2CPIO@"
 let urpmi = "@URPMI@"
 let yumdownloader = "@YUMDOWNLOADER@"
+let xzcat = "@XZCAT@"
+let zcat = "@ZCAT@"
 let zypper = "@ZYPPER@"
 
 let mke2fs = "@MKE2FS@"

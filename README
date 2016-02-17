@@ -97,9 +97,9 @@ are building:
   qemu >= 0.13
   kernel >= 2.6.36
 
-  zlib (statically linked) - if your kernel uses gzipped modules
+  zcat (command) - if your kernel uses gzipped modules
 
-  xz (statically linked) - if your kernel uses xz-compressed modules
+  xzcat (command) - if your kernel uses xz-compressed modules
 
 Building and installing
 -----------------------
