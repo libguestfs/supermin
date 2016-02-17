@@ -41,8 +41,6 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
-#include <asm/unistd.h>
-
 /* Maximum time to wait for the root device to appear (seconds).
  *
  * On slow machines with lots of disks (Koji running the 255 disk test
