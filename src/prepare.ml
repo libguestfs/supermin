@@ -28,10 +28,8 @@ let prepare debug (copy_kernel, dtb_wildcard, format, host_cpu,
   if debug >= 1 then
     printf "supermin: prepare: %s\n%!" (String.concat " " inputs);
 
-  if inputs = [] then (
-    eprintf "supermin: prepare: no input packages specified\n";
-    exit 1;
-  );
+  if inputs = [] then
+    error "prepare: no input packages specified";
 
   let ph = get_package_handler () in
 
@@ -40,10 +38,8 @@ let prepare debug (copy_kernel, dtb_wildcard, format, host_cpu,
    * filter_map will return only packages which are installed.
    *)
   let packages = filter_map ph.ph_package_of_string inputs in
-  if packages = [] then (
-    eprintf "supermin: prepare: none of the packages listed on the command line seem to be installed\n";
-    exit 1;
-  );
+  if packages = [] then
+    error "prepare: none of the packages listed on the command line seem to be installed";
 
   if debug >= 1 then (
     printf "supermin: packages specified on the command line:\n";

@@ -39,9 +39,7 @@ let dpkg_init s =
   let cmd = sprintf "%s --print-architecture" Config.dpkg in
   let lines = run_command_get_lines cmd in
   match lines with
-  | [] ->
-    eprintf "supermin: dpkg: expecting %s to return some output\n" cmd;
-    exit 1
+  | [] -> error "dpkg: expecting %s to return some output" cmd
   | arch :: _ -> dpkg_primary_arch := arch
 
 type dpkg_t = {

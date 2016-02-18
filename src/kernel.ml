@@ -128,16 +128,15 @@ and kernel_filter patterns is_arm all_files =
   List.filter (fun filename -> has_modpath filename) files
 
 and no_kernels host_cpu =
-  eprintf "\
-supermin: failed to find a suitable kernel (host_cpu=%s).
+  error "\
+failed to find a suitable kernel (host_cpu=%s).
 
 I looked for kernels in /boot and modules in /lib/modules.
 
 If this is a Xen guest, and you only have Xen domU kernels
 installed, try installing a fullvirt kernel (only for
-supermin use, you shouldn't boot the Xen guest with it).\n"
-    host_cpu;
-  exit 1
+supermin use, you shouldn't boot the Xen guest with it)."
+    host_cpu
 
 and find_dtb debug copy_kernel kernel_name wildcard dtb =
   let dtb_file =
@@ -180,27 +179,25 @@ and find_dtb debug copy_kernel kernel_name wildcard dtb =
   copy_or_symlink_file copy_kernel dtb_file dtb
 
 and no_dtb_dir kernel_name =
-  eprintf "\
-supermin: failed to find a dtb (device tree) directory.
+  error "\
+failed to find a dtb (device tree) directory.
 
 I expected to take '%s' and to
 replace vmlinuz- with dtb- to form a directory.
 
 You can set SUPERMIN_KERNEL, SUPERMIN_MODULES and SUPERMIN_DTB
-to override automatic selection.  See supermin(1).\n"
-    kernel_name;
-  exit 1
+to override automatic selection.  See supermin(1)."
+    kernel_name
 
 and no_dtb dtb_dir wildcard =
-  eprintf "\
-supermin: failed to find a matching device tree.
+  error "\
+failed to find a matching device tree.
 
 I looked for a file matching '%s' in directory '%s'.
 
 You can set SUPERMIN_KERNEL, SUPERMIN_MODULES and SUPERMIN_DTB
-to override automatic selection.  See supermin(1).\n"
-    wildcard dtb_dir;
-  exit 1
+to override automatic selection.  See supermin(1)."
+    wildcard dtb_dir
 
 and find_modpath debug kernel_version =
   try

@@ -66,10 +66,8 @@ let pacman_package_of_string str =
     ) lines;
 
     let name = !name and evr = !evr and arch = !arch in
-    if name = "" || evr = "" || arch = "" then (
-      eprintf "supermin: pacman: Name/Version/Architecture field missing in output of %s\n" cmd;
-      exit 1
-    );
+    if name = "" || evr = "" || arch = "" then
+      error "pacman: Name/Version/Architecture field missing in output of %s" cmd;
 
     (* Parse epoch:version-release field. *)
     let epoch, version, release =

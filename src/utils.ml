@@ -28,6 +28,13 @@ let (//) = Filename.concat
 let quote = Filename.quote
 let quoted_list names = String.concat " " (List.map quote names)
 
+let error ?(exit_code = 1) fs =
+  let display str =
+    prerr_endline (sprintf "supermin: %s" str);
+    exit exit_code
+  in
+  ksprintf display fs
+
 let dir_exists name =
   try (stat name).st_kind = S_DIR
   with Unix_error _ -> false
@@ -59,31 +66,25 @@ let run_command_get_lines cmd =
   (match stat with
    | WEXITED 0 -> ()
    | WEXITED i ->
-       eprintf "supermin: command '%s' failed (returned %d), see earlier error messages\n" cmd i;
-       exit i
+       error ~exit_code:i "command '%s' failed (returned %d), see earlier error messages"
+         cmd i
    | WSIGNALED i ->
-       eprintf "supermin: command '%s' killed by signal %d" cmd i;
-       exit 1
+       error "command '%s' killed by signal %d" cmd i
    | WSTOPPED i ->
-       eprintf "supermin: command '%s' stopped by signal %d" cmd i;
-       exit 1
+       error "command '%s' stopped by signal %d" cmd i
   );
   lines
 
 let run_command cmd =
-  if Sys.command cmd <> 0 then (
-    eprintf "supermin: %s: command failed, see earlier errors\n" cmd;
-    exit 1
-  )
+  if Sys.command cmd <> 0 then
+    error "%s: command failed, see earlier errors" cmd
 
 let run_shell code args =
   let cmd = sprintf "sh -c %s arg0 %s"
     (Filename.quote code)
     (String.concat " " (List.map Filename.quote args)) in
-  if Sys.command cmd <> 0 then (
-    eprintf "supermin: external shell program failed, see earlier error messages\n";
-    exit 1
-  )
+  if Sys.command cmd <> 0 then
+    error "external shell program failed, see earlier error messages"
 
 let rec find s sub =
   let len = String.length s in
@@ -191,8 +192,8 @@ let compare_architecture a1 a2 =
     | "s390x" -> 64
     | "alpha" -> 64
     | a ->
-      eprintf "supermin: missing support for architecture '%s'\nIt may need to be added to supermin.\n" a;
-      exit 1
+      error "missing support for architecture '%s'\nIt may need to be added to supermin."
+        a
   in
   compare (index_of_architecture a1) (index_of_architecture a2)
 
@@ -213,6 +214,5 @@ let parse_size =
     if matches const_re then (
       size_scaled (float_of_string (sub 1)) (sub 2)
     ) else (
-      eprintf "supermin: cannot parse size field '%s'\n" field;
-      exit 1
+      error "cannot parse size field '%s'" field
     )

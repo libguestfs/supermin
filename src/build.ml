@@ -65,10 +65,8 @@ let rec build debug
   if debug >= 1 then
     printf "supermin: build: %s\n%!" (String.concat " " inputs);
 
-  if inputs = [] then (
-    eprintf "supermin: build: no input supermin appliance specified\n";
-    exit 1;
-  );
+  if inputs = [] then
+    error "build: no input supermin appliance specified";
 
   (* When base images are seen, they are unpacked into this temporary
    * directory.  But to speed things up, when we are building a chroot,
@@ -297,10 +295,8 @@ and update_appliance appliance lines = function
     let lines = List.map (
       fun path ->
         let n = String.length path in
-        if n < 1 || path.[0] <> '-' then (
-          eprintf "supermin: excludefiles line does not start with '-'\n";
-          exit 1
-        );
+        if n < 1 || path.[0] <> '-' then
+          error "excludefiles line does not start with '-'";
         String.sub path 1 (n-1)
     ) lines in
     { appliance with excludefiles = appliance.excludefiles @ lines }
@@ -335,16 +331,12 @@ and get_file_content file buf len =
     (* However we intend to support them in future for both input
      * and output.
      *)
-    eprintf "supermin: %s: cpio files are not supported in this version of supermin\n" file;
-    exit 1
+    error "%s: cpio files are not supported in this version of supermin" file;
   )
   else if len >= 2 && buf.[0] = '/' then Hostfiles
   else if len >= 2 && buf.[0] = '-' then Excludefiles
   else if len >= 1 && isalnum buf.[0] then Packages
-  else (
-    eprintf "supermin: %s: unknown file type in supermin directory\n" file;
-    exit 1
-  )
+  else error "%s: unknown file type in supermin directory" file
 
 and get_compressed_file_content zcat file =
   let cmd = sprintf "%s %s" zcat (quote file) in

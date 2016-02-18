@@ -24,6 +24,9 @@ val ( *^ ) : int64 -> int64 -> int64
 val (/^) : int64 -> int64 -> int64
   (** Int64 operators. *)
 
+val error : ?exit_code:int -> ('a, unit, string, 'b) format4 -> 'a
+(** Standard error function. *)
+
 val dir_exists : string -> bool
   (** Return [true] iff dir exists. *)
 

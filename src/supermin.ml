@@ -54,10 +54,8 @@ let main () =
    * This is untested and will break in some way or another later, so
    * better to die now with a meaningful error message.
    *)
-  if try Filename.is_relative (getenv "TMPDIR") with Not_found -> false then (
-    eprintf "supermin: error: environment variable $TMPDIR must be an absolute path\n";
-    exit 1
-  );
+  if try Filename.is_relative (getenv "TMPDIR") with Not_found -> false then
+    error "error: environment variable $TMPDIR must be an absolute path";
 
   (* Create a temporary directory for scratch storage. *)
   let tmpdir =
@@ -102,9 +100,7 @@ let main () =
     let set_format = function
       | "chroot" | "fs" | "filesystem" -> format := Some Chroot
       | "ext2" -> format := Some Ext2
-      | s ->
-        eprintf "supermin: unknown --format option (%s)\n" s;
-        exit 1
+      | s -> error "unknown --format option (%s)\n" s
     in
 
     let rec set_prepare_mode () =
@@ -116,20 +112,19 @@ let main () =
         bad_mode ();
       mode := Some Build
     and bad_mode () =
-      eprintf "supermin: you must use --prepare or --build to select the mode\n";
-      exit 1
+      error "you must use --prepare or --build to select the mode"
     in
 
     let set_size arg = size := Some (parse_size arg) in
 
     let error_supermin_5 () =
-      eprintf "supermin: *** error: This is supermin version 5.\n";
-      eprintf "supermin: *** It looks like you are looking for supermin version 4.\n";
-      eprintf "\n";
-      eprintf "This version of supermin will not work.  You need to find the old version\n";
-      eprintf "or upgrade to libguestfs >= 1.26.\n";
-      eprintf "\n";
-      exit 1
+      error "\
+*** error: This is supermin version 5.
+supermin: *** It looks like you are looking for supermin version 4.
+
+This version of supermin will not work.  You need to find the old version
+or upgrade to libguestfs >= 1.26.
+"
     in
 
     let ditto = " -\"-" in
@@ -178,18 +173,14 @@ let main () =
     let format =
       match mode, !format with
       | Prepare, Some _ ->
-        eprintf "supermin: cannot use --prepare and --format options together\n";
-        exit 1
+        error "cannot use --prepare and --format options together"
       | Prepare, None -> Chroot (* doesn't matter, prepare doesn't use this *)
       | Build, None ->
-        eprintf "supermin: when using --build, you must specify an output --format\n";
-        exit 1
+        error "when using --build, you must specify an output --format"
       | Build, Some f -> f in
 
-    if outputdir = "" then (
-      eprintf "supermin: output directory (-o option) must be supplied\n";
-      exit 1
-    );
+    if outputdir = "" then
+      error "supermin: output directory (-o option) must be supplied";
     (* Chop final '/' in output directory (RHBZ#1146753). *)
     let outputdir =
       let len = String.length outputdir in
@@ -293,24 +284,17 @@ let () =
   try main ()
   with
   | Unix.Unix_error (code, fname, "") -> (* from a syscall *)
-    eprintf "supermin: error: %s: %s\n" fname (Unix.error_message code);
-    exit 1
+    error "error: %s: %s" fname (Unix.error_message code)
   | Unix.Unix_error (code, fname, param) -> (* from a syscall *)
-    eprintf "supermin: error: %s: %s: %s\n" fname (Unix.error_message code)
-      param;
-    exit 1
+    error "error: %s: %s: %s" fname (Unix.error_message code) param
   | Failure msg ->                      (* from failwith/failwithf *)
-    eprintf "supermin: failure: %s\n" msg;
-    exit 1
+    error "failure: %s" msg
   | Invalid_argument msg ->             (* probably should never happen *)
-    eprintf "supermin: internal error: invalid argument: %s\n" msg;
-    exit 1
+    error "internal error: invalid argument: %s" msg
   | Assert_failure (file, line, char) -> (* should never happen *)
-    eprintf "supermin: internal error: assertion failed at %s, line %d, char %d\n" file line char;
-    exit 1
+    error "internal error: assertion failed at %s, line %d, char %d"
+      file line char
   | Not_found ->                        (* should never happen *)
-    eprintf "supermin: internal error: Not_found exception was thrown\n";
-    exit 1
+    error "internal error: Not_found exception was thrown"
   | exn ->                              (* something not matched above *)
-    eprintf "supermin: exception: %s\n" (Printexc.to_string exn);
-    exit 1
+    error "exception: %s" (Printexc.to_string exn)

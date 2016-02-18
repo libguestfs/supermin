@@ -116,8 +116,8 @@ let check_system settings =
     handler := Some h;
     ph.ph_init settings
   with Not_found ->
-    eprintf "\
-supermin: could not detect package manager used by this system or distro.
+    error "\
+could not detect package manager used by this system or distro.
 
 If this is a new Linux distro, or not Linux, or a Linux distro that uses
 an unusual packaging format then you may need to port supermin.  If
@@ -128,8 +128,7 @@ To list which package handlers are compiled into this version of
 supermin, do:
 
   supermin --list-drivers
-";
-    exit 1
+"
 
 let rec get_package_handler () =
   match !handler with
