@@ -49,11 +49,6 @@ val run_shell : string -> string list -> unit
       This does not return anything, but exits with an error message
       if the shell code returns an error. *)
 
-val run_python : string -> string list -> unit
-  (** [run_python code args] runs Python [code] with arguments [args].
-      This does not return anything, but exits with an error message
-      if the Python code returns an error. *)
-
 val (//) : string -> string -> string
   (** [x // y] concatenates file paths [x] and [y] into a single path. *)
 

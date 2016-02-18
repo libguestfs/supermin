@@ -85,15 +85,6 @@ let run_shell code args =
     exit 1
   )
 
-let run_python code args =
-  let cmd = sprintf "python -c %s %s"
-    (Filename.quote code)
-    (String.concat " " (List.map Filename.quote args)) in
-  if Sys.command cmd <> 0 then (
-    eprintf "supermin: external python program failed, see earlier error messages\n";
-    exit 1
-  )
-
 let rec find s sub =
   let len = String.length s in
   let sublen = String.length sub in
