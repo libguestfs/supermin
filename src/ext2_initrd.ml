@@ -82,14 +82,13 @@ let rec build_initrd debug tmpdir modpath initrd =
   (* Do depth-first search to locate the modules we need to load.  Keep
    * track of which modules we've added so we don't add them twice.
    *)
-  let visited = Hashtbl.create 13 in
-  let loaded = ref 0 in
+  let visited = ref StringSet.empty in
   let chan = open_out (initdir // "modules") in
   let rec visit set =
     StringSet.iter (
       fun modl ->
-        if not (Hashtbl.mem visited modl) then (
-          Hashtbl.add visited modl true;
+        if not (StringSet.mem modl !visited) then (
+          visited := StringSet.add modl !visited;
 
           if debug >= 2 then
             printf "supermin: ext2: initrd: visiting module %s\n%!" modl;
@@ -141,7 +140,6 @@ let rec build_initrd debug tmpdir modpath initrd =
 
           (* Write module name to 'modules' file. *)
           fprintf chan "%s\n" basename;
-          incr loaded
         )
     ) set
   in
@@ -149,7 +147,7 @@ let rec build_initrd debug tmpdir modpath initrd =
   close_out chan;
 
   if debug >= 1 then
-    printf "supermin: ext2: wrote %d modules to minimal initrd\n%!" !loaded;
+    printf "supermin: ext2: wrote %d modules to minimal initrd\n%!" (StringSet.cardinal !visited);
 
   (* This is the binary blob containing the init "script". *)
   let init = binary_init () in
