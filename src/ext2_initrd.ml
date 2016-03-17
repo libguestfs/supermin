@@ -40,12 +40,7 @@ let kmods = [
   "virtio*.ko*";
   "libata*.ko*";
   "piix*.ko*";
-  "scsi_transport_spi.ko*";
-  "scsi_mod.ko*";
-  "sd_mod.ko*";
-  "sym53c8xx.ko*";
   "ata_piix.ko*";
-  "sr_mod.ko*";
   "crc*.ko*";
   "libcrc*.ko*";
   "ibmvscsic.ko*";
