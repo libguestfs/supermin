@@ -71,10 +71,10 @@ static const char *moderror(int err)
   }
 }
 
-/* Leave this enabled for now.  When we get more confident in the boot
- * process we can turn this off or make it configurable.
+/* If "quiet" is found on the command line, set this which suppresses
+ * ordinary debug messages.
  */
-#define verbose 1
+static int quiet = 0;
 
 static void mount_proc (void);
 static void print_uptime (void);
@@ -90,7 +90,6 @@ main ()
 {
   mount_proc ();
 
-  print_uptime ();
   fprintf (stderr, "supermin: ext2 mini initrd starting up: "
            PACKAGE_VERSION
 #if defined(__dietlibc__)
@@ -105,6 +104,12 @@ main ()
            "\n");
 
   read_cmdline ();
+  quiet = strstr (cmdline, "quiet") != NULL;
+
+  if (!quiet) {
+    fprintf (stderr, "supermin: cmdline: %s\n", cmdline);
+    print_uptime ();
+  }
 
   /* Create some fixed directories. */
   mkdir ("/dev", 0755);
@@ -112,7 +117,7 @@ main ()
   mkdir ("/sys", 0755);
 
   /* Mount /sys. */
-  if (verbose)
+  if (!quiet)
     fprintf (stderr, "supermin: mounting /sys\n");
   if (mount ("sysfs", "/sys", "sysfs", 0, "") == -1) {
     perror ("mount: /sys");
@@ -208,7 +213,7 @@ main ()
   exit (EXIT_FAILURE);
 
  found:
-  if (verbose)
+  if (!quiet)
     fprintf (stderr, "supermin: picked %s as root device\n", path);
 
   fgets (line, sizeof line, fp);
@@ -229,7 +234,7 @@ main ()
     perror ("ioctl: TIOCSCTTY");
 #endif
 
-  if (verbose)
+  if (!quiet)
     fprintf (stderr, "supermin: creating /dev/root as block special %d:%d\n",
              major, minor);
 
@@ -239,7 +244,7 @@ main ()
   }
 
   /* Mount new root and chroot to it. */
-  if (verbose)
+  if (!quiet)
     fprintf (stderr, "supermin: mounting new root on /root\n");
   if (mount ("/dev/root", "/root", "ext2", MS_NOATIME, "") == -1) {
     perror ("mount: /root");
@@ -250,7 +255,7 @@ main ()
    * Documentation/filesystems/ramfs-rootfs-initramfs.txt
    * We could remove the old initramfs files, but let's not bother.
    */
-  if (verbose)
+  if (!quiet)
     fprintf (stderr, "supermin: chroot\n");
 
   if (chroot ("/root") == -1) {
@@ -282,7 +287,7 @@ insmod (const char *filename)
 {
   size_t size;
 
-  if (verbose)
+  if (!quiet)
     fprintf (stderr, "supermin: internal insmod %s\n", filename);
 
   int fd = open (filename, O_RDONLY);
@@ -323,7 +328,7 @@ mount_proc (void)
   if (access ("/proc/uptime", R_OK) == -1) {
     mkdir ("/proc", 0755);
 
-    if (verbose)
+    if (!quiet)
       fprintf (stderr, "supermin: mounting /proc\n");
 
     if (mount ("proc", "/proc", "proc", 0, "") == -1) {
@@ -370,8 +375,6 @@ read_cmdline (void)
   len = strlen (cmdline);
   if (len >= 1 && cmdline[len-1] == '\n')
     cmdline[len-1] = '\0';
-
-  fprintf (stderr, "supermin: cmdline: %s\n", cmdline);
 }
 
 /* Display a directory on stderr.  This is used for debugging only. */
