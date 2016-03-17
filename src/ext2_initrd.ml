@@ -46,7 +46,6 @@ let kmods = [
   "sym53c8xx.ko*";
   "ata_piix.ko*";
   "sr_mod.ko*";
-  "mbcache.ko*";
   "crc*.ko*";
   "libcrc*.ko*";
   "ibmvscsic.ko*";
