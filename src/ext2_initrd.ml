@@ -38,7 +38,6 @@ let kmods = [
   "ext2.ko*";
   "ext4.ko*";    (* CONFIG_EXT4_USE_FOR_EXT23=y option might be set *)
   "virtio*.ko*";
-  "ide*.ko*";
   "libata*.ko*";
   "piix*.ko*";
   "scsi_transport_spi.ko*";
