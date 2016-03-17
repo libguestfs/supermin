@@ -50,7 +50,6 @@ let kmods = [
   "crc*.ko*";
   "libcrc*.ko*";
   "ibmvscsic.ko*";
-  "megaraid*.ko*";
 ]
 
 let rec build_initrd debug tmpdir modpath initrd =
