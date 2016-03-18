@@ -46,6 +46,13 @@ let kmods = [
   "ibmvscsic.ko*";
 ]
 
+(* A blacklist of kmods which match the above patterns, but which we
+ * subsequently remove.
+ *)
+let not_kmods = [
+  "virtio-gpu.ko*";
+]
+
 let rec build_initrd debug tmpdir modpath initrd =
   if debug >= 1 then
     printf "supermin: ext2: creating minimal initrd '%s'\n%!" initrd;
@@ -65,7 +72,8 @@ let rec build_initrd debug tmpdir modpath initrd =
       fun topset modl ->
         let m = Filename.basename modl in
         let matches wildcard = fnmatch wildcard m [FNM_PATHNAME] in
-        if List.exists matches kmods then
+        if List.exists matches kmods && not (List.exists matches not_kmods)
+        then
           StringSet.add modl topset
         else
           topset
