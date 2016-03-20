@@ -40,6 +40,7 @@ let kmods = [
   "virtio*.ko*";
   "libata*.ko*";
   "piix*.ko*";
+  "sd_mod.ko*";
   "ata_piix.ko*";
   "crc*.ko*";
   "libcrc*.ko*";
