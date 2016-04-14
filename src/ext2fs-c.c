@@ -31,6 +31,7 @@
 #include <limits.h>
 #include <errno.h>
 #include <assert.h>
+#include <inttypes.h>
 
 /* Inlining is broken in the ext2fs header file.  Disable it by
  * defining the following:
@@ -659,9 +660,9 @@ ext2_copy_file (struct ext2_data *data, const char *src, const char *dest)
    */
   blocks = ROUND_UP (statbuf.st_size, data->fs->blocksize);
   if (blocks > ext2fs_free_blocks_count (data->fs->super)) {
-    fprintf (stderr, "supermin: %s: needed %lu blocks (%d each) for "
-                     "%lu bytes, available only %llu\n",
-             src, blocks, data->fs->blocksize, statbuf.st_size,
+    fprintf (stderr, "supermin: %s: needed %zu blocks (%d each) for "
+                     "%" PRIu64 " bytes, available only %llu\n",
+             src, blocks, data->fs->blocksize, (uint64_t) statbuf.st_size,
              ext2fs_free_blocks_count (data->fs->super));
     unix_error (ENOSPC, (char *) "block size",
                 data->fs->device_name ? caml_copy_string (data->fs->device_name) : Val_none);
