@@ -1,5 +1,5 @@
 dnl supermin configure.ac
-dnl (C) Copyright 2009-2014 Red Hat Inc.
+dnl (C) Copyright 2009-2016 Red Hat Inc.
 dnl
 dnl This program is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@ dnl Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 dnl
 dnl Written by Richard W.M. Jones <rjones@redhat.com>
 
-AC_INIT([supermin],[5.1.15])
+AC_INIT([supermin],[5.1.16])
 AM_INIT_AUTOMAKE(foreign)
 AC_REQUIRE_AUX_FILE([supermin-test-driver])
 
