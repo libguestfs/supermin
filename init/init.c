@@ -154,11 +154,14 @@ main ()
    */
   char *root, *path;
   size_t len;
+  int dax = 0;
   root = strstr (cmdline, "root=");
   if (root) {
     root += 5;
     if (strncmp (root, "/dev/", 5) == 0)
       root += 5;
+    if (strncmp (root, "pmem", 4) == 0)
+      dax = 1;
     len = strcspn (root, " ");
     root[len] = '\0';
 
@@ -243,10 +246,20 @@ main ()
     exit (EXIT_FAILURE);
   }
 
+  /* Construct the filesystem mount options. */
+  const char *mount_options = "";
+  if (dax)
+    mount_options = "dax";
+
   /* Mount new root and chroot to it. */
-  if (!quiet)
-    fprintf (stderr, "supermin: mounting new root on /root\n");
-  if (mount ("/dev/root", "/root", "ext2", MS_NOATIME, "") == -1) {
+  if (!quiet) {
+    fprintf (stderr, "supermin: mounting new root on /root");
+    if (mount_options[0] != '\0')
+      fprintf (stderr, " (%s)", mount_options);
+    fprintf (stderr, "\n");
+  }
+  if (mount ("/dev/root", "/root", "ext2", MS_NOATIME,
+             mount_options) == -1) {
     perror ("mount: /root");
     exit (EXIT_FAILURE);
   }

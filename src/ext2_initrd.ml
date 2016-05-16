@@ -45,6 +45,10 @@ let kmods = [
   "crc*.ko*";
   "libcrc*.ko*";
   "ibmvscsic.ko*";
+  "libnvdimm.ko*";
+  "nd_pmem.ko*";
+  "nd_btt.ko*";
+  "nfit.ko*";
 ]
 
 (* A blacklist of kmods which match the above patterns, but which we
