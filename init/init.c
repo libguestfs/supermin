@@ -314,7 +314,11 @@ insmod (const char *filename)
     exit (EXIT_FAILURE);
   }
   size = st.st_size;
-  char buf[size];
+  char *buf = malloc (size);
+  if (buf == NULL) {
+    fprintf (stderr, "insmod: malloc (%s, %zu bytes): %m\n", filename, size);
+    exit (EXIT_FAILURE);
+  }
   size_t offset = 0;
   do {
     ssize_t rc = read (fd, buf + offset, size - offset);
@@ -332,6 +336,8 @@ insmod (const char *filename)
      * of a missing device.
      */
   }
+
+  free (buf);
 }
 
 /* Mount /proc unless it's mounted already. */
