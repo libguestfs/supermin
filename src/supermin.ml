@@ -57,9 +57,12 @@ let main () =
   if try Filename.is_relative (getenv "TMPDIR") with Not_found -> false then
     error "error: environment variable $TMPDIR must be an absolute path";
 
-  (* Create a temporary directory for scratch storage. *)
+  (* Create a temporary directory for scratch storage.  Because it's
+   * for large files, use /var/tmp if TMPDIR is not set.
+   *)
   let tmpdir =
-    let tmpdir = Filename.temp_file "supermin" ".tmpdir" in
+    let temp_dir = try getenv "TMPDIR" with Not_found -> "/var/tmp" in
+    let tmpdir = Filename.temp_file ~temp_dir "supermin" ".tmpdir" in
     unlink tmpdir;
     mkdir tmpdir 0o700;
     at_exit
