@@ -185,6 +185,7 @@ supermin_ext2fs_read_bitmaps (value fsv)
 static void ext2_mkdir (ext2_filsys fs, ext2_ino_t dir_ino, const char *dirname, const char *basename, mode_t mode, uid_t uid, gid_t gid, time_t ctime, time_t atime, time_t mtime);
 static void ext2_empty_inode (ext2_filsys fs, ext2_ino_t dir_ino, const char *dirname, const char *basename, mode_t mode, uid_t uid, gid_t gid, time_t ctime, time_t atime, time_t mtime, int major, int minor, int dir_ft, ext2_ino_t *ino_ret);
 static void ext2_write_file (ext2_filsys fs, ext2_ino_t ino, const char *buf, size_t size, const char *filename);
+static void ext2_write_host_file (ext2_filsys fs, ext2_ino_t ino, const char *src, const char *filename);
 static void ext2_link (ext2_filsys fs, ext2_ino_t dir_ino, const char *basename, ext2_ino_t ino, int dir_ft);
 static void ext2_clean_path (ext2_filsys fs, ext2_ino_t dir_ino, const char *dirname, const char *basename, int isdir);
 static void ext2_copy_file (struct ext2_data *data, const char *src, const char *dest);
@@ -500,6 +501,81 @@ ext2_write_file (ext2_filsys fs,
     ext2_error_to_exception ("ext2fs_write_inode", err, filename);
 }
 
+/* Same as ext2_write_file, but it copies the file contents from the
+ * host.  You must create the file first with ext2_empty_inode, and
+ * the host file must be a regular file.
+ */
+static void
+ext2_write_host_file (ext2_filsys fs,
+                      ext2_ino_t ino,
+                      const char *src, /* source (host) file */
+                      const char *filename)
+{
+  int fd;
+  char buf[BUFSIZ];
+  ssize_t r;
+  size_t size = 0;
+  errcode_t err;
+  ext2_file_t file;
+  unsigned int written;
+
+  fd = open (src, O_RDONLY);
+  if (fd == -1) {
+    static int warned = 0;
+
+    /* We skip unreadable files.  However if the error is -EACCES then
+     * modify the message so as not to frighten the horses.
+     */
+    fprintf (stderr, "supermin: warning: %s: %m (ignored)\n", filename);
+    if (errno == EACCES && !warned) {
+      fprintf (stderr,
+               "Some distro files are not public readable, so supermin cannot copy them\n"
+               "into the appliance.  This is a problem with your Linux distro.  Please ask\n"
+               "your distro to stop doing pointless security by obscurity.\n"
+               "You can ignore these warnings.  You *do not* need to use sudo.\n");
+      warned = 1;
+    }
+    return;
+  }
+
+  err = ext2fs_file_open2 (fs, ino, NULL, EXT2_FILE_WRITE, &file);
+  if (err != 0)
+    ext2_error_to_exception ("ext2fs_file_open2", err, filename);
+
+  while ((r = read (fd, buf, sizeof buf)) > 0) {
+    err = ext2fs_file_write (file, buf, r, &written);
+    if (err != 0)
+      ext2_error_to_exception ("ext2fs_file_open2", err, filename);
+    if ((ssize_t) written != r)
+      caml_failwith ("ext2fs_file_write: requested write size != bytes written");
+    size += written;
+  }
+
+  if (r == -1)
+    unix_error (errno, (char *) "read", caml_copy_string (filename));
+
+  if (close (fd) == -1)
+    unix_error (errno, (char *) "close", caml_copy_string (filename));
+
+  /* Flush out the ext2 file. */
+  err = ext2fs_file_flush (file);
+  if (err != 0)
+    ext2_error_to_exception ("ext2fs_file_flush", err, filename);
+  err = ext2fs_file_close (file);
+  if (err != 0)
+    ext2_error_to_exception ("ext2fs_file_close", err, filename);
+
+  /* Update the true size in the inode. */
+  struct ext2_inode inode;
+  err = ext2fs_read_inode (fs, ino, &inode);
+  if (err != 0)
+    ext2_error_to_exception ("ext2fs_read_inode", err, filename);
+  inode.i_size = size;
+  err = ext2fs_write_inode (fs, ino, &inode);
+  if (err != 0)
+    ext2_error_to_exception ("ext2fs_write_inode", err, filename);
+}
+
 /* This is just a wrapper around ext2fs_link which calls
  * ext2fs_expand_dir as necessary if the directory fills up.  See
  * definition of expand_dir in the sources of debugfs.
@@ -587,43 +663,6 @@ ext2_clean_path (ext2_filsys fs, ext2_ino_t dir_ino,
     }
   }
   /* else it's a directory, what to do? XXX */
-}
-
-/* Read in the whole file into memory.  Check the size is still 'size'. */
-static char *
-read_whole_file (const char *filename, size_t size)
-{
-  char *buf = malloc (size);
-  if (buf == NULL)
-    caml_raise_out_of_memory ();
-
-  int fd = open (filename, O_RDONLY);
-  if (fd == -1) {
-    /* Skip unreadable files. */
-    fprintf (stderr, "supermin: open: %s: %m\n", filename);
-    free (buf);
-    return NULL;
-  }
-
-  size_t n = 0;
-  char *p = buf;
-
-  while (n < size) {
-    ssize_t r = read (fd, p, size - n);
-    if (r == -1)
-      unix_error (errno, (char *) "read", caml_copy_string (filename));
-    if (r == 0) {
-      fprintf (stderr, "supermin: end of file reading '%s'\n", filename);
-      caml_invalid_argument ("ext2fs: file has changed size unexpectedly");
-    }
-    n += r;
-    p += r;
-  }
-
-  if (close (fd) == -1)
-    unix_error (errno, (char *) "close", caml_copy_string (filename));
-
-  return buf;
 }
 
 /* Copy a file (or directory etc) from the host. */
@@ -766,24 +805,14 @@ ext2_copy_file (struct ext2_data *data, const char *src, const char *dest)
   if (S_ISREG (statbuf.st_mode)) {
     /* XXX Hard links get duplicated here. */
     ext2_ino_t ino;
-    char *buf = NULL;
-
-    if (statbuf.st_size > 0) {
-      buf = read_whole_file (src, statbuf.st_size);
-      if (buf == NULL)
-        goto skip_unreadable_file;
-    }
 
     ext2_empty_inode (data->fs, dir_ino, dirname, basename,
                       statbuf.st_mode, statbuf.st_uid, statbuf.st_gid,
                       statbuf.st_ctime, statbuf.st_atime, statbuf.st_mtime,
                       0, 0, EXT2_FT_REG_FILE, &ino);
 
-    if (statbuf.st_size > 0) {
-      ext2_write_file (data->fs, ino, buf, statbuf.st_size, dest);
-      free (buf);
-    }
-  skip_unreadable_file: ;
+    if (statbuf.st_size > 0)
+      ext2_write_host_file (data->fs, ino, src, dest);
   }
   /* Create a symlink. */
   else if (S_ISLNK (statbuf.st_mode)) {
