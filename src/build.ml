@@ -207,9 +207,9 @@ let rec build debug
   (* Create a temporary file for packagelist, if requested. *)
   let packagelist_file =
     if include_packagelist then (
-      let filename, chan = Filename.open_temp_file "packagelist." "" in
+      let filename = tmpdir // "packagelist" in
+      let chan = open_out filename in
       List.iter (fprintf chan "%s\n") pretty_packages;
-      flush chan;
       close_out chan;
       Some filename
     ) else None in
@@ -230,11 +230,6 @@ let rec build debug
     Ext2.build_ext2 debug basedir files modpath kernel_version appliance size
       packagelist_file;
     Ext2_initrd.build_initrd debug tmpdir modpath initrd
-  );
-
-  (match packagelist_file with
-  | None -> ()
-  | Some filename -> Sys.remove filename
   )
 
 and read_appliance debug basedir appliance = function
