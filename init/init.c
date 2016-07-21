@@ -138,7 +138,7 @@ main ()
     /* XXX Because of the way we construct the module list, the
      * "modules" file can contain non-existent modules.  Ignore those
      * for now.  Really we should add them as missing dependencies.
-     * See ext2initrd.c:ext2_make_initrd().
+     * See src/ext2_initrd.ml.
      */
     if (access (line, R_OK) == 0)
       insmod (line);
