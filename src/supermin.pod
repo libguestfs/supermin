@@ -243,7 +243,7 @@ directory.
 
 See also I<--lock> below.
 
-=item B<"--include-packagelist>
+=item B<--include-packagelist>
 
 (I<--build> mode only)
 
