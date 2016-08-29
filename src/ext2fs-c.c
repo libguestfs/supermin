@@ -32,6 +32,7 @@
 #include <errno.h>
 #include <assert.h>
 #include <inttypes.h>
+#include <sys/sysmacros.h>
 
 /* Inlining is broken in the ext2fs header file.  Disable it by
  * defining the following:

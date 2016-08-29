@@ -40,6 +40,7 @@
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <sys/sysmacros.h>
 
 /* Maximum time to wait for the root device to appear (seconds).
  *
