@@ -31,21 +31,24 @@ let stringset_of_list pkgs =
 let fedora_detect () =
   Config.rpm <> "no" && Config.rpm2cpio <> "no" && rpm_is_available () &&
     (Config.yumdownloader <> "no" || Config.dnf <> "no") &&
-    try
-      (stat "/etc/redhat-release").st_kind = S_REG ||
-      (stat "/etc/fedora-release").st_kind = S_REG
-    with Unix_error _ -> false
+    (List.mem (Os_release.get_id ()) [ "fedora"; "rhel"; "centos" ] ||
+     try
+       (stat "/etc/redhat-release").st_kind = S_REG ||
+       (stat "/etc/fedora-release").st_kind = S_REG
+     with Unix_error _ -> false)
 
 let opensuse_detect () =
   Config.rpm <> "no" && Config.rpm2cpio <> "no" && rpm_is_available () &&
     Config.zypper <> "no" &&
-    try (stat "/etc/SuSE-release").st_kind = S_REG with Unix_error _ -> false
+    (List.mem (Os_release.get_id ()) [ "opensuse"; "sled"; "sles" ] ||
+     try (stat "/etc/SuSE-release").st_kind = S_REG with Unix_error _ -> false)
 
 let mageia_detect () =
   Config.rpm <> "no" && Config.rpm2cpio <> "no" && rpm_is_available () &&
     Config.urpmi <> "no" &&
     Config.fakeroot <> "no" &&
-    try (stat "/etc/mageia-release").st_kind = S_REG with Unix_error _ -> false
+    (Os_release.get_id () = "mageia" ||
+     try (stat "/etc/mageia-release").st_kind = S_REG with Unix_error _ -> false)
 
 let ibm_powerkvm_detect () =
   Config.rpm <> "no" && Config.rpm2cpio <> "no" && rpm_is_available () &&
