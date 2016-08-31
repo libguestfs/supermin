@@ -25,7 +25,14 @@ set -e
 # NOTE:  This test will only work if the $pkgs listed below
 # for your distro are installed on the host.  SEE LIST BELOW.
 
-if [ -f /etc/arch-release ]; then
+if [ -f /etc/os-release ]; then
+    distro=$(. /etc/os-release && echo $ID)
+    case "$distro" in
+        fedora|rhel|centos) distro=redhat ;;
+        opensuse|sled|sles) distro=suse ;;
+        ubuntu) distro=debian ;;
+    esac
+elif [ -f /etc/arch-release ]; then
     distro=arch
 elif [ -f /etc/debian_version ]; then
     distro=debian
@@ -62,6 +69,10 @@ case $distro in
 	;;
     ibm-powerkvm)
 	pkgs="augeas hivex tar"
+	;;
+    *)
+	echo "Unhandled distro '$distro'"
+	exit 77
 	;;
 esac
 
