@@ -313,10 +313,7 @@ let rec fedora_download_all_packages pkgs dir =
   rpm_unpack tdir dir
 
 and fedora_download_all_packages_with_dnf pkgs dir tdir =
-  (* dnf doesn't create the download directory, and if you use
-   * --destdir without an existing directory then it downloads each
-   * package on top of each other to --destdir as a file.  WTF?
-   *)
+  (* Old dnf didn't create the destdir directory, newer versions do. *)
   mkdir tdir 0o700;
 
   let rpms = pkgs_as_NA_rpms pkgs in
