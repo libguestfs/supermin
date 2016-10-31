@@ -45,8 +45,7 @@ let opensuse_detect () =
 
 let mageia_detect () =
   Config.rpm <> "no" && Config.rpm2cpio <> "no" && rpm_is_available () &&
-    Config.urpmi <> "no" &&
-    Config.fakeroot <> "no" &&
+    ((Config.urpmi <> "no" && Config.fakeroot <> "no") || Config.dnf <> "no") &&
     (Os_release.get_id () = "mageia" ||
      try (stat "/etc/mageia-release").st_kind = S_REG with Unix_error _ -> false)
 
@@ -389,7 +388,10 @@ and opensuse_download_all_packages pkgs dir =
 and mageia_download_all_packages pkgs dir =
   let tdir = !settings.tmpdir // string_random8 () in
 
-  mageia_download_all_packages_with_urpmi pkgs dir tdir;
+  if Config.dnf <> "no" then
+    download_all_packages_with_dnf pkgs dir tdir
+  else (* Config.urpmi <> "no" && Config.fakeroot <> "no" *)
+    mageia_download_all_packages_with_urpmi pkgs dir tdir;
 
   rpm_unpack tdir dir
 

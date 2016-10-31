@@ -81,8 +81,7 @@ For Mageia:
 
   rpm
   librpm
-  urpmi
-  fakeroot
+  urpmi & fakeroot, or 'dnf download' plugin
 
 For Arch Linux:
 
