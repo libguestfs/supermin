@@ -36,6 +36,8 @@ elif [ -f /etc/arch-release ]; then
     distro=arch
 elif [ -f /etc/debian_version ]; then
     distro=debian
+elif [ -f /etc/mageia-release ]; then  # before the redhat checks
+    distro=mageia
 elif [ -f /etc/redhat-release ]; then
     distro=redhat
 elif [ -f /etc/SuSE-release ]; then
@@ -58,6 +60,11 @@ case $distro in
 	;;
     debian)
 	pkgs="augeas-tools libaugeas0 libhivex0 libhivex-bin"
+	;;
+    mageia)
+	# Choose rpm because it has an epoch > 0 and is commonly
+	# installed.  (See commit fb40baade8e3441b73ce6fd10a32fbbfe49cc4da)
+	pkgs="augeas hivex rpm"
 	;;
     redhat)
         # Choose tar because it has an epoch > 0 and is commonly
@@ -115,6 +122,33 @@ case $distro in
 	fi
 	if [ "$(find $d2/usr/lib* -name libhivex.so.0 | wc -l)" -lt 1 ]; then
 	    echo "$0: $distro: hivex library not installed in chroot"
+	    ls -lR $d2
+	    exit 1
+	fi
+	;;
+    mageia)
+	if [ ! -x $d2/usr/bin/augtool ]; then
+	    echo "$0: $distro: augtool binary not installed in chroot"
+	    ls -lR $d2
+	    exit 1
+	fi
+	if [ "$(find $d2/usr/lib* -name libaugeas.so.0 | wc -l)" -lt 1 ]; then
+	    echo "$0: $distro: augeas library not installed in chroot"
+	    ls -lR $d2
+	    exit 1
+	fi
+	if [ ! -x $d2/usr/bin/hivexget ]; then
+	    echo "$0: $distro: hivexget binary not installed in chroot"
+	    ls -lR $d2
+	    exit 1
+	fi
+	if [ "$(find $d2/usr/lib* -name libhivex.so.0 | wc -l)" -lt 1 ]; then
+	    echo "$0: $distro: hivex library not installed in chroot"
+	    ls -lR $d2
+	    exit 1
+	fi
+	if [ ! -x $d2/bin/rpm ]; then
+	    echo "$0: $distro: rpm binary not installed in chroot"
 	    ls -lR $d2
 	    exit 1
 	fi
