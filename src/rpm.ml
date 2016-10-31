@@ -389,6 +389,11 @@ and opensuse_download_all_packages pkgs dir =
 and mageia_download_all_packages pkgs dir =
   let tdir = !settings.tmpdir // string_random8 () in
 
+  mageia_download_all_packages_with_urpmi pkgs dir tdir;
+
+  rpm_unpack tdir dir
+
+and mageia_download_all_packages_with_urpmi pkgs dir tdir =
   let rpms = List.map rpm_package_name (PackageSet.elements pkgs) in
 
   let cmd =
@@ -403,9 +408,7 @@ and mageia_download_all_packages pkgs dir =
       (if !settings.debug >= 1 then " --verbose" else " --quiet")
       (quote tdir)
       (quoted_list rpms) in
-  run_command cmd;
-
-  rpm_unpack tdir dir
+  run_command cmd
 
 and download_all_packages_with_dnf pkgs dir tdir =
   (* Old dnf didn't create the destdir directory, newer versions do. *)
