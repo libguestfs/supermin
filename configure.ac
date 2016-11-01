@@ -17,7 +17,7 @@ dnl Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 dnl
 dnl Written by Richard W.M. Jones <rjones@redhat.com>
 
-AC_INIT([supermin],[5.1.16])
+AC_INIT([supermin],[5.1.17])
 AM_INIT_AUTOMAKE(foreign)
 AC_REQUIRE_AUX_FILE([supermin-test-driver])
 
