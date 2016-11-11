@@ -30,6 +30,8 @@ let patt_of_cpu host_cpu =
     | "ppc" | "powerpc" | "powerpc64" -> ["ppc"; "powerpc"; "powerpc64"]
     | "sparc" | "sparc64" -> ["sparc"; "sparc64"]
     | "amd64" | "x86_64" -> ["amd64"; "x86_64"]
+    | "parisc" | "parisc64" -> ["hppa"; "hppa64"]
+    | "ppc64el" -> ["powerpc64le"]
     | _ when host_cpu.[0] = 'i' && host_cpu.[2] = '8' && host_cpu.[3] = '6' -> ["?86"]
     | _ when String.length host_cpu >= 5 && String.sub host_cpu 0 5 = "armv7" ->  ["armmp"]
     | _ -> [host_cpu]

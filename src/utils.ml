@@ -183,6 +183,8 @@ let compare_architecture a1 a2 =
     | a when string_prefix "armv6" a -> 32
     | a when string_prefix "armv7" a -> 32
     | a when string_prefix "armv8" a -> 64
+    | "hppa" | "parisc" -> 32
+    | "hppa64" | "parisc64" -> 64
     | "ppc" | "ppc32" -> 32
     | a when string_prefix "ppc64" a -> 64
     | "sparc" | "sparc32" -> 32
