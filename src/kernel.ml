@@ -22,6 +22,7 @@ open Printf
 open Utils
 open Ext2fs
 open Fnmatch
+open Glob
 
 let patt_of_cpu host_cpu =
   let models =
@@ -60,7 +61,28 @@ let rec build_kernel debug host_cpu dtb_wildcard copy_kernel kernel dtb =
       let modpath = find_modpath debug kernel_version in
       kernel_env, kernel_name, kernel_version, modpath
     with Not_found ->
-      find_kernel debug host_cpu kernel in
+      let kernels =
+        let files = glob "/lib/modules/*/vmlinuz" [GLOB_NOSORT; GLOB_NOESCAPE] in
+        let files = Array.to_list files in
+        let kernels =
+          List.map (
+            fun f ->
+              let modpath = Filename.dirname f in
+              f, Filename.basename f, Filename.basename modpath, modpath
+          ) files in
+        List.sort (
+          fun (_, _, a, _) (_, _, b, _) -> compare_version b a
+        ) kernels in
+
+      if kernels <> [] then (
+        let kernel = List.hd kernels in
+        if debug >= 1 then (
+          let kernel_file, _, _, _ = kernel in
+          printf "supermin: kernel: picked vmlinuz %s\n%!" kernel_file;
+        );
+        kernel
+      ) else
+        find_kernel debug host_cpu kernel in
 
   (* If the user passed --dtb option, locate dtb. *)
   (match dtb_wildcard with
