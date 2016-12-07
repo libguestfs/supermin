@@ -143,40 +143,6 @@ the kernel in F</boot>.
 This is fractionally slower, but is necessary if you want to change
 the permissions or SELinux label on the kernel or device tree.
 
-=item B<--dtb> WILDCARD
-
-(I<--build> mode only)
-
-If specified, search for a device tree which is compatible with the
-selected kernel and the name of which matches the given wildcard.  You
-can use a wildcard such as C<vexpress-*a9*.dtb> which would match
-F<vexpress-v2p-ca9.dtb>.
-
-Notes:
-
-=over 4
-
-=item *
-
-You may need to quote the wildcard to prevent it from being expanded
-by your shell.
-
-=item *
-
-If no I<--dtb> option is given, no device tree will be looked for.
-
-=item *
-
-You only need a device tree on architectures such as ARM and PowerPC
-which use them.  On other architectures, don't use this option.
-
-=item *
-
-If you use this option and no compatible device tree can be found,
-supermin will exit with an error.
-
-=back
-
 =item B<-f> FORMAT
 
 =item B<--format> FORMAT
@@ -202,15 +168,15 @@ This is called a C<chroot> because you could literally L<chroot(1)>
 into this directory afterwards, although it's a better idea to use a
 container technology (LXC, etc.).
 
-No kernel, initrd or dtb is generated in this mode because it is
+No kernel or initrd is generated in this mode because it is
 assumed that you will be running the appliance using the host kernel.
 
 =item ext2
 
 An ext2 filesystem disk image.
 
-The output kernel is written to F<OUTPUTDIR/kernel>, the device tree
-(if using) to F<OUTPUTDIR/dtb>, a small initramfs which can mount the
+The output kernel is written to F<OUTPUTDIR/kernel>,
+a small initramfs which can mount the
 appliance to F<OUTPUTDIR/initrd>, and the ext2 filesystem image to
 F<OUTPUTDIR/root>.  (Where F<OUTPUTDIR> is specified by the I<-o>
 option).
@@ -542,10 +508,6 @@ This specifies the kernel modules directory to use.
 
 The environment variable should point to a module directory,
 eg. F</lib/modules/3.0.x86_64/>
-
-=item SUPERMIN_DTB
-
-Force the given device tree file to be used.
 
 =item SUPERMIN_KERNEL_VERSION
 

@@ -86,7 +86,6 @@ let main () =
 
     let copy_kernel = ref false in
     let debug = ref 0 in
-    let dtb_wildcard = ref "" in
     let format = ref None in
     let host_cpu = ref Config.host_cpu in
     let if_newer = ref false in
@@ -130,11 +129,21 @@ or upgrade to libguestfs >= 1.26.
 "
     in
 
+    let error_dtb_option _ =
+      error "\
+*** error: The --dtb option was removed in supermin 5.1.18.
+
+Normally you can just drop this option and the wildcard following
+it.  Modern QEMU will generate a correct DTB for the supermin
+appliance automatically.
+"
+    in
+
     let ditto = " -\"-" in
     let argspec = Arg.align [
       "--build",   Arg.Unit set_build_mode,   " Build a full appliance";
       "--copy-kernel", Arg.Set copy_kernel,   " Copy kernel instead of symlinking";
-      "--dtb",     Arg.Set_string dtb_wildcard, "WILDCARD Find device tree matching wildcard";
+      "--dtb",     Arg.String error_dtb_option, " Obsolete option, do not use";
       "-f",        Arg.String set_format,     "chroot|ext2 Set output format";
       "--format",  Arg.String set_format,     ditto;
       "--host-cpu", Arg.Set_string host_cpu,  "ARCH Set host CPU architecture";
@@ -160,7 +169,6 @@ or upgrade to libguestfs >= 1.26.
 
     let copy_kernel = !copy_kernel in
     let debug = !debug in
-    let dtb_wildcard = match !dtb_wildcard with "" -> None | s -> Some s in
     let host_cpu = !host_cpu in
     let if_newer = !if_newer in
     let inputs = List.rev !inputs in
@@ -191,7 +199,7 @@ or upgrade to libguestfs >= 1.26.
       else outputdir in
 
     debug, mode, if_newer, inputs, lockfile, outputdir,
-    (copy_kernel, dtb_wildcard, format, host_cpu,
+    (copy_kernel, format, host_cpu,
      packager_config, tmpdir, use_installed, size,
      include_packagelist) in
 
@@ -201,7 +209,7 @@ or upgrade to libguestfs >= 1.26.
    * This fails with an error if one could not be located.
    *)
   let () =
-    let (_, _, _, _, packager_config, tmpdir, _, _, _) = args in
+    let (_, _, _, packager_config, tmpdir, _, _, _) = args in
     let settings = {
       debug = debug;
       tmpdir = tmpdir;

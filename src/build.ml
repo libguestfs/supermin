@@ -58,7 +58,7 @@ and string_of_file_content = function
   | Excludefiles -> "excludefiles"
 
 let rec build debug
-    (copy_kernel, dtb_wildcard, format, host_cpu,
+    (copy_kernel, format, host_cpu,
      packager_config, tmpdir, use_installed, size,
      include_packagelist)
     inputs outputdir =
@@ -222,11 +222,10 @@ let rec build debug
 
   | Ext2 ->
     let kernel = outputdir // "kernel"
-    and dtb = outputdir // "dtb"
     and appliance = outputdir // "root"
     and initrd = outputdir // "initrd" in
     let kernel_version, modpath =
-      Kernel.build_kernel debug host_cpu dtb_wildcard copy_kernel kernel dtb in
+      Kernel.build_kernel debug host_cpu copy_kernel kernel in
     Ext2.build_ext2 debug basedir files modpath kernel_version appliance size
       packagelist_file;
     Ext2_initrd.build_initrd debug tmpdir modpath initrd

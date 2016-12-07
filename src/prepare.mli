@@ -18,6 +18,6 @@
 
 (** Implements the [--prepare] subcommand. *)
 
-val prepare : int -> (bool * string option * Types.format * string * string option * string * bool * int64 option * bool) -> string list -> string -> unit
+val prepare : int -> (bool * Types.format * string * string option * string * bool * int64 option * bool) -> string list -> string -> unit
 (** [prepare debug (args...) inputs outputdir] performs the
     [supermin --prepare] subcommand. *)

@@ -18,6 +18,6 @@
 
 (** Implements the [--build] subcommand. *)
 
-val build : int -> (bool * string option * Types.format * string * string option * string * bool * int64 option * bool) -> string list -> string -> unit
+val build : int -> (bool * Types.format * string * string option * string * bool * int64 option * bool) -> string list -> string -> unit
 (** [build debug (args...) inputs outputdir] performs the
     [supermin --build] subcommand. *)

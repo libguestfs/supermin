@@ -39,7 +39,7 @@ let patt_of_cpu host_cpu =
   in
   List.map (fun model -> sprintf "vmlinu?-*-%s" model) models
 
-let rec build_kernel debug host_cpu dtb_wildcard copy_kernel kernel dtb =
+let rec build_kernel debug host_cpu copy_kernel kernel =
   (* Locate the kernel. *)
   let kernel_file, kernel_name, kernel_version, modpath =
     try
@@ -83,13 +83,6 @@ let rec build_kernel debug host_cpu dtb_wildcard copy_kernel kernel dtb =
         kernel
       ) else
         find_kernel debug host_cpu kernel in
-
-  (* If the user passed --dtb option, locate dtb. *)
-  (match dtb_wildcard with
-  | None -> ()
-  | Some wildcard ->
-    find_dtb debug copy_kernel kernel_name wildcard dtb
-  );
 
   if debug >= 1 then (
     printf "supermin: kernel: kernel_version %s\n" kernel_version;
@@ -160,67 +153,6 @@ If this is a Xen guest, and you only have Xen domU kernels
 installed, try installing a fullvirt kernel (only for
 supermin use, you shouldn't boot the Xen guest with it)."
     host_cpu
-
-and find_dtb debug copy_kernel kernel_name wildcard dtb =
-  let dtb_file =
-    try
-      let dtb_file = getenv "SUPERMIN_DTB" in
-      if debug >= 1 then
-        printf "supermin: kernel: SUPERMIN_DTB environment variable = %s\n%!"
-          dtb_file;
-      dtb_file
-    with Not_found ->
-      (* Replace vmlinuz- with dtb- *)
-      if not (string_prefix "vmlinuz-" kernel_name) &&
-        not (string_prefix "vmlinuz-" kernel_name) then
-        no_dtb_dir kernel_name;
-      let dtb_dir =
-        try
-          List.find dir_exists (
-            List.map (fun prefix ->
-              prefix ^ String.sub kernel_name 8 (String.length kernel_name - 8)
-            ) ["/boot/dtb-"; "/usr/lib/linux-image-"])
-        with Not_found ->
-          no_dtb_dir kernel_name; ""
-      in
-
-      let all_files = Sys.readdir dtb_dir in
-      let all_files = Array.to_list all_files in
-
-      let files =
-        List.filter (fun filename -> fnmatch wildcard filename [FNM_NOESCAPE])
-          all_files in
-      if files = [] then
-        no_dtb dtb_dir wildcard;
-
-      let dtb_name = List.hd files in
-      let dtb_file = dtb_dir // dtb_name in
-      if debug >= 1 then
-        printf "supermin: kernel: picked dtb %s\n%!" dtb_file;
-      dtb_file in
-
-  copy_or_symlink_file copy_kernel dtb_file dtb
-
-and no_dtb_dir kernel_name =
-  error "\
-failed to find a dtb (device tree) directory.
-
-I expected to take '%s' and to
-replace vmlinuz- with dtb- to form a directory.
-
-You can set SUPERMIN_KERNEL, SUPERMIN_MODULES and SUPERMIN_DTB
-to override automatic selection.  See supermin(1)."
-    kernel_name
-
-and no_dtb dtb_dir wildcard =
-  error "\
-failed to find a matching device tree.
-
-I looked for a file matching '%s' in directory '%s'.
-
-You can set SUPERMIN_KERNEL, SUPERMIN_MODULES and SUPERMIN_DTB
-to override automatic selection.  See supermin(1)."
-    wildcard dtb_dir
 
 and find_modpath debug kernel_version =
   try
