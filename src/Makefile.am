@@ -52,14 +52,23 @@ SOURCES = \
 	package_handler.ml \
 	package_handler.mli \
 	rpm.ml \
+	rpm.mli \
 	dpkg.ml \
+	dpkg.mli \
 	pacman.ml \
+	pacman.mli \
 	prepare.ml \
+	prepare.mli \
 	chroot.ml \
+	chroot.mli \
 	kernel.ml \
+	kernel.mli \
 	ext2_initrd.ml \
+	ext2_initrd.mli \
 	ext2.ml \
+	ext2.mli \
 	build.ml \
+	build.mli \
 	supermin.ml
 
 # Can't use filter for this because of automake brokenness.
