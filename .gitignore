@@ -39,7 +39,7 @@ pod2htm?.tmp
 /snippet/
 /src/.depend
 /src/config.ml
-/src/ext2init-bin.S
+/src/format-ext2-init-bin.S
 /src/supermin
 /src/supermin.1
 /src/supermin-link.sh

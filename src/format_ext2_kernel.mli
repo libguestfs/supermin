@@ -16,16 +16,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *)
 
-(** Implements [--build -f ext2] minimal initrd which is required
-    to mount the ext2 filesystem at runtime.
+(** For [--build -f ext2] this module chooses a kernel to use
+    and either links to it or copies it.
 
-    See also the {!Ext2} module. *)
+    See also the {!Format_ext2} module. *)
 
-val build_initrd : int -> string -> string -> string -> unit
-(** [build_initrd debug tmpdir modpath initrd] creates the minimal
-    initrd required to mount the ext2 filesystem at runtime.
+val build_kernel : int -> string -> bool -> string -> string * string
+(** [build_kernel debug host_cpu copy_kernel kernel]
+    chooses the kernel to use and links to it or copies it into the
+    appliance directory.
 
-    A small, whitelisted selection of kernel modules is taken
-    from [modpath], just enough to mount the appliance.
+    The output is written to the file [kernel].
 
-    The output is the file [initrd]. *)
+    The function returns the [kernel_version, modpath] tuple as a
+    side-effect of locating the kernel. *)

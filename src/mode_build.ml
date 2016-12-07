@@ -218,17 +218,17 @@ let rec build debug
   (match format with
   | Chroot ->
     (* chroot doesn't need an external kernel or initrd *)
-    Chroot.build_chroot debug files outputdir packagelist_file
+    Format_chroot.build_chroot debug files outputdir packagelist_file
 
   | Ext2 ->
     let kernel = outputdir // "kernel"
     and appliance = outputdir // "root"
     and initrd = outputdir // "initrd" in
     let kernel_version, modpath =
-      Kernel.build_kernel debug host_cpu copy_kernel kernel in
-    Ext2.build_ext2 debug basedir files modpath kernel_version appliance size
-      packagelist_file;
-    Ext2_initrd.build_initrd debug tmpdir modpath initrd
+      Format_ext2_kernel.build_kernel debug host_cpu copy_kernel kernel in
+    Format_ext2.build_ext2 debug basedir files modpath kernel_version
+                           appliance size packagelist_file;
+    Format_ext2_initrd.build_initrd debug tmpdir modpath initrd
   )
 
 and read_appliance debug basedir appliance = function

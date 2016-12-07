@@ -21,7 +21,6 @@ open Printf
 
 open Utils
 open Ext2fs
-open Ext2init
 open Fnmatch
 
 module StringSet = Set.Make (String)
@@ -155,7 +154,7 @@ let rec build_initrd debug tmpdir modpath initrd =
     printf "supermin: ext2: wrote %d modules to minimal initrd\n%!" (StringSet.cardinal !visited);
 
   (* This is the binary blob containing the init "script". *)
-  let init = binary_init () in
+  let init = Format_ext2_init.binary_init () in
   let initfile = initdir // "init" in
   let chan = open_out initfile in
   output_string chan init;

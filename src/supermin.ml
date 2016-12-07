@@ -21,8 +21,6 @@ open Printf
 
 open Types
 open Utils
-open Prepare
-open Build
 open Package_handler
 
 type mode = Prepare | Build
@@ -260,8 +258,8 @@ appliance automatically.
       ignore (Sys.command cmd));
 
   (match mode with
-  | Prepare -> prepare debug args inputs new_outputdir
-  | Build -> build debug args inputs new_outputdir
+  | Prepare -> Mode_prepare.prepare debug args inputs new_outputdir
+  | Build -> Mode_build.build debug args inputs new_outputdir
   );
 
   (* Delete the old output directory if it exists. *)

@@ -28,9 +28,6 @@ SOURCES = \
 	ext2fs-c.c \
 	ext2fs.ml \
 	ext2fs.mli \
-	ext2init-c.c \
-	ext2init.ml \
-	ext2init.mli \
 	fnmatch-c.c \
 	fnmatch.ml \
 	fnmatch.mli \
@@ -51,30 +48,32 @@ SOURCES = \
 	os_release.mli \
 	package_handler.ml \
 	package_handler.mli \
-	rpm.ml \
-	rpm.mli \
-	dpkg.ml \
-	dpkg.mli \
-	pacman.ml \
-	pacman.mli \
-	prepare.ml \
-	prepare.mli \
-	chroot.ml \
-	chroot.mli \
-	kernel.ml \
-	kernel.mli \
-	ext2_initrd.ml \
-	ext2_initrd.mli \
-	ext2.ml \
-	ext2.mli \
-	build.ml \
-	build.mli \
+	ph_rpm.ml \
+	ph_rpm.mli \
+	ph_dpkg.ml \
+	ph_dpkg.mli \
+	ph_pacman.ml \
+	ph_pacman.mli \
+	mode_prepare.ml \
+	mode_prepare.mli \
+	format_chroot.ml \
+	format_chroot.mli \
+	format-ext2-init-c.c \
+	format_ext2_init.ml \
+	format_ext2_init.mli \
+	format_ext2_initrd.ml \
+	format_ext2_initrd.mli \
+	format_ext2_kernel.ml \
+	format_ext2_kernel.mli \
+	format_ext2.ml \
+	format_ext2.mli \
+	mode_build.ml \
+	mode_build.mli \
 	supermin.ml
 
 # Can't use filter for this because of automake brokenness.
 SOURCES_ML = \
 	ext2fs.ml \
-	ext2init.ml \
 	fnmatch.ml \
 	glob.ml \
 	realpath.ml \
@@ -84,20 +83,21 @@ SOURCES_ML = \
 	types.ml \
 	os_release.ml \
 	package_handler.ml \
-	rpm.ml \
-	dpkg.ml \
-	pacman.ml \
-	prepare.ml \
-	chroot.ml \
-	kernel.ml \
-	ext2_initrd.ml \
-	ext2.ml \
-	build.ml \
+	ph_rpm.ml \
+	ph_dpkg.ml \
+	ph_pacman.ml \
+	mode_prepare.ml \
+	format_chroot.ml \
+	format_ext2_init.ml \
+	format_ext2_initrd.ml \
+	format_ext2_kernel.ml \
+	format_ext2.ml \
+	mode_build.ml \
 	supermin.ml
 
 SOURCES_C = \
 	ext2fs-c.c \
-	ext2init-c.c \
+	format-ext2-init-c.c \
 	fnmatch-c.c \
 	glob-c.c \
 	librpm-c.c \
@@ -132,9 +132,9 @@ OBJECTS = $(XOBJECTS)
 BEST    = opt
 endif
 
-supermin_DEPENDENCIES = $(OBJECTS) ext2init-bin.o
+supermin_DEPENDENCIES = $(OBJECTS) format-ext2-init-bin.o
 
-supermin_LDADD = ext2init-bin.o ../lib/libgnu.a
+supermin_LDADD = format-ext2-init-bin.o ../lib/libgnu.a
 
 supermin_LINK = \
 	./supermin-link.sh \
@@ -148,12 +148,12 @@ supermin_LINK = \
 .ml.cmx:
 	$(OCAMLFIND) ocamlopt $(OCAMLFLAGS) $(OCAMLPACKAGES) -c $< -o $@
 
-CLEANFILES += ext2init-bin.S
+CLEANFILES += format-ext2-init-bin.S
 
-ext2init-bin.o: ext2init-bin.S
+format-ext2-init-bin.o: format-ext2-init-bin.S
 	$(CC) -o $@ -c $<
 
-ext2init-bin.S: ../init/init $(srcdir)/bin2s.pl
+format-ext2-init-bin.S: ../init/init $(srcdir)/bin2s.pl
 	strip --strip-all $<
 	ls -l $<
 	@file $< | grep -isq static || \
