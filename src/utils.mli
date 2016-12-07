@@ -91,3 +91,6 @@ val compare_architecture : string -> string -> int
 
 val parse_size : string -> int64
 (** Parse a size field, eg. [10G] *)
+
+val isalnum : char -> bool
+(** Return true iff the character is alphanumeric. *)

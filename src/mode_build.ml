@@ -344,10 +344,6 @@ and get_compressed_file_content zcat file =
 
   get_file_content file buf len
 
-and isalnum = function
-  | '0'..'9' | 'a'..'z' | 'A'..'Z' -> true
-  | _ -> false
-
 (* The files may not be listed in an order that allows us to run
  * through the list (even if we sorted it).  The particular problem is
  * where you have:

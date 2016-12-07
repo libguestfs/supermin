@@ -218,3 +218,7 @@ let parse_size =
     ) else (
       error "cannot parse size field '%s'" field
     )
+
+let isalnum = function
+  | '0'..'9' | 'a'..'z' | 'A'..'Z' -> true
+  | _ -> false
