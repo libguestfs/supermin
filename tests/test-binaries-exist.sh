@@ -56,7 +56,7 @@ if [ "$(find $d2 -name sync -perm -0555 | wc -l)" -lt 1 ]; then
 fi
 
 # These binaries should be runnable (since they are the same as the host).
-`find $d2 -name sync | head`
+`find $d2 -name sync ! -path '*/bash/*' | head`
 
 # Need to chmod $d2 since rm -r can't remove unwritable directories.
 chmod -R +w $d2 ||:
