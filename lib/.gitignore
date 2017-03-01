@@ -1,8 +1,14 @@
+
+
+/assure.h
 /*.c
+/flexmember.h
+/getprogname.c
+/getprogname.h
 /*.h
 /*.h.in
-/*.valgrind
-
+/limits.in.h
 /Makefile.am
-
+/stdalign.in.h
 /sys
+/*.valgrind

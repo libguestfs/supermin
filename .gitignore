@@ -14,6 +14,7 @@ Makefile.in
 pod2htm?.tmp
 
 /aclocal.m4
+/ar-lib
 /arg-nonnull.h
 /autom4te.cache
 /c++defs.h
