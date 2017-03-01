@@ -40,7 +40,13 @@
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+
+#if MAJOR_IN_MKDEV
+#include <sys/mkdev.h>
+#elif MAJOR_IN_SYSMACROS
 #include <sys/sysmacros.h>
+/* else it's in sys/types.h, included above */
+#endif
 
 /* Maximum time to wait for the root device to appear (seconds).
  *

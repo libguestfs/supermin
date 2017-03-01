@@ -32,7 +32,13 @@
 #include <errno.h>
 #include <assert.h>
 #include <inttypes.h>
+
+#if MAJOR_IN_MKDEV
+#include <sys/mkdev.h>
+#elif MAJOR_IN_SYSMACROS
 #include <sys/sysmacros.h>
+/* else it's in sys/types.h, included above */
+#endif
 
 /* Inlining is broken in the ext2fs header file.  Disable it by
  * defining the following:

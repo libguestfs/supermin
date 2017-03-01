@@ -42,6 +42,9 @@ AC_SYS_LARGEFILE
 dnl Enable GNU stuff.
 AC_USE_SYSTEM_EXTENSIONS
 
+dnl Which header file defines major, minor, makedev.
+AC_HEADER_MAJOR
+
 dnl Define the host CPU architecture (defines host_cpu).
 AC_CANONICAL_HOST
 

@@ -33,6 +33,7 @@
 gl_LOCAL_DIR([])
 gl_MODULES([
   fts
+  sys_types
 ])
 gl_AVOID([])
 gl_SOURCE_BASE([lib])
