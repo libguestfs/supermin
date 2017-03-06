@@ -93,7 +93,7 @@ AC_CHECK_PROG(PERLDOC,[perldoc],[perldoc],[no])
 if test "x$PERLDOC" = "xno" ; then
   AC_MSG_WARN([perldoc not found - install perl to make man pages])
 fi
-AM_CONDITIONAL(HAVE_PERLDOC,[test "$perldoc" != "no"])
+AM_CONDITIONAL(HAVE_PERLDOC,[test "x$PERLDOC" != "xno"])
 
 dnl For yum-rpm handler.
 AC_PATH_PROG(RPM,[rpm],[no])
