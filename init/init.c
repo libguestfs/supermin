@@ -240,10 +240,6 @@ main ()
 
   /* Make current process the controlling process of the tty. */
   setsid ();
-#ifdef TIOCSCTTY
-  if (ioctl (0, TIOCSCTTY, 1) == -1)
-    perror ("ioctl: TIOCSCTTY");
-#endif
 
   if (!quiet)
     fprintf (stderr, "supermin: creating /dev/root as block special %d:%d\n",
