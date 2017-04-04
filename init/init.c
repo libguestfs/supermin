@@ -238,9 +238,6 @@ main ()
     exit (EXIT_FAILURE);
   }
 
-  /* Make current process the controlling process of the tty. */
-  setsid ();
-
   if (!quiet)
     fprintf (stderr, "supermin: creating /dev/root as block special %d:%d\n",
              major, minor);
