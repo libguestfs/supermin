@@ -100,12 +100,18 @@ main ()
   char *root, *path;
   size_t len;
   int dax = 0;
-  uint64_t delay_ns = 250000;
+  uint64_t delay_ns;
   int virtio_message = 0;
-  struct timespec t;
   int major, minor;
   char *p;
   const char *mount_options = "";
+
+#define NANOSLEEP(ns) do {                      \
+    struct timespec t;                          \
+    t.tv_sec = delay_ns / 1000000000;           \
+    t.tv_nsec = delay_ns % 1000000000;          \
+    nanosleep (&t, NULL);                       \
+  } while(0)
 
   mount_proc ();
 
@@ -183,7 +189,9 @@ main ()
 
   asprintf (&path, "/sys/block/%s/dev", root);
 
-  while (delay_ns <= MAX_ROOT_WAIT * UINT64_C(1000000000)) {
+  for (delay_ns = 250000;
+       delay_ns <= MAX_ROOT_WAIT * UINT64_C(1000000000);
+       delay_ns *= 2) {
     fp = fopen (path, "r");
     if (fp != NULL)
       break;
@@ -200,10 +208,7 @@ main ()
       }
     }
 
-    t.tv_sec = delay_ns / 1000000000;
-    t.tv_nsec = delay_ns % 1000000000;
-    nanosleep (&t, NULL);
-    delay_ns *= 2;
+    NANOSLEEP (delay_ns);
   }
 
   if (!quiet)
