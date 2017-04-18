@@ -154,76 +154,53 @@ main ()
   }
   fclose (fp);
 
-  /* Look for the ext2 filesystem device.  It's always the last one
-   * that was added.  Modern versions of libguestfs supply the
-   * expected name of the root device on the command line
-   * ("root=/dev/...").  For virtio-scsi this is required, because we
-   * must wait for the device to appear after the module is loaded.
+  /* Look for the ext2 filesystem root device specified as root=...
+   * on the kernel command line.
    */
   char *root, *path;
   size_t len;
   int dax = 0;
   root = strstr (cmdline, "root=");
-  if (root) {
+  if (!root) {
+    fprintf (stderr, "supermin: missing root= parameter on the command line\n");
+    exit (EXIT_FAILURE);
+  }
+  root += 5;
+  if (strncmp (root, "/dev/", 5) == 0)
     root += 5;
-    if (strncmp (root, "/dev/", 5) == 0)
-      root += 5;
-    if (strncmp (root, "pmem", 4) == 0)
-      dax = 1;
-    len = strcspn (root, " ");
-    root[len] = '\0';
+  if (strncmp (root, "pmem", 4) == 0)
+    dax = 1;
+  len = strcspn (root, " ");
+  root[len] = '\0';
 
-    asprintf (&path, "/sys/block/%s/dev", root);
+  asprintf (&path, "/sys/block/%s/dev", root);
 
-    uint64_t delay_ns = 250000;
-    int virtio_message = 0;
-    while (delay_ns <= MAX_ROOT_WAIT * UINT64_C(1000000000)) {
-      fp = fopen (path, "r");
-      if (fp != NULL)
-        goto found;
+  uint64_t delay_ns = 250000;
+  int virtio_message = 0;
+  while (delay_ns <= MAX_ROOT_WAIT * UINT64_C(1000000000)) {
+    fp = fopen (path, "r");
+    if (fp != NULL)
+      break;
 
-      if (delay_ns > 1000000000) {
-	fprintf (stderr,
-		 "supermin: waiting another %" PRIu64 " ns for %s to appear\n",
-		 delay_ns, path);
-        if (!virtio_message) {
-          fprintf (stderr,
-                   "This usually means your kernel doesn't support virtio, or supermin was unable\n"
-                   "to load some kernel modules (see module loading messages above).\n");
-          virtio_message = 1;
-        }
-      }
-
-      struct timespec t;
-      t.tv_sec = delay_ns / 1000000000;
-      t.tv_nsec = delay_ns % 1000000000;
-      nanosleep (&t, NULL);
-      delay_ns *= 2;
-    }
-  }
-  else {
-    path = strdup ("/sys/block/xdx/dev");
-
-    char class[3] = { 'v', 's', 'h' };
-    size_t i, j;
-    fp = NULL;
-    for (i = 0; i < sizeof class; ++i) {
-      for (j = 'z'; j >= 'a'; --j) {
-        path[11] = class[i];
-        path[13] = j;
-        fp = fopen (path, "r");
-        if (fp != NULL)
-          goto found;
+    if (delay_ns > 1000000000) {
+      fprintf (stderr,
+               "supermin: waiting another %" PRIu64 " ns for %s to appear\n",
+               delay_ns, path);
+      if (!virtio_message) {
+        fprintf (stderr,
+                 "This usually means your kernel doesn't support virtio, or supermin was unable\n"
+                 "to load some kernel modules (see module loading messages above).\n");
+        virtio_message = 1;
       }
     }
+
+    struct timespec t;
+    t.tv_sec = delay_ns / 1000000000;
+    t.tv_nsec = delay_ns % 1000000000;
+    nanosleep (&t, NULL);
+    delay_ns *= 2;
   }
 
-  fprintf (stderr,
-           "supermin: no ext2 root device found\n"
-           "Please include FULL verbose output in your bug report.\n");
-  exit (EXIT_FAILURE);
-
- found:
   if (!quiet)
     fprintf (stderr, "supermin: picked %s as root device\n", path);
 
