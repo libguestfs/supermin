@@ -96,6 +96,17 @@ static char line[1024];
 int
 main ()
 {
+  FILE *fp;
+  char *root, *path;
+  size_t len;
+  int dax = 0;
+  uint64_t delay_ns = 250000;
+  int virtio_message = 0;
+  struct timespec t;
+  int major, minor;
+  char *p;
+  const char *mount_options = "";
+
   mount_proc ();
 
   fprintf (stderr, "supermin: ext2 mini initrd starting up: "
@@ -132,7 +143,7 @@ main ()
     exit (EXIT_FAILURE);
   }
 
-  FILE *fp = fopen ("/modules", "r");
+  fp = fopen ("/modules", "r");
   if (fp == NULL) {
     perror ("fopen: /modules");
     exit (EXIT_FAILURE);
@@ -157,9 +168,6 @@ main ()
   /* Look for the ext2 filesystem root device specified as root=...
    * on the kernel command line.
    */
-  char *root, *path;
-  size_t len;
-  int dax = 0;
   root = strstr (cmdline, "root=");
   if (!root) {
     fprintf (stderr, "supermin: missing root= parameter on the command line\n");
@@ -175,8 +183,6 @@ main ()
 
   asprintf (&path, "/sys/block/%s/dev", root);
 
-  uint64_t delay_ns = 250000;
-  int virtio_message = 0;
   while (delay_ns <= MAX_ROOT_WAIT * UINT64_C(1000000000)) {
     fp = fopen (path, "r");
     if (fp != NULL)
@@ -194,7 +200,6 @@ main ()
       }
     }
 
-    struct timespec t;
     t.tv_sec = delay_ns / 1000000000;
     t.tv_nsec = delay_ns % 1000000000;
     nanosleep (&t, NULL);
@@ -205,9 +210,9 @@ main ()
     fprintf (stderr, "supermin: picked %s as root device\n", path);
 
   fgets (line, sizeof line, fp);
-  int major = atoi (line);
-  char *p = line + strcspn (line, ":") + 1;
-  int minor = atoi (p);
+  major = atoi (line);
+  p = line + strcspn (line, ":") + 1;
+  minor = atoi (p);
 
   fclose (fp);
   if (umount ("/sys") == -1) {
@@ -225,7 +230,7 @@ main ()
   }
 
   /* Construct the filesystem mount options. */
-  const char *mount_options = "";
+  mount_options = "";
   if (dax)
     mount_options = "dax";
 
@@ -280,27 +285,30 @@ static void
 insmod (const char *filename)
 {
   size_t size;
+  int fd;
+  struct stat st;
+  char *buf;
+  size_t offset;
 
   if (!quiet)
     fprintf (stderr, "supermin: internal insmod %s\n", filename);
 
-  int fd = open (filename, O_RDONLY);
+  fd = open (filename, O_RDONLY);
   if (fd == -1) {
     fprintf (stderr, "insmod: open: %s: %m\n", filename);
     exit (EXIT_FAILURE);
   }
-  struct stat st;
   if (fstat (fd, &st) == -1) {
     perror ("insmod: fstat");
     exit (EXIT_FAILURE);
   }
   size = st.st_size;
-  char *buf = malloc (size);
+  buf = malloc (size);
   if (buf == NULL) {
     fprintf (stderr, "insmod: malloc (%s, %zu bytes): %m\n", filename, size);
     exit (EXIT_FAILURE);
   }
-  size_t offset = 0;
+  offset = 0;
   do {
     ssize_t rc = read (fd, buf + offset, size - offset);
     if (rc == -1) {
