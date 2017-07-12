@@ -191,7 +191,6 @@ supermin_ext2fs_read_bitmaps (value fsv)
 
 static void ext2_mkdir (ext2_filsys fs, ext2_ino_t dir_ino, const char *dirname, const char *basename, mode_t mode, uid_t uid, gid_t gid, time_t ctime, time_t atime, time_t mtime);
 static void ext2_empty_inode (ext2_filsys fs, ext2_ino_t dir_ino, const char *dirname, const char *basename, mode_t mode, uid_t uid, gid_t gid, time_t ctime, time_t atime, time_t mtime, int major, int minor, int dir_ft, ext2_ino_t *ino_ret);
-static void ext2_write_file (ext2_filsys fs, ext2_ino_t ino, const char *buf, size_t size, const char *filename);
 static void ext2_write_host_file (ext2_filsys fs, ext2_ino_t ino, const char *src, const char *filename);
 static void ext2_link (ext2_filsys fs, ext2_ino_t dir_ino, const char *basename, ext2_ino_t ino, int dir_ft);
 static void ext2_clean_path (ext2_filsys fs, ext2_ino_t dir_ino, const char *dirname, const char *basename, int isdir);
@@ -468,49 +467,9 @@ ext2_empty_inode (ext2_filsys fs,
     *ino_ret = ino;
 }
 
-/* You must create the file first with ext2_empty_inode. */
-static void
-ext2_write_file (ext2_filsys fs,
-                 ext2_ino_t ino, const char *buf, size_t size,
-                 const char *filename)
-{
-  errcode_t err;
-  ext2_file_t file;
-  err = ext2fs_file_open2 (fs, ino, NULL, EXT2_FILE_WRITE, &file);
-  if (err != 0)
-    ext2_error_to_exception ("ext2fs_file_open2", err, filename);
-
-  /* ext2fs_file_write cannot deal with partial writes.  You have
-   * to write the entire file in a single call.
-   */
-  unsigned int written;
-  err = ext2fs_file_write (file, buf, size, &written);
-  if (err != 0)
-    ext2_error_to_exception ("ext2fs_file_write", err, filename);
-  if ((size_t) written != size)
-    caml_failwith ("ext2fs_file_write: file size != bytes written");
-
-  err = ext2fs_file_flush (file);
-  if (err != 0)
-    ext2_error_to_exception ("ext2fs_file_flush", err, filename);
-  err = ext2fs_file_close (file);
-  if (err != 0)
-    ext2_error_to_exception ("ext2fs_file_close", err, filename);
-
-  /* Update the true size in the inode. */
-  struct ext2_inode inode;
-  err = ext2fs_read_inode (fs, ino, &inode);
-  if (err != 0)
-    ext2_error_to_exception ("ext2fs_read_inode", err, filename);
-  inode.i_size = size;
-  err = ext2fs_write_inode (fs, ino, &inode);
-  if (err != 0)
-    ext2_error_to_exception ("ext2fs_write_inode", err, filename);
-}
-
-/* Same as ext2_write_file, but it copies the file contents from the
- * host.  You must create the file first with ext2_empty_inode, and
- * the host file must be a regular file.
+/* Copies the file contents from the host.  You must create the file
+ * first with ext2_empty_inode, and the host file must be a regular
+ * file.
  */
 static void
 ext2_write_host_file (ext2_filsys fs,
@@ -829,11 +788,17 @@ ext2_copy_file (struct ext2_data *data, const char *src, const char *dest)
                       statbuf.st_ctime, statbuf.st_atime, statbuf.st_mtime,
                       0, 0, EXT2_FT_SYMLINK, &ino);
 
-    char buf[PATH_MAX+1];
-    ssize_t r = readlink (src, buf, sizeof buf);
+    char *buf = malloc (statbuf.st_size+1);
+    if (buf == NULL)
+      caml_raise_out_of_memory ();
+    ssize_t r = readlink (src, buf, statbuf.st_size);
     if (r == -1)
       unix_error (errno, (char *) "readlink", caml_copy_string (src));
-    ext2_write_file (data->fs, ino, buf, r, dest);
+    if (r > statbuf.st_size)
+      r = statbuf.st_size;
+    buf[r] = '\0';
+    ext2fs_symlink (data->fs, dir_ino, ino, dest, buf);
+    free (buf);
   }
   /* Create directory. */
   else if (S_ISDIR (statbuf.st_mode))
