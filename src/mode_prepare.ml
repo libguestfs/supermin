@@ -146,6 +146,10 @@ let prepare debug (copy_kernel, format, host_cpu,
         with Sys_error _ -> false
     ) config_files in
 
+    if debug >= 1 then
+      printf "supermin: there are %d config files\n"
+             (List.length config_files);
+
     (* Put the list of config files into a file, for tar to read. *)
     let files_from = tmpdir // "files-from.txt" in
     let chan = open_out files_from in
@@ -158,6 +162,7 @@ let prepare debug (copy_kernel, format, host_cpu,
   let base = outputdir // "base.tar.gz" in
   if debug >= 1 then printf "supermin: writing %s\n%!" base;
   let cmd =
-    sprintf "tar -C %s -zcf %s -T %s"
-      (quote dir) (quote base) (quote files_from) in
+    sprintf "tar%s -C %s -zcf %s -T %s"
+            (if debug >=1 then " -v" else "")
+            (quote dir) (quote base) (quote files_from) in
   run_command cmd;
