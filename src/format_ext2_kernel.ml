@@ -79,7 +79,10 @@ and find_kernel_from_env_vars debug  =
         if debug >= 1 then
           printf "supermin: kernel: SUPERMIN_KERNEL_VERSION=%s\n%!" v;
         v
-      with Not_found -> get_kernel_version_from_file kernel_env in
+      with Not_found ->
+        match get_kernel_version debug kernel_env with
+        | Some v -> v
+        | None -> raise Not_found in
     let kernel_name = Filename.basename kernel_env in
     let modpath = find_modpath debug kernel_version in
     Some (kernel_env, kernel_name, kernel_version, modpath)
@@ -123,16 +126,16 @@ and find_kernel_from_boot debug host_cpu =
 
   let files = List.sort (fun a b -> compare_version b a) files in
   let kernels =
-    List.map (
+    filter_map (
       fun kernel_name ->
-        let kernel_version = get_kernel_version kernel_name in
         let kernel_file = "/boot" // kernel_name in
-        let modpath = find_modpath debug kernel_version in
-        (kernel_file, kernel_name, kernel_version, modpath)
+        match get_kernel_version debug kernel_file with
+        | None -> None
+        | Some kernel_version ->
+           let modpath = find_modpath debug kernel_version in
+           if not (has_modpath modpath) then None
+           else Some (kernel_file, kernel_name, kernel_version, modpath)
     ) files in
-
-  let kernels =
-    List.filter (fun (_, _, _, modpath) -> has_modpath modpath) kernels in
 
   match kernels with
   | kernel :: _ -> Some kernel
@@ -187,24 +190,43 @@ and has_modpath modpath =
   try (stat (modpath // "modules.dep")).st_kind = S_REG
   with Unix_error _ -> false
 
-and get_kernel_version kernel_name =
-  if (string_prefix "vmlinuz-" kernel_name) ||
-    (string_prefix "vmlinux-" kernel_name) then (
-    let kv = String.sub kernel_name 8 (String.length kernel_name - 8) in
-    if modules_dep_exists kv then kv
-    else get_kernel_version_from_name kernel_name
-  ) else get_kernel_version_from_name kernel_name
-
-and modules_dep_exists kv =
-  try (lstat ("/lib/modules/" ^ kv ^ "/modules.dep")).st_kind = S_REG
-  with Unix_error _ -> false
-
-and get_kernel_version_from_name kernel_name =
-  get_kernel_version_from_file ("/boot" // kernel_name)
+(* Extract the kernel version from a Linux kernel file.
+ *
+ * This first sees if we can get the information from the file
+ * content (see below) and if that fails tries to parse the
+ * filename.
+ *)
+and get_kernel_version debug kernel_file =
+  if debug >= 1 then
+    printf "supermin: kernel: kernel version of %s%!" kernel_file;
+  match get_kernel_version_from_file_content kernel_file with
+  | Some version ->
+     if debug >= 1 then printf " = %s (from content)\n%!" version;
+     Some version
+  | None ->
+     (* Try to work it out from the filename instead. *)
+     let basename = Filename.basename kernel_file in
+     if string_prefix "vmlinuz-" basename || string_prefix "vmlinux-" basename
+     then (
+       let version = String.sub basename 8 (String.length basename - 8) in
+       (* Does the version look reasonable? *)
+       let modpath = "/lib/modules" // version in
+       if has_modpath modpath then (
+         if debug >= 1 then printf " = %s (from filename)\n%!" version;
+         Some version
+       ) else (
+         if debug >= 1 then printf " = error, no modpath\n%!";
+         None
+       )
+     )
+     else (
+       if debug >= 1 then printf " = error, cannot parse filename\n%!";
+       None
+     )
 
 (* Extract the kernel version from a Linux kernel file.
  *
- * Returns a string containing the version or [Not_found] if the
+ * Returns a string containing the version or [None] if the
  * file can't be read, is not a Linux kernel, or the version can't
  * be found.
  *
@@ -217,7 +239,7 @@ and get_kernel_version_from_name kernel_name =
  *
  * Bugs: probably limited to x86 kernels.
  *)
-and get_kernel_version_from_file file =
+and get_kernel_version_from_file_content file =
   try
     let chan = open_in file in
     let buf = read_string chan 514 4 in
@@ -247,10 +269,12 @@ and get_kernel_version_from_file file =
       )
       else raise Not_found
     in
-    loop 0
+    let version = loop 0 in
+    Some version
   with
-  | Sys_error _ -> raise Not_found
-  | Invalid_argument _ -> raise Not_found
+  | Not_found
+  | Sys_error _
+  | Invalid_argument _ -> None
 
 (* Read an unsigned little endian short at a specified offset in a file. *)
 and read_leshort chan offset =
