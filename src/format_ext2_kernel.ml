@@ -93,12 +93,16 @@ and find_kernel_from_lib_modules debug =
     let files = glob "/lib/modules/*/vmlinuz" [GLOB_NOSORT; GLOB_NOESCAPE] in
     let files = Array.to_list files in
     let kernels =
-      List.map (
+      filter_map (
         fun kernel_file ->
-          let kernel_name = Filename.basename kernel_file in
-          let modpath = Filename.dirname kernel_file in
-          let kernel_version = Filename.basename modpath in
-          kernel_file, kernel_name, kernel_version, modpath
+          let size = try (stat kernel_file).st_size with Unix_error _ -> 0 in
+          if size < 10000 then None
+          else (
+            let kernel_name = Filename.basename kernel_file in
+            let modpath = Filename.dirname kernel_file in
+            let kernel_version = Filename.basename modpath in
+            Some (kernel_file, kernel_name, kernel_version, modpath)
+          )
       ) files in
     List.sort (
       fun (_, _, a, _) (_, _, b, _) -> compare_version b a
