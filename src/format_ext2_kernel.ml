@@ -94,9 +94,11 @@ and find_kernel_from_lib_modules debug =
     let files = Array.to_list files in
     let kernels =
       List.map (
-        fun f ->
-          let modpath = Filename.dirname f in
-          f, Filename.basename f, Filename.basename modpath, modpath
+        fun kernel_file ->
+          let kernel_name = Filename.basename kernel_file in
+          let modpath = Filename.dirname kernel_file in
+          let kernel_version = Filename.basename modpath in
+          kernel_file, kernel_name, kernel_version, modpath
       ) files in
     List.sort (
       fun (_, _, a, _) (_, _, b, _) -> compare_version b a
