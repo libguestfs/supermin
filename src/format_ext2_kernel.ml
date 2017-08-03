@@ -121,17 +121,22 @@ and find_kernel_from_boot debug host_cpu =
       (* In original: ls -1dvr /boot/vmlinuz-* 2>/dev/null | grep -v xen *)
       kernel_filter ["vmlinu?-*"] is_arm all_files in
 
-  if files = [] then None
-  else (
-    let files = List.sort (fun a b -> compare_version b a) files in
-    let kernel_name = List.hd files in
-    let kernel_version = get_kernel_version kernel_name in
+  let files = List.sort (fun a b -> compare_version b a) files in
+  let kernels =
+    List.map (
+      fun kernel_name ->
+        let kernel_version = get_kernel_version kernel_name in
+        let kernel_file = "/boot" // kernel_name in
+        let modpath = find_modpath debug kernel_version in
+        (kernel_file, kernel_name, kernel_version, modpath)
+    ) files in
 
-    (* Get the kernel modules. *)
-    let modpath = find_modpath debug kernel_version in
+  let kernels =
+    List.filter (fun (_, kernel_name, _, _) -> has_modpath kernel_name) kernels in
 
-    Some (("/boot" // kernel_name), kernel_name, kernel_version, modpath)
-  )
+  match kernels with
+  | kernel :: _ -> Some kernel
+  | [] -> None
 
 and kernel_filter patterns is_arm all_files =
   let files =
@@ -149,7 +154,7 @@ and kernel_filter patterns is_arm all_files =
 	find filename "tegra" = -1
       ) files
     ) in
-  List.filter (fun filename -> has_modpath filename) files
+  files
 
 and patt_of_cpu host_cpu =
   let models =
