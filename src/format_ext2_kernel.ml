@@ -132,7 +132,7 @@ and find_kernel_from_boot debug host_cpu =
     ) files in
 
   let kernels =
-    List.filter (fun (_, kernel_name, _, _) -> has_modpath kernel_name) kernels in
+    List.filter (fun (_, _, _, modpath) -> has_modpath modpath) kernels in
 
   match kernels with
   | kernel :: _ -> Some kernel
@@ -183,12 +183,9 @@ and find_modpath debug kernel_version =
       printf "supermin: kernel: picked modules path %s\n%!" modpath;
     modpath
 
-and has_modpath kernel_name =
-  try
-    let kv = get_kernel_version kernel_name in
-    modules_dep_exists kv
-  with
-  | Not_found -> false
+and has_modpath modpath =
+  try (stat (modpath // "modules.dep")).st_kind = S_REG
+  with Unix_error _ -> false
 
 and get_kernel_version kernel_name =
   if (string_prefix "vmlinuz-" kernel_name) ||
