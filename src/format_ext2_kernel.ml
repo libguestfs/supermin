@@ -24,21 +24,6 @@ open Ext2fs
 open Fnmatch
 open Glob
 
-let patt_of_cpu host_cpu =
-  let models =
-    match host_cpu with
-    | "mips" | "mips64" -> [host_cpu; "*-malta"]
-    | "ppc" | "powerpc" | "powerpc64" -> ["ppc"; "powerpc"; "powerpc64"]
-    | "sparc" | "sparc64" -> ["sparc"; "sparc64"]
-    | "amd64" | "x86_64" -> ["amd64"; "x86_64"]
-    | "parisc" | "parisc64" -> ["hppa"; "hppa64"]
-    | "ppc64el" -> ["powerpc64le"]
-    | _ when host_cpu.[0] = 'i' && host_cpu.[2] = '8' && host_cpu.[3] = '6' -> ["?86"]
-    | _ when String.length host_cpu >= 5 && String.sub host_cpu 0 5 = "armv7" ->  ["armmp"]
-    | _ -> [host_cpu]
-  in
-  List.map (fun model -> sprintf "vmlinu?-*-%s" model) models
-
 let rec build_kernel debug host_cpu copy_kernel kernel =
   (* Locate the kernel.
    * SUPERMIN_* environment variables override everything.  If those
@@ -71,6 +56,17 @@ let rec build_kernel debug host_cpu copy_kernel kernel =
   copy_or_symlink_file copy_kernel kernel_file kernel;
 
   (kernel_version, modpath)
+
+and error_no_kernels host_cpu =
+  error "\
+failed to find a suitable kernel (host_cpu=%s).
+
+I looked for kernels in /boot and modules in /lib/modules.
+
+If this is a Xen guest, and you only have Xen domU kernels
+installed, try installing a fullvirt kernel (only for
+supermin use, you shouldn't boot the Xen guest with it)."
+    host_cpu
 
 and find_kernel_from_env_vars debug  =
   try
@@ -155,16 +151,20 @@ and kernel_filter patterns is_arm all_files =
     ) in
   List.filter (fun filename -> has_modpath filename) files
 
-and error_no_kernels host_cpu =
-  error "\
-failed to find a suitable kernel (host_cpu=%s).
-
-I looked for kernels in /boot and modules in /lib/modules.
-
-If this is a Xen guest, and you only have Xen domU kernels
-installed, try installing a fullvirt kernel (only for
-supermin use, you shouldn't boot the Xen guest with it)."
-    host_cpu
+and patt_of_cpu host_cpu =
+  let models =
+    match host_cpu with
+    | "mips" | "mips64" -> [host_cpu; "*-malta"]
+    | "ppc" | "powerpc" | "powerpc64" -> ["ppc"; "powerpc"; "powerpc64"]
+    | "sparc" | "sparc64" -> ["sparc"; "sparc64"]
+    | "amd64" | "x86_64" -> ["amd64"; "x86_64"]
+    | "parisc" | "parisc64" -> ["hppa"; "hppa64"]
+    | "ppc64el" -> ["powerpc64le"]
+    | _ when host_cpu.[0] = 'i' && host_cpu.[2] = '8' && host_cpu.[3] = '6' -> ["?86"]
+    | _ when String.length host_cpu >= 5 && String.sub host_cpu 0 5 = "armv7" ->  ["armmp"]
+    | _ -> [host_cpu]
+  in
+  List.map (fun model -> sprintf "vmlinu?-*-%s" model) models
 
 and find_modpath debug kernel_version =
   try
