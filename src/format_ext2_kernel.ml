@@ -273,6 +273,7 @@ and get_kernel_version_from_file_content file =
     Some version
   with
   | Not_found
+  | End_of_file
   | Sys_error _
   | Invalid_argument _ -> None
 
