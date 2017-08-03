@@ -40,49 +40,21 @@ let patt_of_cpu host_cpu =
   List.map (fun model -> sprintf "vmlinu?-*-%s" model) models
 
 let rec build_kernel debug host_cpu copy_kernel kernel =
-  (* Locate the kernel. *)
+  (* Locate the kernel.
+   * SUPERMIN_* environment variables override everything.  If those
+   * are not present then we look in /lib/modules and /boot.
+   *)
   let kernel_file, kernel_name, kernel_version, modpath =
-    try
-      let kernel_env = getenv "SUPERMIN_KERNEL" in
-      if debug >= 1 then
-        printf "supermin: kernel: SUPERMIN_KERNEL environment variable %s\n%!"
-          kernel_env;
-      let kernel_version =
-        try
-          let v = getenv "SUPERMIN_KERNEL_VERSION" in
-          if debug >= 1 then
-            printf "supermin: kernel: SUPERMIN_KERNEL_VERSION environment variable %s\n%!" v;
-          v
-        with Not_found -> get_kernel_version_from_file kernel_env in
-      if debug >= 1 then
-        printf "supermin: kernel: SUPERMIN_KERNEL version %s\n%!"
-          kernel_version;
-      let kernel_name = Filename.basename kernel_env in
-      let modpath = find_modpath debug kernel_version in
-      kernel_env, kernel_name, kernel_version, modpath
-    with Not_found ->
-      let kernels =
-        let files = glob "/lib/modules/*/vmlinuz" [GLOB_NOSORT; GLOB_NOESCAPE] in
-        let files = Array.to_list files in
-        let kernels =
-          List.map (
-            fun f ->
-              let modpath = Filename.dirname f in
-              f, Filename.basename f, Filename.basename modpath, modpath
-          ) files in
-        List.sort (
-          fun (_, _, a, _) (_, _, b, _) -> compare_version b a
-        ) kernels in
-
-      if kernels <> [] then (
-        let kernel = List.hd kernels in
-        if debug >= 1 then (
-          let kernel_file, _, _, _ = kernel in
-          printf "supermin: kernel: picked vmlinuz %s\n%!" kernel_file;
-        );
-        kernel
-      ) else
-        find_kernel debug host_cpu kernel in
+    match find_kernel_from_env_vars debug with
+    | Some k -> k
+    | None ->
+       match find_kernel_from_lib_modules debug with
+       | Some k -> k
+       | None ->
+          match find_kernel_from_boot debug host_cpu with
+          | Some k -> k
+          | None ->
+             error_no_kernels host_cpu in
 
   if debug >= 1 then (
     printf "supermin: kernel: kernel_version %s\n" kernel_version;
@@ -93,7 +65,52 @@ let rec build_kernel debug host_cpu copy_kernel kernel =
 
   (kernel_version, modpath)
 
-and find_kernel debug host_cpu kernel =
+and find_kernel_from_env_vars debug  =
+  try
+    let kernel_env = getenv "SUPERMIN_KERNEL" in
+    if debug >= 1 then
+      printf "supermin: kernel: SUPERMIN_KERNEL environment variable %s\n%!"
+             kernel_env;
+    let kernel_version =
+      try
+        let v = getenv "SUPERMIN_KERNEL_VERSION" in
+        if debug >= 1 then
+          printf "supermin: kernel: SUPERMIN_KERNEL_VERSION environment variable %s\n%!" v;
+        v
+      with Not_found -> get_kernel_version_from_file kernel_env in
+    if debug >= 1 then
+      printf "supermin: kernel: SUPERMIN_KERNEL version %s\n%!"
+             kernel_version;
+    let kernel_name = Filename.basename kernel_env in
+    let modpath = find_modpath debug kernel_version in
+    Some (kernel_env, kernel_name, kernel_version, modpath)
+  with Not_found -> None
+
+and find_kernel_from_lib_modules debug =
+  let kernels =
+    let files = glob "/lib/modules/*/vmlinuz" [GLOB_NOSORT; GLOB_NOESCAPE] in
+    let files = Array.to_list files in
+    let kernels =
+      List.map (
+        fun f ->
+          let modpath = Filename.dirname f in
+          f, Filename.basename f, Filename.basename modpath, modpath
+      ) files in
+    List.sort (
+      fun (_, _, a, _) (_, _, b, _) -> compare_version b a
+    ) kernels in
+
+  if kernels <> [] then (
+    let kernel = List.hd kernels in
+    if debug >= 1 then (
+      let kernel_file, _, _, _ = kernel in
+      printf "supermin: kernel: picked vmlinuz %s\n%!" kernel_file;
+    );
+    Some kernel
+  ) else
+    None
+
+and find_kernel_from_boot debug host_cpu =
   let is_arm =
     String.length host_cpu >= 3 &&
     host_cpu.[0] = 'a' && host_cpu.[1] = 'r' && host_cpu.[2] = 'm' in
@@ -111,19 +128,20 @@ and find_kernel debug host_cpu kernel =
       (* In original: ls -1dvr /boot/vmlinuz-* 2>/dev/null | grep -v xen *)
       kernel_filter ["vmlinu?-*"] is_arm all_files in
 
-  if files = [] then no_kernels host_cpu;
+  if files = [] then None
+  else (
+    let files = List.sort (fun a b -> compare_version b a) files in
+    let kernel_name = List.hd files in
+    let kernel_version = get_kernel_version kernel_name in
 
-  let files = List.sort (fun a b -> compare_version b a) files in
-  let kernel_name = List.hd files in
-  let kernel_version = get_kernel_version kernel_name in
+    if debug >= 1 then
+      printf "supermin: kernel: picked kernel %s\n%!" kernel_name;
 
-  if debug >= 1 then
-    printf "supermin: kernel: picked kernel %s\n%!" kernel_name;
+    (* Get the kernel modules. *)
+    let modpath = find_modpath debug kernel_version in
 
-  (* Get the kernel modules. *)
-  let modpath = find_modpath debug kernel_version in
-
-  ("/boot" // kernel_name), kernel_name, kernel_version, modpath
+    Some (("/boot" // kernel_name), kernel_name, kernel_version, modpath)
+  )
 
 and kernel_filter patterns is_arm all_files =
   let files =
@@ -143,7 +161,7 @@ and kernel_filter patterns is_arm all_files =
     ) in
   List.filter (fun filename -> has_modpath filename) files
 
-and no_kernels host_cpu =
+and error_no_kernels host_cpu =
   error "\
 failed to find a suitable kernel (host_cpu=%s).
 
