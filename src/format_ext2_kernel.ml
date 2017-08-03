@@ -45,20 +45,27 @@ let rec build_kernel debug host_cpu copy_kernel kernel =
    * are not present then we look in /lib/modules and /boot.
    *)
   let kernel_file, kernel_name, kernel_version, modpath =
+    if debug >= 1 then
+      printf "supermin: kernel: looking for kernel using environment variables ...\n%!";
     match find_kernel_from_env_vars debug with
     | Some k -> k
     | None ->
+       if debug >= 1 then
+         printf "supermin: kernel: looking for kernels in /lib/modules/*/vmlinuz ...\n%!";
        match find_kernel_from_lib_modules debug with
        | Some k -> k
        | None ->
+          if debug >= 1 then
+            printf "supermin: kernel: looking for kernels in /boot ...\n%!";
           match find_kernel_from_boot debug host_cpu with
           | Some k -> k
           | None ->
              error_no_kernels host_cpu in
 
   if debug >= 1 then (
+    printf "supermin: kernel: picked vmlinuz %s\n%!" kernel_file;
     printf "supermin: kernel: kernel_version %s\n" kernel_version;
-    printf "supermin: kernel: modules %s\n%!" modpath;
+    printf "supermin: kernel: modpath %s\n%!" modpath;
   );
 
   copy_or_symlink_file copy_kernel kernel_file kernel;
@@ -69,18 +76,14 @@ and find_kernel_from_env_vars debug  =
   try
     let kernel_env = getenv "SUPERMIN_KERNEL" in
     if debug >= 1 then
-      printf "supermin: kernel: SUPERMIN_KERNEL environment variable %s\n%!"
-             kernel_env;
+      printf "supermin: kernel: SUPERMIN_KERNEL=%s\n%!" kernel_env;
     let kernel_version =
       try
         let v = getenv "SUPERMIN_KERNEL_VERSION" in
         if debug >= 1 then
-          printf "supermin: kernel: SUPERMIN_KERNEL_VERSION environment variable %s\n%!" v;
+          printf "supermin: kernel: SUPERMIN_KERNEL_VERSION=%s\n%!" v;
         v
       with Not_found -> get_kernel_version_from_file kernel_env in
-    if debug >= 1 then
-      printf "supermin: kernel: SUPERMIN_KERNEL version %s\n%!"
-             kernel_version;
     let kernel_name = Filename.basename kernel_env in
     let modpath = find_modpath debug kernel_version in
     Some (kernel_env, kernel_name, kernel_version, modpath)
@@ -100,15 +103,9 @@ and find_kernel_from_lib_modules debug =
       fun (_, _, a, _) (_, _, b, _) -> compare_version b a
     ) kernels in
 
-  if kernels <> [] then (
-    let kernel = List.hd kernels in
-    if debug >= 1 then (
-      let kernel_file, _, _, _ = kernel in
-      printf "supermin: kernel: picked vmlinuz %s\n%!" kernel_file;
-    );
-    Some kernel
-  ) else
-    None
+  match kernels with
+  | kernel :: _ -> Some kernel
+  | [] -> None
 
 and find_kernel_from_boot debug host_cpu =
   let is_arm =
@@ -133,9 +130,6 @@ and find_kernel_from_boot debug host_cpu =
     let files = List.sort (fun a b -> compare_version b a) files in
     let kernel_name = List.hd files in
     let kernel_version = get_kernel_version kernel_name in
-
-    if debug >= 1 then
-      printf "supermin: kernel: picked kernel %s\n%!" kernel_name;
 
     (* Get the kernel modules. *)
     let modpath = find_modpath debug kernel_version in
@@ -176,8 +170,7 @@ and find_modpath debug kernel_version =
   try
     let modpath = getenv "SUPERMIN_MODULES" in
     if debug >= 1 then
-      printf "supermin: kernel: SUPERMIN_MODULES environment variable = %s\n%!"
-        modpath;
+      printf "supermin: kernel: SUPERMIN_MODULES=%s\n%!" modpath;
     modpath
   with Not_found ->
     let modpath = "/lib/modules/" ^ kernel_version in
