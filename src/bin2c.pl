@@ -15,10 +15,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-# This script creates a source file for the GNU assembler which shuold
-# result in an object file equivalent to that of
+# This script creates a C snippet embedding an arbitrary file
 #
-# objcopy -I binary -B $(DEFAULT_ARCH) -O $(ELF_DEFAULT_ARCH) <in> <out>
+# The output provides two variables:
+# static const char _binary_$name[];
+# static const size_t _binary_$name_len;
 
 use strict;
 use warnings;
@@ -36,28 +37,21 @@ $infile_basename =~ s{.*/}{};
 print $ofh <<"EOF";
 /* This file has been automatically generated from $infile by $0 */
 
-/* Mark stack as non-executable for GNU tools. */
-\t.section .note.GNU-stack,"",%progbits
-\t.previous
-
-\t.globl\t_binary_${infile_basename}_start
-\t.globl\t_binary_${infile_basename}_end
-
-\t.section\t.rodata
-_binary_${infile_basename}_start:
+static const char _binary_${infile_basename}[] = {
 EOF
 
 $sz = 0;
 while ( $i = read $ifh, $buf, 12 ) {
-    print $ofh "\t.byte\t"
-      . join( ',', map { sprintf '0x%02x', ord $_ } split //, $buf ) . "\n";
+    print $ofh "  "
+      . join( ", ", map { sprintf '0x%02x', ord $_ } split //, $buf ) . ",\n";
     $sz += $i;
 }
 die "read $infile (at offset $sz): $!\n" if not defined $i;
 close $ifh;
 
 print $ofh <<"EOF";
-_binary_${infile_basename}_end:
+};
+static const size_t _binary_${infile_basename}_len = ${sz};
 EOF
 
 close $ofh;

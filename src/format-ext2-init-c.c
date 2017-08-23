@@ -27,19 +27,18 @@
 #include <caml/memory.h>
 
 /* The init binary.
- * See: bin2s.pl, init.c.
+ * See: bin2c.pl, init.c.
  */
-extern uint8_t _binary_init_start, _binary_init_end;
+#include <format-ext2-init-bin.h>
 
 value
 supermin_binary_init (value unitv)
 {
   CAMLparam1 (unitv);
   CAMLlocal1 (sv);
-  size_t n = &_binary_init_end - &_binary_init_start;
 
-  sv = caml_alloc_string (n);
-  memcpy (String_val (sv), &_binary_init_start, n);
+  sv = caml_alloc_string (_binary_init_len);
+  memcpy (String_val (sv), _binary_init, _binary_init_len);
 
   CAMLreturn (sv);
 }

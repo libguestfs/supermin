@@ -17,7 +17,7 @@
 
 EXTRA_DIST = \
 	.depend \
-	bin2s.pl \
+	bin2c.pl \
 	config.ml.in \
 	supermin.1 \
 	supermin.pod \
@@ -111,11 +111,13 @@ man_MANS = \
 bin_PROGRAMS = supermin
 
 supermin_SOURCES = $(SOURCES_C)
+nodist_supermin_SOURCES = format-ext2-init-bin.h
 supermin_CFLAGS = \
 	-I$(shell $(OCAMLC) -where) \
 	$(EXT2FS_CFLAGS) $(COM_ERR_CFLAGS) $(LIBRPM_CFLAGS) \
 	-Wall $(WERROR_CFLAGS) \
 	-I$(top_srcdir)/lib -I../lib
+format-ext2-init-c.$(OBJEXT): format-ext2-init-bin.h
 
 BOBJECTS = $(SOURCES_ML:.ml=.cmo)
 XOBJECTS = $(SOURCES_ML:.ml=.cmx)
@@ -132,9 +134,9 @@ OBJECTS = $(XOBJECTS)
 BEST    = opt
 endif
 
-supermin_DEPENDENCIES = $(OBJECTS) format-ext2-init-bin.o
+supermin_DEPENDENCIES = $(OBJECTS)
 
-supermin_LDADD = format-ext2-init-bin.o ../lib/libgnu.a
+supermin_LDADD = ../lib/libgnu.a
 
 supermin_LINK = \
 	./supermin-link.sh \
@@ -148,17 +150,15 @@ supermin_LINK = \
 .ml.cmx:
 	$(OCAMLFIND) ocamlopt $(OCAMLFLAGS) $(OCAMLPACKAGES) -c $< -o $@
 
-CLEANFILES += format-ext2-init-bin.S
+CLEANFILES += format-ext2-init-bin.h
+BUILT_SOURCES = format-ext2-init-bin.h
 
-format-ext2-init-bin.o: format-ext2-init-bin.S
-	$(CC) -o $@ -c $<
-
-format-ext2-init-bin.S: ../init/init $(srcdir)/bin2s.pl
+format-ext2-init-bin.h: ../init/init $(srcdir)/bin2c.pl
 	strip --strip-all $<
 	ls -l $<
 	@file $< | grep -isq static || \
 	  (echo "*** error: init is not statically linked"; exit 1)
-	$(srcdir)/bin2s.pl $< $@
+	$(srcdir)/bin2c.pl $< $@
 
 depend: .depend
 
