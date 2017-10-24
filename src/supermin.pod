@@ -12,7 +12,7 @@ supermin - Tool for creating and building supermin appliances
 
 =head1 EXAMPLE
 
- supermin --prepare bash -o /tmp/supermin.d
+ supermin --prepare bash util-linux -o /tmp/supermin.d
  
  cat > init <<EOF
  #!/bin/sh
