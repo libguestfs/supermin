@@ -290,9 +290,9 @@ and read_leshort chan offset =
 
 and read_string chan offset len =
   seek_in chan offset;
-  let buf = String.create len in
+  let buf = Bytes.create len in
   really_input chan buf 0 len;
-  buf
+  Bytes.to_string buf
 
 and copy_or_symlink_file copy_kernel src dest =
   if not copy_kernel then

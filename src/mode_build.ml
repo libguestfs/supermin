@@ -299,9 +299,10 @@ and update_appliance appliance lines = function
 (* Determine the [file_type] of [file], or exit with an error. *)
 and get_file_type file =
   let chan = open_in file in
-  let buf = String.create 512 in
-  let len = input chan buf 0 (String.length buf) in
+  let buf = Bytes.create 512 in
+  let len = input chan buf 0 (Bytes.length buf) in
   close_in chan;
+  let buf = Bytes.to_string buf in
 
   if len >= 3 && buf.[0] = '\x1f' && buf.[1] = '\x8b' && buf.[2] = '\x08'
   then                                  (* gzip-compressed file *)
@@ -335,8 +336,9 @@ and get_file_content file buf len =
 and get_compressed_file_content zcat file =
   let cmd = sprintf "%s %s" zcat (quote file) in
   let chan_out, chan_in, chan_err = open_process_full cmd [||] in
-  let buf = String.create 512 in
-  let len = input chan_out buf 0 (String.length buf) in
+  let buf = Bytes.create 512 in
+  let len = input chan_out buf 0 (Bytes.length buf) in
+  let buf = Bytes.to_string buf in
   (* We're expecting the subprocess to fail because we close the pipe
    * early, so:
    *)
