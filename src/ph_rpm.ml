@@ -40,7 +40,8 @@ let fedora_detect () =
 let opensuse_detect () =
   Config.rpm <> "no" && Config.rpm2cpio <> "no" && rpm_is_available () &&
     Config.zypper <> "no" &&
-    (List.mem (Os_release.get_id ()) [ "opensuse-leap"; "opensuse"; "sled"; "sles" ] ||
+    (List.mem (Os_release.get_id ()) [ "sled"; "sles" ] ||
+     string_prefix "opensuse" (Os_release.get_id ()) ||
      try (stat "/etc/SuSE-release").st_kind = S_REG with Unix_error _ -> false)
 
 let mageia_detect () =

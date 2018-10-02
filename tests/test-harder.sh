@@ -29,7 +29,7 @@ if [ -f /etc/os-release ]; then
     distro=$(. /etc/os-release && echo $ID)
     case "$distro" in
         fedora|rhel|centos) distro=redhat ;;
-        opensuse-leap|opensuse|sled|sles) distro=suse ;;
+        opensuse*|sled|sles) distro=suse ;;
         ubuntu) distro=debian ;;
     esac
 elif [ -f /etc/arch-release ]; then
