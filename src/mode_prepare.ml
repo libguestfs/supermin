@@ -128,28 +128,28 @@ let prepare debug (copy_kernel, format, host_cpu,
    * be missing either from the package or from the filesystem (the
    * latter case with --use-installed).
    *)
+  let config_files =
+    List.map (
+      fun (_, files) ->
+        filter_map (
+          function
+          | { ft_config = true; ft_path = path } -> Some path
+          | { ft_config = false } -> None
+        ) files
+    ) packages in
+  let config_files = List.flatten config_files in
+
+  let config_files = List.filter (
+    fun path ->
+      try close_in (open_in (dir // path)); true
+      with Sys_error _ -> false
+  ) config_files in
+
+  if debug >= 1 then
+    printf "supermin: there are %d config files\n"
+           (List.length config_files);
+
   let files_from =
-    let config_files =
-      List.map (
-        fun (_, files) ->
-          filter_map (
-            function
-            | { ft_config = true; ft_path = path } -> Some path
-            | { ft_config = false } -> None
-          ) files
-      ) packages in
-    let config_files = List.flatten config_files in
-
-    let config_files = List.filter (
-      fun path ->
-        try close_in (open_in (dir // path)); true
-        with Sys_error _ -> false
-    ) config_files in
-
-    if debug >= 1 then
-      printf "supermin: there are %d config files\n"
-             (List.length config_files);
-
     (* Put the list of config files into a file, for tar to read. *)
     let files_from = tmpdir // "files-from.txt" in
     let chan = open_out files_from in
