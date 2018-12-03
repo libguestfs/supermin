@@ -149,20 +149,29 @@ let prepare debug (copy_kernel, format, host_cpu,
     printf "supermin: there are %d config files\n"
            (List.length config_files);
 
-  let files_from =
-    (* Put the list of config files into a file, for tar to read. *)
-    let files_from = tmpdir // "files-from.txt" in
-    let chan = open_out files_from in
-    List.iter (fprintf chan ".%s\n") config_files; (* "./filename" *)
-    close_out chan;
+  if config_files <> [] then (
+    (* There are config files to copy, so create the list with them,
+     * and then compress them with tar.
+     *)
+    let files_from =
+      (* Put the list of config files into a file, for tar to read. *)
+      let files_from = tmpdir // "files-from.txt" in
+      let chan = open_out files_from in
+      List.iter (fprintf chan ".%s\n") config_files; (* "./filename" *)
+      close_out chan;
 
-    files_from in
+      files_from in
 
-  (* Write base.tar.gz. *)
-  let base = outputdir // "base.tar.gz" in
-  if debug >= 1 then printf "supermin: writing %s\n%!" base;
-  let cmd =
-    sprintf "tar%s -C %s -zcf %s -T %s"
-            (if debug >=1 then " -v" else "")
-            (quote dir) (quote base) (quote files_from) in
-  run_command cmd;
+    (* Write base.tar.gz. *)
+    let base = outputdir // "base.tar.gz" in
+    if debug >= 1 then printf "supermin: writing %s\n%!" base;
+    let cmd =
+      sprintf "tar%s -C %s -zcf %s -T %s"
+              (if debug >=1 then " -v" else "")
+              (quote dir) (quote base) (quote files_from) in
+    run_command cmd;
+  )
+  else (
+    (* No config files to copy, so do not create base.tar.gz. *)
+    if debug >= 1 then printf "supermin: not creating base.tar.gz\n%!";
+  )
