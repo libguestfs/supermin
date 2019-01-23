@@ -298,6 +298,8 @@ let () =
     error "error: %s: %s: %s" fname (Unix.error_message code) param
   | Failure msg ->                      (* from failwith/failwithf *)
     error "failure: %s" msg
+  | Librpm.Multiple_matches (package, count) -> (* from librpm *)
+    error "RPM error: %d occurrences for %s" count package
   | Invalid_argument msg ->             (* probably should never happen *)
     error "internal error: invalid argument: %s" msg
   | Assert_failure (file, line, char) -> (* should never happen *)
