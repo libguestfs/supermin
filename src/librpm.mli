@@ -31,7 +31,7 @@ val rpm_vercmp : string -> string -> int
 type t
 (** The librpm handle. *)
 
-exception Multiple_matches of int
+exception Multiple_matches of string * int
 
 val rpm_open : ?debug:int -> t
 (** Open the librpm (transaction set) handle. *)

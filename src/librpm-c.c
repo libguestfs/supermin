@@ -66,10 +66,15 @@ librpm_handle_closed (void)
 }
 
 static void
-librpm_raise_multiple_matches (int occurrences)
+librpm_raise_multiple_matches (value pkgv, int occurrences)
 {
-  caml_raise_with_arg (*caml_named_value ("librpm_multiple_matches"),
-                       Val_int (occurrences));
+  CAMLparam1 (pkgv);
+
+  value args[] = { pkgv, Val_int (occurrences) };
+  caml_raise_with_args (*caml_named_value ("librpm_multiple_matches"),
+                        2, args);
+
+  CAMLnoreturn;
 }
 
 #define Librpm_val(v) (*((struct librpm_data *)Data_custom_val(v)))
@@ -296,7 +301,7 @@ supermin_rpm_pkg_requires (value rpmv, value pkgv)
     fflush (stdout);
   }
   if (count != 1)
-    librpm_raise_multiple_matches (count);
+    librpm_raise_multiple_matches (pkgv, count);
 
   h = rpmdbNextIterator (iter);
   assert (h != NULL);
@@ -413,7 +418,7 @@ supermin_rpm_pkg_filelist (value rpmv, value pkgv)
     fflush (stdout);
   }
   if (count != 1)
-    librpm_raise_multiple_matches (count);
+    librpm_raise_multiple_matches (pkgv, count);
 
   h = rpmdbNextIterator (iter);
   assert (h != NULL);
