@@ -50,6 +50,12 @@ let mageia_detect () =
     (Os_release.get_id () = "mageia" ||
      try (stat "/etc/mageia-release").st_kind = S_REG with Unix_error _ -> false)
 
+let openmandriva_detect () =
+  Config.rpm <> "no" && Config.rpm2cpio <> "no" && rpm_is_available () &&
+    ((Config.urpmi <> "no" && Config.fakeroot <> "no") || Config.dnf <> "no") &&
+    (Os_release.get_id () = "openmandriva" ||
+     try (stat "/etc/openmandriva-release").st_kind = S_REG with Unix_error _ -> false)
+
 let ibm_powerkvm_detect () =
   Config.rpm <> "no" && Config.rpm2cpio <> "no" && rpm_is_available () &&
     Config.yumdownloader <> "no" &&
@@ -386,17 +392,27 @@ and opensuse_download_all_packages pkgs dir =
 
   rpm_unpack tdir dir
 
+and openmandriva_download_all_packages pkgs dir =
+  let tdir = !settings.tmpdir // string_random8 () in
+
+  if Config.dnf <> "no" then
+    download_all_packages_with_dnf pkgs dir tdir
+  else (* Config.urpmi <> "no" && Config.fakeroot <> "no" *)
+    download_all_packages_with_urpmi pkgs dir tdir;
+
+  rpm_unpack tdir dir
+
 and mageia_download_all_packages pkgs dir =
   let tdir = !settings.tmpdir // string_random8 () in
 
   if Config.dnf <> "no" then
     download_all_packages_with_dnf pkgs dir tdir
   else (* Config.urpmi <> "no" && Config.fakeroot <> "no" *)
-    mageia_download_all_packages_with_urpmi pkgs dir tdir;
+    download_all_packages_with_urpmi pkgs dir tdir;
 
   rpm_unpack tdir dir
 
-and mageia_download_all_packages_with_urpmi pkgs dir tdir =
+and download_all_packages_with_urpmi pkgs dir tdir =
   let rpms = List.map rpm_package_name (PackageSet.elements pkgs) in
 
   let cmd =
@@ -484,4 +500,10 @@ let () =
     ph_detect = mageia_detect;
     ph_download_package = PHDownloadAllPackages mageia_download_all_packages;
   } in
-  register_package_handler "mageia" "rpm" mageia
+  register_package_handler "mageia" "rpm" mageia;
+  let openmandriva = {
+    fedora with
+    ph_detect = openmandriva_detect;
+    ph_download_package = PHDownloadAllPackages openmandriva_download_all_packages;
+  } in
+  register_package_handler "openmandriva" "rpm" openmandriva

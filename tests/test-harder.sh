@@ -31,6 +31,7 @@ if [ -f /etc/os-release ]; then
         fedora|rhel|centos) distro=redhat ;;
         opensuse*|sled|sles) distro=suse ;;
         ubuntu) distro=debian ;;
+        openmandriva) distro=openmandriva ;;
     esac
 elif [ -f /etc/arch-release ]; then
     distro=arch
@@ -77,6 +78,9 @@ case $distro in
     ibm-powerkvm)
 	pkgs="augeas hivex tar"
 	;;
+    openmandriva)
+        pkgs="augeas hivex rpm"
+        ;;
     *)
 	echo "Unhandled distro '$distro'"
 	exit 77
@@ -133,6 +137,33 @@ case $distro in
 	    exit 1
 	fi
 	if [ "$(find $d2/usr/lib* -name libaugeas.so.0 | wc -l)" -lt 1 ]; then
+	    echo "$0: $distro: augeas library not installed in chroot"
+	    ls -lR $d2
+	    exit 1
+	fi
+	if [ ! -x $d2/usr/bin/hivexget ]; then
+	    echo "$0: $distro: hivexget binary not installed in chroot"
+	    ls -lR $d2
+	    exit 1
+	fi
+	if [ "$(find $d2/usr/lib* -name libhivex.so.0 | wc -l)" -lt 1 ]; then
+	    echo "$0: $distro: hivex library not installed in chroot"
+	    ls -lR $d2
+	    exit 1
+	fi
+	if [ ! -x $d2/bin/rpm ]; then
+	    echo "$0: $distro: rpm binary not installed in chroot"
+	    ls -lR $d2
+	    exit 1
+	fi
+	;;
+    openmandriva)
+	if [ ! -x $d2/usr/bin/augtool ]; then
+	    echo "$0: $distro: augtool binary not installed in chroot"
+	    ls -lR $d2
+	    exit 1
+	fi
+	if [ "$(find $d2/lib* $d2/usr/lib* -name libaugeas.so.0 | wc -l)" -lt 1 ]; then
 	    echo "$0: $distro: augeas library not installed in chroot"
 	    ls -lR $d2
 	    exit 1
