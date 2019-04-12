@@ -172,33 +172,6 @@ and split_version = function
       ) in
     first :: split_version rest
 
-let compare_architecture a1 a2 =
-  let index_of_architecture = function
-    | "noarch" | "all" -> 100
-    | "i386" | "i486" | "i586" | "i686" | "x86_32" | "x86-32" -> 32
-    | "x86_64" | "x86-64" | "amd64" -> 64
-    | "armel" | "armhf" -> 32
-    | "aarch64" -> 64
-    | a when string_prefix "armv5" a -> 32
-    | a when string_prefix "armv6" a -> 32
-    | a when string_prefix "armv7" a -> 32
-    | a when string_prefix "armv8" a -> 64
-    | "hppa" | "parisc" -> 32
-    | "hppa64" | "parisc64" -> 64
-    | "ppc" | "ppc32" -> 32
-    | a when string_prefix "ppc64" a -> 64
-    | "sparc" | "sparc32" -> 32
-    | "sparc64" -> 64
-    | "ia64" -> 64
-    | "s390" -> 32
-    | "s390x" -> 64
-    | "alpha" -> 64
-    | a ->
-      error "missing support for architecture '%s'\nIt may need to be added to supermin."
-        a
-  in
-  compare (index_of_architecture a1) (index_of_architecture a2)
-
 (* Parse a size field, eg. "10G". *)
 let parse_size =
   let const_re = Str.regexp "^\\([.0-9]+\\)\\([bKMG]\\)$" in

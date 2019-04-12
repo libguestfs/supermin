@@ -86,9 +86,6 @@ val filter_map : ('a -> 'b option) -> 'a list -> 'b list
 val compare_version : string -> string -> int
   (** Compare two version-like strings. *)
 
-val compare_architecture : string -> string -> int
-  (** Compare two architecture strings. *)
-
 val parse_size : string -> int64
 (** Parse a size field, eg. [10G] *)
 
