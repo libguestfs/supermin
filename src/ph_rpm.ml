@@ -136,21 +136,44 @@ let rpm_of_pkg, pkg_of_rpm = get_memo_functions ()
 (* Memo of rpm_package_of_string. *)
 let rpmh = Hashtbl.create 13
 
+let rpm_to_evr_string rpm =
+  (* In RPM < 4.11 query commands that use the epoch number in the
+   * package name did not work.
+   *
+   * For example:
+   * RHEL 6 (rpm 4.8.0):
+   *   $ rpm -q tar-2:1.23-11.el6.x86_64
+   *   package tar-2:1.23-11.el6.x86_64 is not installed
+   * Fedora 20 (rpm 4.11.2):
+   *   $ rpm -q tar-2:1.26-30.fc20.x86_64
+   *   tar-1.26-30.fc20.x86_64
+   *
+   *)
+  let is_rpm_lt_4_11 =
+    !rpm_major < 4 || (!rpm_major = 4 && !rpm_minor < 11) in
+
+  if is_rpm_lt_4_11 || rpm.epoch = 0 then
+    sprintf "%s-%s" rpm.version rpm.release
+  else
+    sprintf "%d:%s-%s"
+      rpm.epoch rpm.version rpm.release
+
 let rpm_package_of_string str =
   let query rpm =
     let rpms = Array.to_list (rpm_installed (get_rpm ()) rpm) in
+    let rpms = List.map (fun rpm -> (rpm, rpm_to_evr_string rpm)) rpms in
     (* RPM will return multiple hits when either multiple versions or
      * multiple arches are installed at the same time.  We are only
      * interested in the highest version with the best
      * architecture.
      *)
-    let cmp pkg1 pkg2 =
-      let i = rpm_vercmp pkg2.version pkg1.version in
+    let cmp (pkg1, evr1) (pkg2, evr2) =
+      let i = rpm_vercmp evr2 evr2 in
       if i <> 0 then i
       else compare_architecture pkg2.arch pkg1.arch
     in
     let rpms = List.sort cmp rpms in
-    List.hd rpms
+    fst (List.hd rpms)
   in
 
   try
