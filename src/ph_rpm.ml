@@ -144,10 +144,10 @@ let rpm_package_of_string str =
      * interested in the highest version with the best
      * architecture.
      *)
-    let cmp { version = v1; arch = a1 } { version = v2; arch = a2 } =
-      let i = rpm_vercmp v2 v1 in
+    let cmp pkg1 pkg2 =
+      let i = rpm_vercmp pkg2.version pkg1.version in
       if i <> 0 then i
-      else compare_architecture a2 a1
+      else compare_architecture pkg2.arch pkg1.arch
     in
     let rpms = List.sort cmp rpms in
     List.hd rpms
