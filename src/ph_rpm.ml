@@ -172,9 +172,14 @@ let rpm_package_of_string str =
      * architecture.
      *)
     let cmp (pkg1, evr1) (pkg2, evr2) =
-      let i = rpm_vercmp evr2 evr2 in
+      let weight_of_arch = function
+        | "noarch" -> 100
+        | a when a = !rpm_arch -> 50
+        | _ -> 0
+      in
+      let i = compare (weight_of_arch pkg2.arch) (weight_of_arch pkg1.arch) in
       if i <> 0 then i
-      else compare_architecture pkg2.arch pkg1.arch
+      else rpm_vercmp evr2 evr2
     in
     let rpms = List.sort cmp rpms in
     fst (List.hd rpms)
