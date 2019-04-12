@@ -133,6 +133,16 @@ supermin_rpm_vercmp (value av, value bv)
 }
 
 value
+supermin_rpm_get_arch (value unit)
+{
+  const char *str;
+
+  rpmGetArchInfo (&str, NULL);
+
+  return caml_copy_string (str);
+}
+
+value
 supermin_rpm_open (value debugv)
 {
   CAMLparam1 (debugv);

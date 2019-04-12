@@ -28,6 +28,9 @@ val rpm_version : unit -> string
 val rpm_vercmp : string -> string -> int
 (** Compare two RPM version strings using RPM version compare rules. *)
 
+val rpm_get_arch : unit -> string
+(** The current main RPM architecture. *)
+
 type t
 (** The librpm handle. *)
 

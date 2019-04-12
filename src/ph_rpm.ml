@@ -64,7 +64,7 @@ let ibm_powerkvm_detect () =
     with Unix_error _ -> false
 
 let settings = ref no_settings
-let rpm_major, rpm_minor = ref 0, ref 0
+let rpm_major, rpm_minor, rpm_arch = ref 0, ref 0, ref ""
 let zypper_major, zypper_minor, zypper_patch = ref 0, ref 0, ref 0
 let t = ref None
 
@@ -93,7 +93,11 @@ let rec rpm_init s =
   if !settings.debug >= 1 then
     printf "supermin: rpm: detected RPM version %d.%d\n" major minor;
 
-  t := Some (rpm_open ~debug:!settings.debug)
+  t := Some (rpm_open ~debug:!settings.debug);
+
+  rpm_arch := rpm_get_arch ();
+  if !settings.debug >= 1 then
+    printf "supermin: rpm: detected RPM architecture %s\n" !rpm_arch
 
 and opensuse_init s =
   rpm_init s;
