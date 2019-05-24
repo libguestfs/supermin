@@ -484,6 +484,12 @@ supermin_rpm_vercmp (value av, value bv)
 }
 
 value
+supermin_rpm_get_arch (value unit)
+{
+  abort ();
+}
+
+value
 supermin_rpm_open (value debugv)
 {
   abort ();
