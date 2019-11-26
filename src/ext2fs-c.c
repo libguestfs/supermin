@@ -782,12 +782,6 @@ ext2_copy_file (struct ext2_data *data, const char *src, const char *dest)
   }
   /* Create a symlink. */
   else if (S_ISLNK (statbuf.st_mode)) {
-    ext2_ino_t ino;
-    ext2_empty_inode (data->fs, dir_ino, dirname, basename,
-                      statbuf.st_mode, statbuf.st_uid, statbuf.st_gid,
-                      statbuf.st_ctime, statbuf.st_atime, statbuf.st_mtime,
-                      0, 0, EXT2_FT_SYMLINK, &ino);
-
     char *buf = malloc (statbuf.st_size+1);
     if (buf == NULL)
       caml_raise_out_of_memory ();
@@ -797,7 +791,7 @@ ext2_copy_file (struct ext2_data *data, const char *src, const char *dest)
     if (r > statbuf.st_size)
       r = statbuf.st_size;
     buf[r] = '\0';
-    ext2fs_symlink (data->fs, dir_ino, ino, dest, buf);
+    ext2fs_symlink (data->fs, dir_ino, 0, basename, buf);
     free (buf);
   }
   /* Create directory. */
