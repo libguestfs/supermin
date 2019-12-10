@@ -791,7 +791,18 @@ ext2_copy_file (struct ext2_data *data, const char *src, const char *dest)
     if (r > statbuf.st_size)
       r = statbuf.st_size;
     buf[r] = '\0';
-    ext2fs_symlink (data->fs, dir_ino, 0, basename, buf);
+  symlink_again:
+    err = ext2fs_symlink (data->fs, dir_ino, 0, basename, buf);
+    if (err) {
+      if (err == EXT2_ET_DIR_NO_SPACE) {
+	err = ext2fs_expand_dir (data->fs, dir_ino);
+	if (err)
+	  ext2_error_to_exception ("ext2fs_expand_dir", err, dirname);
+	goto symlink_again;
+      }
+      else
+	ext2_error_to_exception ("ext2fs_symlink", err, basename);
+    }
     free (buf);
   }
   /* Create directory. */
