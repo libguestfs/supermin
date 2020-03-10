@@ -17,7 +17,11 @@ dnl Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 dnl
 dnl Written by Richard W.M. Jones <rjones@redhat.com>
 
-AC_INIT([supermin],[5.1.20])
+dnl MAJOR = 5 (unless we break the command line again)
+dnl MINOR = even for stable branch, odd for development branch
+dnl RELEASE = increments for each release
+AC_INIT([supermin],[5.2.0])
+
 AM_INIT_AUTOMAKE(foreign)
 AC_REQUIRE_AUX_FILE([supermin-test-driver])
 
