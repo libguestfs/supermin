@@ -82,6 +82,23 @@ if test "$OCAMLFIND" = "no"; then
     AC_MSG_ERROR([You must install OCaml findlib (the ocamlfind command)])
 fi
 
+dnl Check if OCaml has caml_alloc_initialized_string (added 2017).
+AS_IF([test "x$OCAMLC" != "xno" && test "x$OCAMLFIND" != "xno"],[
+    AC_MSG_CHECKING([for caml_alloc_initialized_string])
+    cat >conftest.c <<'EOF'
+#include <caml/alloc.h>
+int main () { char *p = (void *) caml_alloc_initialized_string; return 0; }
+EOF
+    AS_IF([$OCAMLC conftest.c >&AS_MESSAGE_LOG_FD 2>&1],[
+        AC_MSG_RESULT([yes])
+        AC_DEFINE([HAVE_CAML_ALLOC_INITIALIZED_STRING],[1],
+                  [caml_alloc_initialized_string found at compile time.])
+    ],[
+        AC_MSG_RESULT([no])
+    ])
+    rm -f conftest.c conftest.o
+])
+
 # NB: AC_CHECK_PROG(S) or AC_PATH_PROG(S)?
 # Use AC_CHECK_PROG(S) for programs which are only used during build.
 # Use AC_PATH_PROG(S) for program names which are compiled into the

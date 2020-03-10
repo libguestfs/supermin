@@ -31,14 +31,25 @@
  */
 #include <format-ext2-init-bin.h>
 
+/* Replacement if caml_alloc_initialized_string is missing, added
+ * to OCaml runtime in 2017.
+ */
+#ifndef HAVE_CAML_ALLOC_INITIALIZED_STRING
+static inline value
+caml_alloc_initialized_string (mlsize_t len, const char *p)
+{
+  value sv = caml_alloc_string (len);
+  memcpy ((char *) String_val (sv), p, len);
+  return sv;
+}
+#endif
+
 value
 supermin_binary_init (value unitv)
 {
   CAMLparam1 (unitv);
   CAMLlocal1 (sv);
 
-  sv = caml_alloc_string (_binary_init_len);
-  memcpy (String_val (sv), _binary_init, _binary_init_len);
-
+  sv = caml_alloc_initialized_string (_binary_init_len, _binary_init);
   CAMLreturn (sv);
 }
