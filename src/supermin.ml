@@ -245,7 +245,7 @@ appliance automatically.
         exit 0
       )
     with
-      Unix_error _ -> () (* just continue *)
+      Unix_error (ENOENT, _, _) -> () (* just continue *)
   );
 
   (* Create the output directory nearly atomically. *)
