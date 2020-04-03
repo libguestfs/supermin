@@ -28,7 +28,8 @@ TESTS = \
 	test-execstack.sh \
 	test-build-bash.sh \
 	test-binaries-exist.sh \
-	test-harder.sh
+	test-harder.sh \
+	test-if-newer-ext2.sh
 
 if NETWORK_TESTS
 TESTS += \

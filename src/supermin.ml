@@ -236,10 +236,12 @@ appliance automatically.
    *)
   if mode = Build && if_newer then (
     try
-      let odate = (lstat outputdir).st_mtime in
+      let outputs = Mode_build.get_outputs args inputs in
+      let outputs = List.map ((//) outputdir) outputs in
+      let odates = List.map (fun d -> (lstat d).st_mtime) (outputdir :: outputs) in
       let idates = List.map (fun d -> (lstat d).st_mtime) inputs in
       let pdate = (get_package_handler ()).ph_get_package_database_mtime () in
-      if List.for_all (fun idate -> idate < odate) (pdate :: idates) then (
+      if List.for_all (fun idate -> List.for_all (fun odate -> idate < odate) odates) (pdate :: idates) then (
         if debug >= 1 then
           printf "supermin: if-newer: output does not need rebuilding\n%!";
         exit 0

@@ -21,3 +21,7 @@
 val build : int -> (bool * Types.format * string * string option * string * bool * int64 option * bool) -> string list -> string -> unit
 (** [build debug (args...) inputs outputdir] performs the
     [supermin --build] subcommand. *)
+
+val get_outputs : (bool * Types.format * string * string option * string * bool * int64 option * bool) -> string list -> string list
+(** [get_outputs (args...) inputs] gets the potential outputs for the
+    appliance. *)

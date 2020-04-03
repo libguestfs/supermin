@@ -462,3 +462,15 @@ and munge files =
   let files = loop files in
 
   files
+
+and get_outputs
+    (copy_kernel, format, host_cpu,
+     packager_config, tmpdir, use_installed, size,
+     include_packagelist)
+    inputs =
+  match format with
+  | Chroot ->
+    (* The content for chroot depends on the packages. *)
+    []
+  | Ext2 ->
+    [kernel_filename; appliance_filename; initrd_filename]
