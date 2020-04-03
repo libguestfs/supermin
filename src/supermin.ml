@@ -234,7 +234,7 @@ appliance automatically.
    * does not exist, or if the dates of either input files or package
    * database is newer, then we rebuild.  Else we can just exit.
    *)
-  if if_newer then (
+  if mode = Build && if_newer then (
     try
       let odate = (lstat outputdir).st_mtime in
       let idates = List.map (fun d -> (lstat d).st_mtime) inputs in
