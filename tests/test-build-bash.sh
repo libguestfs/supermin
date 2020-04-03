@@ -27,6 +27,7 @@ tmpdir=`mktemp -d`
 
 d1=$tmpdir/d1
 d2=$tmpdir/d2
+d3=$tmpdir/d3
 
 test "$USE_NETWORK" = 1 || USE_INSTALLED=--use-installed
 
@@ -37,6 +38,8 @@ arch="$(uname -m)"
 
 # Check all supermin-helper formats work.
 ../src/supermin -v --build -f chroot --host-cpu $arch $d1 -o $d2
-../src/supermin -v --build -f ext2 --host-cpu $arch $d1 -o $d2
+../src/supermin -v --build -f ext2 --host-cpu $arch $d1 -o $d3
 
+# Need to chmod $d2 since rm -r can't remove unwritable directories.
+chmod -R +w $d2 ||:
 rm -rf $tmpdir ||:
