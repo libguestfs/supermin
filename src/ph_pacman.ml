@@ -170,6 +170,8 @@ let pacman_download_all_packages pkgs dir =
   (* Because we reuse the same temporary download directory (tdir), this
    * only downloads each package once, even though each call to pacman will
    * download dependent packages as well.
+   *
+   * CacheDir directives must be filtered out to force pacman downloads.
    *)
   List.iter (
     fun name ->
@@ -178,12 +180,13 @@ let pacman_download_all_packages pkgs dir =
         umask 0000
         cd %s
         mkdir -p var/lib/pacman
+        pacman-conf | grep -v CacheDir > tmp.conf
         %s %s%s -Syw --noconfirm --cachedir=$(pwd) --root=$(pwd) %s
       "
         (quote tdir)
         Config.fakeroot Config.pacman
         (match !settings.packager_config with
-         | None -> ""
+         | None -> " --config tmp.conf --dbpath var/lib/pacman"
          | Some filename -> " --config " ^ (quote filename))
         (quoted_list names) in
       if !settings.debug >= 2 then printf "%s" cmd;
