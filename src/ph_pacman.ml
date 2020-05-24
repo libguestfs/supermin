@@ -173,25 +173,25 @@ let pacman_download_all_packages pkgs dir =
    *
    * CacheDir directives must be filtered out to force pacman downloads.
    *)
-  List.iter (
-    fun name ->
-      let cmd = sprintf "\
-        set -e
-        umask 0000
-        cd %s
-        mkdir -p var/lib/pacman
-        pacman-conf | grep -v CacheDir > tmp.conf
-        %s %s%s -Syw --noconfirm --cachedir=$(pwd) --root=$(pwd) %s
-      "
-        (quote tdir)
-        Config.fakeroot Config.pacman
-        (match !settings.packager_config with
-         | None -> " --config tmp.conf --dbpath var/lib/pacman"
-         | Some filename -> " --config " ^ (quote filename))
-        (quoted_list names) in
-      if !settings.debug >= 2 then printf "%s" cmd;
-      if Sys.command cmd <> 0 then (
-        (* The package may not be in the main repos, check the AUR. *)
+  let cmd = sprintf "\
+    set -e
+    umask 0000
+    cd %s
+    mkdir -p var/lib/pacman
+    pacman-conf | grep -v CacheDir > tmp.conf
+    %s %s%s -Syw --noconfirm --cachedir=$(pwd) --root=$(pwd) %s
+  "
+    (quote tdir)
+    Config.fakeroot Config.pacman
+    (match !settings.packager_config with
+     | None -> " --config tmp.conf --dbpath var/lib/pacman"
+     | Some filename -> " --config " ^ (quote filename))
+    (quoted_list names) in
+  if !settings.debug >= 2 then printf "%s" cmd;
+  if Sys.command cmd <> 0 then (
+    (* The package may not be in the main repos, check the AUR. *)
+    List.iter (
+      fun name ->
         let cmd = sprintf "\
           set -e
           umask 0000
@@ -204,16 +204,16 @@ let pacman_download_all_packages pkgs dir =
        "
           (quote tdir)
           (quote ("https://aur.archlinux.org/packages/" ^
-	          (String.sub name 0 2) ^
-	          "/" ^ name ^ "/" ^ name ^ ".tar.gz"))
+	    (String.sub name 0 2) ^
+	    "/" ^ name ^ "/" ^ name ^ ".tar.gz"))
           (quote (name ^ ".tar.gz"))
           (quote name) (* cd *)
           Config.makepkg
           (quote name) (quote tdir) (* mv *) in
         if !settings.debug >= 2 then printf "%s" cmd;
         run_command cmd
-      );
-  ) names;
+    ) names;
+  );
 
   (* Unpack the downloaded packages. *)
   let cmd =
