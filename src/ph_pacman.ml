@@ -219,7 +219,7 @@ let pacman_download_all_packages pkgs dir =
   let cmd =
     sprintf "
       umask 0000
-      for f in %s/*.pkg.tar.xz; do tar -xf \"$f\" -C %s; done
+      for f in %s/*.pkg.tar.*; do tar -xf \"$f\" -C %s; done
     "
       (quote tdir) (quote dir) in
   if !settings.debug >= 2 then printf "%s" cmd;
