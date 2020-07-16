@@ -127,7 +127,7 @@ then it may be that the package detection code is not working.
 To list which package handlers are compiled into this version of
 supermin, do:
 
-  supermin --list-drivers
+  supermin5 --list-drivers
 "
 
 let rec get_package_handler () =
