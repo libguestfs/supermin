@@ -36,7 +36,7 @@ type pac_t = {
   name : string;
   epoch : int;
   version : string;
-  release : int;
+  release : string;
   arch : string;
 }
 
@@ -81,7 +81,7 @@ let pacman_package_of_string str =
           with Not_found -> 0, evr in
         let version, release =
           match string_split "-" vr with
-          | [ v; r ] -> v, int_of_string r
+          | [ v; r ] -> v, r
           | _ -> assert false in
         epoch, version, release
       with
@@ -117,9 +117,9 @@ let pacman_package_of_string str =
 let pacman_package_to_string pkg =
   let pac = pac_of_pkg pkg in
   if pac.epoch = 0 then
-    sprintf "%s-%s-%d.%s" pac.name pac.version pac.release pac.arch
+    sprintf "%s-%s-%s.%s" pac.name pac.version pac.release pac.arch
   else
-    sprintf "%s-%d:%s-%d.%s"
+    sprintf "%s-%d:%s-%s.%s"
       pac.name pac.epoch pac.version pac.release pac.arch
 
 let pacman_package_name pkg =
