@@ -234,7 +234,11 @@ let rpm_package_name pkg =
   rpm.name
 
 let rpm_get_package_database_mtime () =
-  (lstat "/var/lib/rpm/Packages").st_mtime
+  (try
+    lstat "/var/lib/rpm/rpmdb.sqlite"
+   with Unix_error (ENOENT, _, _) ->
+    lstat "/var/lib/rpm/Packages"
+   ).st_mtime
 
 (* Return the best provider of a particular RPM requirement.
  *
