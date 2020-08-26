@@ -17,6 +17,7 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 set -e
+set -x
 
 # XXX Hack for Arch.
 if [ -f /etc/arch-release ]; then
@@ -40,7 +41,10 @@ run_supermin ()
 run_supermin
 
 # No changes, hence nothing to do.
-run_supermin | grep 'if-newer: output does not need rebuilding'
+run_supermin > test-if-newer-ext2.out
+cat test-if-newer-ext2.out
+grep 'if-newer: output does not need rebuilding' test-if-newer-ext2.out
+rm test-if-newer-ext2.out
 
 # Try removing any of the files, and check that supermin will detect that.
 ext2_files="kernel initrd root"
