@@ -17,6 +17,7 @@
  *)
 
 open Unix
+open Unix.LargeFile
 open Printf
 
 open Utils
@@ -95,8 +96,8 @@ and find_kernel_from_lib_modules debug =
     let kernels =
       filter_map (
         fun kernel_file ->
-          let size = try (stat kernel_file).st_size with Unix_error _ -> 0 in
-          if size < 10000 then None
+          let size = try (stat kernel_file).st_size with Unix_error _ -> 0L in
+          if size < 10000_L then None
           else (
             let kernel_name = Filename.basename kernel_file in
             let modpath = Filename.dirname kernel_file in
