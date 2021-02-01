@@ -20,7 +20,7 @@ dnl Written by Richard W.M. Jones <rjones@redhat.com>
 dnl MAJOR = 5 (unless we break the command line again)
 dnl MINOR = even for stable branch, odd for development branch
 dnl RELEASE = increments for each release
-AC_INIT([supermin],[5.2.0])
+AC_INIT([supermin],[5.3.0])
 
 AM_INIT_AUTOMAKE(foreign)
 AC_REQUIRE_AUX_FILE([supermin-test-driver])
