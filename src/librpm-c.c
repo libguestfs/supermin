@@ -78,8 +78,12 @@ librpm_raise_multiple_matches (value pkgv, int occurrences)
 }
 
 #define Librpm_val(v) (*((struct librpm_data *)Data_custom_val(v)))
+#ifndef Val_none
 #define Val_none Val_int(0)
+#endif
+#ifndef Some_val
 #define Some_val(v) Field(v,0)
+#endif
 
 static void
 librpm_finalize (value rpmv)
