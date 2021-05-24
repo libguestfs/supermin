@@ -96,8 +96,12 @@ ext2_handle_closed (void)
 }
 
 #define Ext2fs_val(v) (*((struct ext2_data *)Data_custom_val(v)))
+#ifndef Val_none
 #define Val_none Val_int(0)
+#endif
+#ifndef Some_val
 #define Some_val(v) Field(v,0)
+#endif
 
 static void
 ext2_finalize (value fsv)
