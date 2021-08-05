@@ -39,6 +39,7 @@ let urpmi = "@URPMI@"
 let yumdownloader = "@YUMDOWNLOADER@"
 let xzcat = "@XZCAT@"
 let zcat = "@ZCAT@"
+let zstdcat = "@ZSTDCAT@"
 let zypper = "@ZYPPER@"
 
 let mke2fs = "@MKE2FS@"

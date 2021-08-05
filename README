@@ -102,6 +102,8 @@ are building:
 
   xzcat (command) - if your kernel uses xz-compressed modules
 
+  zstdcat (command) - if your kernel uses zstd-compressed modules
+
 Building and installing
 -----------------------
 

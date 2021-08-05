@@ -157,6 +157,9 @@ AC_PATH_PROG(ZCAT,[zcat],[no])
 dnl Check for xzcat, only needed if you have xz-compressed kernel modules.
 AC_PATH_PROG(XZCAT,[xzcat],[no])
 
+dnl Check for zstdcat, only needed if you have zstd-compressed kernel modules.
+AC_PATH_PROG(ZSTDCAT,[zstdcat],[no])
+
 dnl mke2fs.
 AC_PATH_PROG([MKE2FS],[mke2fs],[no],
              [$PATH$PATH_SEPARATOR/sbin$PATH_SEPARATOR])

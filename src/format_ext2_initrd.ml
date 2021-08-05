@@ -106,12 +106,24 @@ let rec build_initrd debug tmpdir modpath initrd =
           visit deps;
 
           (* Copy module to the init directory.
-           * Uncompress the module, if the name ends in .xz or .gz.
+           * Uncompress the module, if the name ends in .zst, .xz or .gz.
            *)
           let basename = Filename.basename modl in
           let basename =
             let len = String.length basename in
-            if Config.xzcat <> "no" &&
+            if Config.zstdcat <> "no" &&
+                 Filename.check_suffix basename ".zst"
+            then (
+              let basename = String.sub basename 0 (len-4) in
+              let cmd = sprintf "%s %s > %s"
+                                (quote Config.zstdcat)
+                                (quote (modpath // modl))
+                                (quote (initdir // basename)) in
+              if debug >= 2 then printf "supermin: %s\n" cmd;
+              run_command cmd;
+              basename
+            )
+            else if Config.xzcat <> "no" &&
                  Filename.check_suffix basename ".xz"
             then (
               let basename = String.sub basename 0 (len-3) in
