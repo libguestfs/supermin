@@ -105,8 +105,12 @@ SOURCES_C = \
 
 CLEANFILES = *~ *.cmi *.cmo *.cmx *.o supermin
 
+if HAVE_PERLDOC
+
 man_MANS = \
 	supermin.1
+
+endif
 
 bin_PROGRAMS = supermin
 
