@@ -32,6 +32,7 @@
 #include <errno.h>
 #include <assert.h>
 #include <inttypes.h>
+#include <fts.h>
 
 #if MAJOR_IN_MKDEV
 #include <sys/mkdev.h>
@@ -56,9 +57,6 @@
 #include <caml/memory.h>
 #include <caml/mlvalues.h>
 #include <caml/unixsupport.h>
-
-/* fts.h in glibc is broken, forcing us to use the GNUlib alternative. */
-#include "fts_.h"
 
 /* How many blocks of size S are needed for storing N bytes. */
 #define ROUND_UP(N, S) (((N) + (S) - 1) / (S))

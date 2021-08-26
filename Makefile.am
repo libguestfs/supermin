@@ -17,15 +17,12 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = lib init src examples tests
+SUBDIRS = init src examples tests
 
 EXTRA_DIST = \
 	.gitignore \
-	autogen.sh \
-	bootstrap \
 	HACKING \
 	html/pod.css \
-	m4/gnulib-cache.m4 \
 	README \
 	TODO \
 	$(SOURCES)

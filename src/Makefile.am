@@ -140,8 +140,6 @@ endif
 
 supermin_DEPENDENCIES = $(OBJECTS)
 
-supermin_LDADD = ../lib/libgnu.a
-
 supermin_LINK = \
 	./supermin-link.sh \
 	  $(OCAMLFIND) $(BEST) $(OCAMLFLAGS) $(OCAMLPACKAGES) \
