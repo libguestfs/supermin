@@ -158,6 +158,8 @@ and kernel_filter patterns is_arm all_files =
   let files =
     List.filter (fun filename -> find filename "xen" = -1) files in
   let files =
+    List.filter (fun filename -> find filename "zfcpdump" = -1) files in
+  let files =
     if not is_arm then files
     else (
       List.filter (fun filename ->
