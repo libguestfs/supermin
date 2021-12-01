@@ -38,7 +38,7 @@ let rec build_kernel debug host_cpu copy_kernel kernel =
     | None ->
        if debug >= 1 then
          printf "supermin: kernel: looking for kernels in /lib/modules/*/vmlinuz ...\n%!";
-       match find_kernel_from_lib_modules debug with
+       match find_kernel_from_lib_modules debug host_cpu with
        | Some k -> k
        | None ->
           if debug >= 1 then
@@ -89,10 +89,13 @@ and find_kernel_from_env_vars debug  =
     Some (kernel_env, kernel_name, kernel_version, modpath)
   with Not_found -> None
 
-and find_kernel_from_lib_modules debug =
+and find_kernel_from_lib_modules debug host_cpu =
+  let files = glob "/lib/modules/*/vmlinuz" [GLOB_NOSORT; GLOB_NOESCAPE] in
+  let files = Array.to_list files in
+
+  let files = ignore_unbootable_kernels host_cpu files in
+
   let kernels =
-    let files = glob "/lib/modules/*/vmlinuz" [GLOB_NOSORT; GLOB_NOESCAPE] in
-    let files = Array.to_list files in
     let kernels =
       filter_map (
         fun kernel_file ->
@@ -114,22 +117,22 @@ and find_kernel_from_lib_modules debug =
   | [] -> None
 
 and find_kernel_from_boot debug host_cpu =
-  let is_arm =
-    String.length host_cpu >= 3 &&
-    host_cpu.[0] = 'a' && host_cpu.[1] = 'r' && host_cpu.[2] = 'm' in
-
   let all_files = Sys.readdir "/boot" in
   let all_files = Array.to_list all_files in
 
   (* In original: ls -1dvr /boot/vmlinuz-*.$arch* 2>/dev/null | grep -v xen *)
   let patterns = patt_of_cpu host_cpu in
-  let files = kernel_filter patterns is_arm all_files in
+  let files = files_matching_globs patterns all_files in
+  let files = ignore_unbootable_kernels host_cpu files in
 
   let files =
     if files <> [] then files
-    else
+    else (
       (* In original: ls -1dvr /boot/vmlinuz-* 2>/dev/null | grep -v xen *)
-      kernel_filter ["vmlinu?-*"] is_arm all_files in
+      let files = files_matching_globs ["vmlinu?-*"] all_files in
+      let files = ignore_unbootable_kernels host_cpu files in
+      files
+    ) in
 
   let files = List.sort (fun a b -> compare_version b a) files in
   let kernels =
@@ -148,13 +151,18 @@ and find_kernel_from_boot debug host_cpu =
   | kernel :: _ -> Some kernel
   | [] -> None
 
-and kernel_filter patterns is_arm all_files =
-  let files =
-    List.filter
-      (fun filename ->
-        List.exists
-          (fun patt -> fnmatch patt filename [FNM_NOESCAPE]) patterns
-      ) all_files in
+and files_matching_globs patterns files =
+  List.filter
+    (fun filename ->
+      List.exists
+        (fun patt -> fnmatch patt filename [FNM_NOESCAPE]) patterns
+    ) files
+
+and ignore_unbootable_kernels host_cpu files =
+  let is_arm =
+    String.length host_cpu >= 3 &&
+    host_cpu.[0] = 'a' && host_cpu.[1] = 'r' && host_cpu.[2] = 'm' in
+
   let files =
     List.filter (fun filename -> find filename "xen" = -1) files in
   let files =
