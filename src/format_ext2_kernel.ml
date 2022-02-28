@@ -168,6 +168,8 @@ and ignore_unbootable_kernels host_cpu files =
   let files =
     List.filter (fun filename -> find filename "zfcpdump" = -1) files in
   let files =
+    List.filter (fun filename -> find filename "+debug" = -1) files in
+  let files =
     if not is_arm then files
     else (
       List.filter (fun filename ->
