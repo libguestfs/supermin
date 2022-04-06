@@ -95,8 +95,22 @@ let build_ext2 debug basedir files modpath kernel_version appliance size
     printf "supermin: ext2: copying kernel modules\n%!";
 
   (* Import the kernel modules. *)
-  ext2fs_copy_file_from_host fs "/lib" "/lib";
-  ext2fs_copy_file_from_host fs "/lib/modules" "/lib/modules";
+  (try
+     ext2fs_copy_file_from_host fs "/lib" "/lib"
+   with Unix_error _ ->
+     (* If /lib doesn't exist on the host, create /lib directory
+      * in the image, populating it with mode etc from host /
+      *)
+     ext2fs_copy_file_from_host fs "/" "/lib"
+  );
+
+  (try
+     ext2fs_copy_file_from_host fs "/lib/modules" "/lib/modules"
+   with Unix_error _ ->
+     (* As above, if /lib/modules does not exist on the host. *)
+     ext2fs_copy_file_from_host fs "/" "/lib/modules"
+  );
+
   ext2fs_copy_dir_recursively_from_host fs
     modpath ("/lib/modules/" ^ kernel_version);
 
