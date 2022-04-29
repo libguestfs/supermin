@@ -26,6 +26,7 @@ open Package_handler
 let pacman_detect () =
   Config.pacman <> "no" && Config.fakeroot <> "no" &&
     (Os_release.get_id () = "arch" ||
+     Os_release.get_id () = "artix" ||
      ((stat "/etc/arch-release").st_kind = S_REG &&
       Config.pacman_g2 = "no")) (* not Frugalware with pacman-g2 *)
 
