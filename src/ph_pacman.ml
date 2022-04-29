@@ -129,7 +129,10 @@ let pacman_package_name pkg =
   pac.name
 
 let pacman_get_package_database_mtime () =
-  (lstat "/var/lib/pacman/sync/core.db" (* XXX? *) ).st_mtime
+  (* This directory changes mtime when packages get installed/reinstalled.
+   * The directory itself contains several *.db files with different names.
+   *)
+  (lstat "/var/lib/pacman/sync/").st_mtime
 
 let pacman_get_all_requires pkgs =
   let cmd = sprintf "\
