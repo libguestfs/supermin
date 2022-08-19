@@ -32,11 +32,12 @@ let stringset_of_list pkgs =
 let fedora_detect () =
   Config.rpm <> "no" && Config.rpm2cpio <> "no" && rpm_is_available () &&
     (Config.yumdownloader <> "no" || Config.dnf <> "no") &&
-    (List.mem (Os_release.get_id ()) [ "fedora"; "rhel"; "centos"; "openEuler" ] ||
+    (List.mem (Os_release.get_id ()) [ "fedora"; "rhel"; "centos"; "openEuler"; "anolis" ] ||
      try
        (stat "/etc/redhat-release").st_kind = S_REG ||
        (stat "/etc/fedora-release").st_kind = S_REG ||
-       (stat "/etc/openEuler-release").st_kind = S_REG
+       (stat "/etc/openEuler-release").st_kind = S_REG ||
+       (stat "/etc/anolis-release").st_kind = S_REG
      with Unix_error _ -> false)
 
 let opensuse_detect () =
