@@ -88,7 +88,7 @@ let pacman_package_of_string str =
         epoch, version, release
       with
         Failure _ ->
-          failwith ("failed to parse epoch:version-release field " ^ evr) in
+          error "failed to parse epoch:version-release field: %s " evr in
 
     { name = name;
       epoch = epoch;
