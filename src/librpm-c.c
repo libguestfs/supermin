@@ -118,6 +118,7 @@ Val_librpm (struct librpm_data *data)
   CAMLreturn (rpmv);
 }
 
+/* NB: This is a [@@noalloc] call. */
 value
 supermin_rpm_is_available (value unit)
 {
@@ -130,6 +131,7 @@ supermin_rpm_version (value unit)
   return caml_copy_string (RPMVERSION);
 }
 
+/* NB: This is a [@@noalloc] call. */
 value
 supermin_rpm_vercmp (value av, value bv)
 {
