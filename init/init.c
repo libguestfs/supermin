@@ -49,6 +49,12 @@
 /* else it's in sys/types.h, included above */
 #endif
 
+/* We make several calls to asprintf, chdir, fgets and ignore the
+ * result.  Since this is a minimal init system there's nothing we can
+ * do if these calls fail.
+ */
+#pragma GCC diagnostic ignored "-Wunused-result"
+
 /* Maximum time to wait for the root device to appear (seconds).
  *
  * On slow machines with lots of disks (Koji running the 255 disk test
