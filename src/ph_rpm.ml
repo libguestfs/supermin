@@ -89,7 +89,7 @@ let rec rpm_init s =
     | [x] -> error "unable to parse rpm version string: %s" x
     | major :: minor :: _ ->
       try int_of_string major, int_of_string minor
-      with Failure "int_of_string" ->
+      with Failure _ ->
         error "unable to parse rpm version string: non-numeric, %s" version in
   rpm_major := major;
   rpm_minor := minor;
@@ -120,11 +120,11 @@ and opensuse_init s =
       | [x] -> error "unable to parse output of zypper --version: %s" x
       | major :: minor :: [] ->
         (try int_of_string major, int_of_string minor, 0
-        with Failure "int_of_string" ->
+        with Failure _ ->
           error "unable to parse output of zypper --version: non-numeric")
       | major :: minor :: patch :: _ ->
         (try int_of_string major, int_of_string minor, int_of_string patch
-        with Failure "int_of_string" ->
+        with Failure _ ->
           error "unable to parse output of zypper --version: non-numeric") in
   zypper_major := major;
   zypper_minor := minor;

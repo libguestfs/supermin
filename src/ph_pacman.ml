@@ -87,7 +87,7 @@ let pacman_package_of_string str =
           | _ -> assert false in
         epoch, version, release
       with
-        Failure "int_of_string" ->
+        Failure _ ->
           failwith ("failed to parse epoch:version-release field " ^ evr) in
 
     { name = name;
