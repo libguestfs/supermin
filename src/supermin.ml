@@ -1,5 +1,5 @@
 (* supermin 5
- * Copyright (C) 2009-2014 Red Hat Inc.
+ * Copyright (C) 2009-2022 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -291,22 +291,32 @@ appliance automatically.
   package_handler_shutdown ()
 
 let () =
-  try main ()
+  try
+    Printexc.record_backtrace true;
+    main ()
   with
   | Unix.Unix_error (code, fname, "") -> (* from a syscall *)
-    error "error: %s: %s" fname (Unix.error_message code)
+     Printexc.print_backtrace Pervasives.stderr;
+     error "error: %s: %s" fname (Unix.error_message code)
   | Unix.Unix_error (code, fname, param) -> (* from a syscall *)
-    error "error: %s: %s: %s" fname (Unix.error_message code) param
+     Printexc.print_backtrace Pervasives.stderr;
+     error "error: %s: %s: %s" fname (Unix.error_message code) param
   | Failure msg ->                      (* from failwith/failwithf *)
-    error "failure: %s" msg
+     Printexc.print_backtrace Pervasives.stderr;
+     error "failure: %s" msg
   | Librpm.Multiple_matches (package, count) -> (* from librpm *)
-    error "RPM error: %d occurrences for %s" count package
+     Printexc.print_backtrace Pervasives.stderr;
+     error "RPM error: %d occurrences for %s" count package
   | Invalid_argument msg ->             (* probably should never happen *)
-    error "internal error: invalid argument: %s" msg
+     Printexc.print_backtrace Pervasives.stderr;
+     error "internal error: invalid argument: %s" msg
   | Assert_failure (file, line, char) -> (* should never happen *)
-    error "internal error: assertion failed at %s, line %d, char %d"
-      file line char
+     Printexc.print_backtrace Pervasives.stderr;
+     error "internal error: assertion failed at %s, line %d, char %d"
+       file line char
   | Not_found ->                        (* should never happen *)
-    error "internal error: Not_found exception was thrown"
+     Printexc.print_backtrace Pervasives.stderr;
+     error "internal error: Not_found exception was thrown"
   | exn ->                              (* something not matched above *)
-    error "exception: %s" (Printexc.to_string exn)
+     Printexc.print_backtrace Pervasives.stderr;
+     error "exception: %s" (Printexc.to_string exn)
