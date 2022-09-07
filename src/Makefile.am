@@ -127,7 +127,7 @@ BOBJECTS = $(SOURCES_ML:.ml=.cmo)
 XOBJECTS = $(SOURCES_ML:.ml=.cmx)
 
 OCAMLPACKAGES = -package unix,str
-OCAMLFLAGS = -warn-error +C+D+E+F+L+M+P+S+U+V+X+Y+Z-3
+OCAMLFLAGS = -g -warn-error +C+D+E+F+L+M+P+S+U+V+X+Y+Z-3
 
 if !HAVE_OCAMLOPT
 OBJECTS = $(BOBJECTS)
