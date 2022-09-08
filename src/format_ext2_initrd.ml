@@ -189,18 +189,20 @@ and read_module_deps modpath =
   close_in chan;
   List.fold_left (
     fun map line ->
-      let i = String.index line ':' in
-      let modl = String.sub line 0 i in
-      let deps = String.sub line (i+1) (String.length line - (i+1)) in
-      let deps =
-        if deps <> "" && deps <> " " then (
-          let deps =
-            let len = String.length deps in
-            if len >= 1 && deps.[0] = ' ' then String.sub deps 1 (len-1)
-            else deps in
-          let deps = string_split " " deps in
-          string_set_of_list deps
-        )
-        else StringSet.empty in
-      StringMap.add modl deps map
+      try
+        let i = String.index line ':' in
+        let modl = String.sub line 0 i in
+        let deps = String.sub line (i+1) (String.length line - (i+1)) in
+        let deps =
+          if deps <> "" && deps <> " " then (
+            let deps =
+              let len = String.length deps in
+              if len >= 1 && deps.[0] = ' ' then String.sub deps 1 (len-1)
+              else deps in
+            let deps = string_split " " deps in
+            string_set_of_list deps
+          )
+          else StringSet.empty in
+        StringMap.add modl deps map
+      with Not_found -> map
   ) StringMap.empty lines
