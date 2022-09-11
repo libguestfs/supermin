@@ -345,7 +345,7 @@ and get_file_content file buf len =
 
 and get_compressed_file_content zcat file =
   let cmd = sprintf "%s %s" zcat (quote file) in
-  let chan_out, chan_in, chan_err = open_process_full cmd [||] in
+  let chan_out, chan_in, chan_err = open_process_full cmd (environment ()) in
   let buf = Bytes.create 512 in
   let len = input chan_out buf 0 (Bytes.length buf) in
   let buf = Bytes.to_string buf in
