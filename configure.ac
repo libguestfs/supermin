@@ -26,7 +26,7 @@ AM_INIT_AUTOMAKE(foreign)
 AC_REQUIRE_AUX_FILE([supermin-test-driver])
 
 dnl Check for basic C environment.
-AC_PROG_CC_STDC
+AC_PROG_CC
 gl_EARLY
 
 AC_PROG_INSTALL
@@ -40,11 +40,11 @@ AM_PROG_CC_C_O
 dnl Gnulib
 gl_INIT
 
-dnl Check support for 64 bit file offsets.
-AC_SYS_LARGEFILE
-
 dnl Enable GNU stuff.
 AC_USE_SYSTEM_EXTENSIONS
+
+dnl Check support for 64 bit file offsets.
+AC_SYS_LARGEFILE
 
 dnl Which header file defines major, minor, makedev.
 AC_HEADER_MAJOR
