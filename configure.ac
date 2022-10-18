@@ -27,7 +27,6 @@ AC_REQUIRE_AUX_FILE([supermin-test-driver])
 
 dnl Check for basic C environment.
 AC_PROG_CC
-gl_EARLY
 
 AC_PROG_INSTALL
 AC_PROG_CPP
@@ -36,9 +35,6 @@ AC_C_PROTOTYPES
 test "x$U" != "x" && AC_MSG_ERROR([Compiler not ANSI compliant])
 
 AM_PROG_CC_C_O
-
-dnl Gnulib
-gl_INIT
 
 dnl Enable GNU stuff.
 AC_USE_SYSTEM_EXTENSIONS
