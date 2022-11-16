@@ -123,7 +123,7 @@ let rec build debug
       (PackageSet.cardinal packages);
     if debug >= 2 then (
       List.iter (printf "  - %s\n") pretty_packages;
-      flush Pervasives.stdout
+      flush Stdlib.stdout
     )
   );
 
@@ -207,7 +207,7 @@ let rec build debug
       (List.length files);
     if debug >= 2 then (
       List.iter (fun { ft_path = path } -> printf "  - %s\n" path) files;
-      flush Pervasives.stdout
+      flush Stdlib.stdout
     )
   );
 

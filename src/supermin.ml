@@ -296,27 +296,27 @@ let () =
     main ()
   with
   | Unix.Unix_error (code, fname, "") -> (* from a syscall *)
-     Printexc.print_backtrace Pervasives.stderr;
+     Printexc.print_backtrace Stdlib.stderr;
      error "error: %s: %s" fname (Unix.error_message code)
   | Unix.Unix_error (code, fname, param) -> (* from a syscall *)
-     Printexc.print_backtrace Pervasives.stderr;
+     Printexc.print_backtrace Stdlib.stderr;
      error "error: %s: %s: %s" fname (Unix.error_message code) param
   | Failure msg ->                      (* from failwith/failwithf *)
-     Printexc.print_backtrace Pervasives.stderr;
+     Printexc.print_backtrace Stdlib.stderr;
      error "failure: %s" msg
   | Librpm.Multiple_matches (package, count) -> (* from librpm *)
-     Printexc.print_backtrace Pervasives.stderr;
+     Printexc.print_backtrace Stdlib.stderr;
      error "RPM error: %d occurrences for %s" count package
   | Invalid_argument msg ->             (* probably should never happen *)
-     Printexc.print_backtrace Pervasives.stderr;
+     Printexc.print_backtrace Stdlib.stderr;
      error "internal error: invalid argument: %s" msg
   | Assert_failure (file, line, char) -> (* should never happen *)
-     Printexc.print_backtrace Pervasives.stderr;
+     Printexc.print_backtrace Stdlib.stderr;
      error "internal error: assertion failed at %s, line %d, char %d"
        file line char
   | Not_found ->                        (* should never happen *)
-     Printexc.print_backtrace Pervasives.stderr;
+     Printexc.print_backtrace Stdlib.stderr;
      error "internal error: Not_found exception was thrown"
   | exn ->                              (* something not matched above *)
-     Printexc.print_backtrace Pervasives.stderr;
+     Printexc.print_backtrace Stdlib.stderr;
      error "exception: %s" (Printexc.to_string exn)
