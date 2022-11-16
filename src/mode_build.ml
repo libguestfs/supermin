@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *)
 
+let stdlib_stdout = stdout
+
 open Unix
 open Unix.LargeFile
 open Printf
@@ -123,7 +125,7 @@ let rec build debug
       (PackageSet.cardinal packages);
     if debug >= 2 then (
       List.iter (printf "  - %s\n") pretty_packages;
-      flush Stdlib.stdout
+      flush stdlib_stdout
     )
   );
 
@@ -207,7 +209,7 @@ let rec build debug
       (List.length files);
     if debug >= 2 then (
       List.iter (fun { ft_path = path } -> printf "  - %s\n" path) files;
-      flush Stdlib.stdout
+      flush stdlib_stdout
     )
   );
 

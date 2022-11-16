@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *)
 
+let stdlib_compare = compare
+
 open Unix
 open Unix.LargeFile
 open Printf
@@ -40,7 +42,7 @@ let dir_exists name =
   try (stat name).st_kind = S_DIR
   with Unix_error _ -> false
 
-let uniq ?(cmp = Stdlib.compare) xs =
+let uniq ?(cmp = stdlib_compare) xs =
   let rec loop acc = function
     | [] -> acc
     | [x] -> x :: acc
@@ -51,7 +53,7 @@ let uniq ?(cmp = Stdlib.compare) xs =
   in
   List.rev (loop [] xs)
 
-let sort_uniq ?(cmp = Stdlib.compare) xs =
+let sort_uniq ?(cmp = stdlib_compare) xs =
   let xs = List.sort cmp xs in
   let xs = uniq ~cmp xs in
   xs
