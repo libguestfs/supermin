@@ -236,12 +236,22 @@ let rpm_package_name pkg =
   let rpm = rpm_of_pkg pkg in
   rpm.name
 
+let rpmdb_locations = [
+  "/usr/lib/sysimage/rpm/rpmdb.sqlite";
+  "/var/lib/rpm/rpmdb.sqlite";
+  "/var/lib/rpm/Packages"
+]
+
+let find_rpmdb () =
+  let rec loop = function
+    | [] -> error "rpm: cannot locate RPM database; if this is a normal RPM-based Linux distro then this is probably a supermin bug"
+    | db :: rest ->
+       if Sys.file_exists db then db else loop rest
+  in
+  loop rpmdb_locations
+
 let rpm_get_package_database_mtime () =
-  (try
-    lstat "/var/lib/rpm/rpmdb.sqlite"
-   with Unix_error (ENOENT, _, _) ->
-    lstat "/var/lib/rpm/Packages"
-   ).st_mtime
+  (lstat (find_rpmdb ())).st_mtime
 
 (* Return the best provider of a particular RPM requirement.
  *
