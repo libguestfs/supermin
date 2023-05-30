@@ -482,18 +482,37 @@ and download_all_packages_with_dnf pkgs dir tdir =
   (* Old dnf didn't create the destdir directory, newer versions do. *)
   mkdir tdir 0o700;
 
+  (* dnf5 lacks various options so we have to detect it:
+   * https://github.com/rpm-software-management/dnf5/issues/580
+   * https://github.com/rpm-software-management/dnf5/issues/581
+   *)
+  let is_dnf5 = is_dnf5 () in
+  let debug_quiet_option =
+    if !settings.debug < 1 then " -q"
+    else if not is_dnf5 then " -v"
+    else "" in
+
   let rpms = pkgs_as_NA_rpms pkgs in
 
   let cmd =
-    sprintf "%s download%s%s --destdir=%s --disableexcludes=all %s"
+    sprintf "%s download%s%s%s --destdir=%s %s"
       Config.dnf
-      (if !settings.debug >= 1 then " -v" else " -q")
+      debug_quiet_option
       (match !settings.packager_config with
       | None -> ""
       | Some filename -> sprintf " -c %s" (quote filename))
+      (if not is_dnf5 then " --disableexcludes=all" else "")
       (quote tdir)
       (quoted_list rpms) in
   run_command cmd
+
+and is_dnf5 () =
+  let cmd = sprintf "%s --version" Config.dnf in
+  let lines = run_command_get_lines cmd in
+  match lines with
+  | [] -> error "rpm: no output from '%s' command" cmd
+  | line :: _ when find line "version 5" >= 0 -> true
+  | _ -> false
 
 and pkgs_as_NA_rpms pkgs =
   let rpms = List.map rpm_of_pkg (PackageSet.elements pkgs) in
