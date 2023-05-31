@@ -500,7 +500,7 @@ and download_all_packages_with_dnf pkgs dir tdir =
       debug_quiet_option
       (match !settings.packager_config with
       | None -> ""
-      | Some filename -> sprintf " -c %s" (quote filename))
+      | Some filename -> sprintf " --config=%s" (quote filename))
       (if not is_dnf5 then " --disableexcludes=all" else "")
       (quote tdir)
       (quoted_list rpms) in
