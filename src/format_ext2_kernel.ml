@@ -311,6 +311,9 @@ and copy_or_symlink_file copy_kernel src dest =
   if not copy_kernel then
     symlink src dest
   else (
-    let cmd = sprintf "cp -p %s %s" (quote src) (quote dest) in
+    (* NB: Do not use -p here, we want the kernel to appear newer
+     * so that --if-newer works.
+     *)
+    let cmd = sprintf "cp %s %s" (quote src) (quote dest) in
     run_command cmd
   )
