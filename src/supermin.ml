@@ -241,10 +241,33 @@ appliance automatically.
     try
       let outputs = Mode_build.get_outputs args inputs in
       let outputs = List.map ((//) outputdir) outputs in
-      let odates = List.map (fun d -> (lstat d).st_mtime) (outputdir :: outputs) in
-      let idates = List.map (fun d -> (lstat d).st_mtime) inputs in
+      let outputs = outputdir :: outputs in
+      let odates = List.map (fun f -> (lstat f).st_mtime) outputs in
+      if debug >= 2 then (
+        List.iter (
+          fun f ->
+            printf "supermin: if-newer: output %s => %.2f\n"
+              f (lstat f).st_mtime
+        ) outputs;
+      );
+      let idates = List.map (fun f -> (lstat f).st_mtime) inputs in
+      if debug >= 2 then (
+        List.iter (
+          fun f ->
+            printf "supermin: if-newer: input %s => %.2f\n"
+              f (lstat f).st_mtime
+        ) inputs;
+      );
       let pdate = (get_package_handler ()).ph_get_package_database_mtime () in
-      if List.for_all (fun idate -> List.for_all (fun odate -> idate < odate) odates) (pdate :: idates) then (
+      if debug >= 2 then (
+        printf "supermin: if-newer: package database date: %.2f\n" pdate;
+      );
+      let older =
+        List.for_all (
+          fun idate ->
+            List.for_all (fun odate -> idate < odate) odates
+        ) (pdate :: idates) in
+      if older then (
         if debug >= 1 then
           printf "supermin: if-newer: output does not need rebuilding\n%!";
         exit 0
