@@ -501,7 +501,8 @@ and download_all_packages_with_dnf pkgs dir tdir =
       (match !settings.packager_config with
       | None -> ""
       | Some filename -> sprintf " --config=%s" (quote filename))
-      (if not is_dnf5 then " --disableexcludes=all" else "")
+      (if not is_dnf5 then " --disableexcludes=all"
+       else " --setopt=disable_excludes=*")
       (quote tdir)
       (quoted_list rpms) in
   run_command cmd
