@@ -132,7 +132,8 @@ OCAMLFLAGS = -g -warn-error +C+D+E+F+L+M+P+S+U+V+X+Y+Z-3
 if !HAVE_OCAMLOPT
 OBJECTS = $(BOBJECTS)
 BEST    = c
-OCAMLFLAGS += -custom
+#OCAMLFLAGS += -custom  # for OCaml < 4.10
+OCAMLFLAGS += -output-complete-exe
 else
 OBJECTS = $(XOBJECTS)
 BEST    = opt
