@@ -25,6 +25,20 @@ open Ext2fs
 open Fnmatch
 open Glob
 
+(* Similar but not the same as get_file_type in mode_build.  There
+ * is a case for deriving a common base utility. XXX
+ *)
+type compression_type = GZip | Uncompressed
+let get_compression_type file =
+  let chan = open_in file in
+  let buf = Bytes.create 512 in
+  let len = input chan buf 0 (Bytes.length buf) in
+  close_in chan;
+  let buf = Bytes.to_string buf in
+  if len >= 3 && buf.[0] = '\x1f' && buf.[1] = '\x8b' && buf.[2] = '\x08'
+  then GZip
+  else Uncompressed (* or other unknown compression type *)
+
 let rec build_kernel debug host_cpu copy_kernel kernel =
   (* Locate the kernel.
    * SUPERMIN_* environment variables override everything.  If those
@@ -54,7 +68,19 @@ let rec build_kernel debug host_cpu copy_kernel kernel =
     printf "supermin: kernel: modpath %s\n%!" modpath;
   );
 
-  copy_or_symlink_kernel copy_kernel kernel_file kernel;
+  (* RISC-V relies on the bootloader or firmware to uncompress the
+   * kernel and doesn't have a concept of self-extracting kernels.
+   * On Arm which is similar, qemu -kernel will automatically uncompress
+   * the kernel, but qemu-system-riscv won't do that and the code is a
+   * big mess so I don't fancy fixing it.  So we have to detect that
+   * case here and uncompress the kernel.
+   *)
+  let kernel_compression_type = get_compression_type kernel_file in
+  if string_prefix "riscv" host_cpu && kernel_compression_type <> Uncompressed
+  then
+    copy_and_uncompress_kernel kernel_compression_type kernel_file kernel
+  else
+    copy_or_symlink_kernel copy_kernel kernel_file kernel;
 
   (kernel_version, modpath)
 
@@ -307,6 +333,13 @@ and read_string chan offset len =
   let buf = Bytes.create len in
   really_input chan buf 0 len;
   Bytes.to_string buf
+
+and copy_and_uncompress_kernel compression_type src dest =
+  let cmd =
+    match compression_type with
+    | GZip -> sprintf "zcat %s > %s" (quote src) (quote dest)
+    | Uncompressed -> sprintf "cp %s %s" (quote src) (quote dest) in
+  run_command cmd
 
 and copy_or_symlink_kernel copy_kernel src dest =
   if not copy_kernel then
