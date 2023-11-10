@@ -54,7 +54,7 @@ let rec build_kernel debug host_cpu copy_kernel kernel =
     printf "supermin: kernel: modpath %s\n%!" modpath;
   );
 
-  copy_or_symlink_file copy_kernel kernel_file kernel;
+  copy_or_symlink_kernel copy_kernel kernel_file kernel;
 
   (kernel_version, modpath)
 
@@ -308,7 +308,7 @@ and read_string chan offset len =
   really_input chan buf 0 len;
   Bytes.to_string buf
 
-and copy_or_symlink_file copy_kernel src dest =
+and copy_or_symlink_kernel copy_kernel src dest =
   if not copy_kernel then
     symlink src dest
   else (
