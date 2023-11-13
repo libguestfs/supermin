@@ -279,8 +279,8 @@ main ()
     fprintf (stderr, "supermin: deleting initramfs files\n");
   delete_initramfs_files ();
 
-  /* Note that pivot_root won't work.  See the note in
-   * Documentation/filesystems/ramfs-rootfs-initramfs.txt
+  /* Note that pivot_root won't work.  See the note in Linux
+   * Documentation/filesystems/ramfs-rootfs-initramfs.rst
    */
   if (!quiet)
     fprintf (stderr, "supermin: chroot\n");
