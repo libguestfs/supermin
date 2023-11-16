@@ -143,7 +143,7 @@ See the examples/ subdirectory.
 Feedback and bugs
 -----------------
 
-Send feedback to libguestfs@redhat.com.  You can file bugs in
+Send feedback to guestfs@lists.libguestfs.org.  You can file bugs in
 https://bugzilla.redhat.com/ (under "Fedora", "supermin")
 
 Alternate libc
