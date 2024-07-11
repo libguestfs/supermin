@@ -75,7 +75,7 @@ echo
 
 echo "To run the full appliance, use a command such as:"
 echo "  qemu-kvm -m 512 -kernel kernel -initrd initrd \\"
-echo "      -append 'vga=773 selinux=0' \\"
+echo "      -append 'vga=773 selinux=0 root=/dev/vda' \\"
 echo "      -drive file=root,format=raw,if=virtio"
 echo
 
