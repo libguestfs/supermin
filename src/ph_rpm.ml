@@ -32,13 +32,14 @@ let stringset_of_list pkgs =
 let fedora_detect () =
   Config.rpm <> "no" && Config.rpm2cpio <> "no" && rpm_is_available () &&
     (Config.yumdownloader <> "no" || Config.dnf <> "no") &&
-    (List.mem (Os_release.get_id ()) [ "fedora"; "rhel"; "centos"; "openEuler"; "anolis"; "KylinSecOS" ] ||
+    (List.mem (Os_release.get_id ()) [ "fedora"; "rhel"; "centos"; "openEuler"; "anolis"; "KylinSecOS"; "uos"; "kylin" ] ||
      try
        (stat "/etc/redhat-release").st_kind = S_REG ||
        (stat "/etc/fedora-release").st_kind = S_REG ||
        (stat "/etc/openEuler-release").st_kind = S_REG ||
        (stat "/etc/anolis-release").st_kind = S_REG ||
-       (stat "/etc/kylin-release").st_kind = S_REG
+       (stat "/etc/kylin-release").st_kind = S_REG ||
+       (stat "/etc/UnionTech-release").st_kind = S_REG
      with Unix_error _ -> false)
 
 let opensuse_detect () =
@@ -525,7 +526,7 @@ and pkgs_as_NA_rpms pkgs =
 
 and rpm_unpack tdir dir =
   (* Unpack each downloaded package.
-   * 
+   *
    * yumdownloader can't necessarily download the specific file that we
    * requested, we might get a different (eg later) version.
    *)
