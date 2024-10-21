@@ -166,9 +166,12 @@ let prepare debug (copy_kernel, format, host_cpu,
     let base = outputdir // "base.tar.gz" in
     if debug >= 1 then printf "supermin: writing %s\n%!" base;
     let cmd =
-      sprintf "tar%s -C %s -zcf %s -T %s"
+      let mtime =
+        try sprintf "--mtime=@%s" (quote (Sys.getenv "SOURCE_DATE_EPOCH"))
+        with Not_found -> "" in
+      sprintf "tar%s -C %s -z --owner=0 --group=0 %s -cf %s -T %s"
               (if debug >=1 then " -v" else "")
-              (quote dir) (quote base) (quote files_from) in
+              (quote dir) mtime (quote base) (quote files_from) in
     run_command cmd;
   )
   else (
