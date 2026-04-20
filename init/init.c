@@ -279,13 +279,36 @@ main ()
     fprintf (stderr, "supermin: deleting initramfs files\n");
   delete_initramfs_files ();
 
+  /* Enter the root
+   * this is needed, because otherwise mount --move leaves us in no-mans-land
+   */
+
+  if (!quiet)
+    fprintf (stderr, "supermin: chdir /root\n");
+
+  if (chdir ("/root") < 0) {
+    perror ("chdir: /root");
+    exit (EXIT_FAILURE);
+  }
+
+  /* Move the root of the mount namspace
+   * This allows user namespaces to work post-chroot
+   */
+  if (!quiet)
+    fprintf (stderr, "supermin: mount --move\n");
+
+  if (mount ("/root", "/", NULL, MS_MOVE, NULL) < 0) {
+    perror ("mount --move: /root");
+    exit (EXIT_FAILURE);
+  }
+
   /* Note that pivot_root won't work.  See the note in Linux
    * Documentation/filesystems/ramfs-rootfs-initramfs.rst
    */
   if (!quiet)
     fprintf (stderr, "supermin: chroot\n");
 
-  if (chroot ("/root") == -1) {
+  if (chroot (".") == -1) {
     perror ("chroot: /root");
     exit (EXIT_FAILURE);
   }
