@@ -71,6 +71,25 @@ if test "$gcc_werror" = "yes"; then
     AC_SUBST([WERROR_CFLAGS])
 fi
 
+dnl Must appear before any PKG_* line in this file.
+PKG_PROG_PKG_CONFIG
+
+dnl Musl libc (eg Gentoo) has separate FTS instead of it being
+dnl included as with glibc.
+AC_ARG_WITH([fts-standalone],
+    [AS_HELP_STRING([--with-fts-standalone],
+                    [Build with standalone FTS library])],
+    [case $withval in
+     yes|no) ;;
+     *)      AC_MSG_ERROR([bad value $withval for fts-standalone option]) ;;
+     esac
+     with_fts_standalone=$withval],
+    [with_fts_standalone=no]
+)
+if test "x$with_fts_standalone" = "xyes"; then
+    PKG_CHECK_MODULES([FTS], [fts-standalone])
+fi
+
 # OCaml and ocamlfind are required to compile.
 AC_PROG_OCAML
 if test "$OCAMLC" = "no"; then
@@ -186,7 +205,7 @@ PKG_CHECK_MODULES([COM_ERR], [com_err])
 
 dnl Requires ext2fs_close2 function, added in 2011.
 old_LIBS="$LIBS"
-LIBS="$EXT2FS_LIBS $COM_ERR_LIBS"
+LIBS="$EXT2FS_LIBS $COM_ERR_LIBS $FTS_LIBS"
 AC_CHECK_FUNCS([ext2fs_close2])
 LIBS="$old_LIBS"
 

@@ -25,4 +25,4 @@ exec "$@" \
      -linkpkg \
      -runtime-variant _pic \
      -ccopt '@CFLAGS@' \
-     -cclib '@LDFLAGS@ @EXT2FS_LIBS@ @COM_ERR_LIBS@ @LIBRPM_LIBS@'
+     -cclib '@LDFLAGS@ @EXT2FS_LIBS@ @COM_ERR_LIBS@ @LIBRPM_LIBS@ @FTS_LIBS@'

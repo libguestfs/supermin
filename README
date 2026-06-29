@@ -89,6 +89,12 @@ For Arch Linux:
   fakeroot
   makepkg
 
+If using musl (alternate libc):
+
+  fts-standalone
+
+  NB: Use ./configure --with-fts-standalone
+
 Optional
 --------
 
