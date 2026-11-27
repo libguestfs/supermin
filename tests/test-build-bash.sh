@@ -34,6 +34,12 @@ test "$USE_NETWORK" = 1 || USE_INSTALLED=--use-installed
 # We assume 'bash' is a package everywhere.
 ../src/supermin -v --prepare $USE_INSTALLED bash -o $d1
 
+# Only list the directory symlink, not its parent or its target.
+# ext2 construction must create both before copying the symlink.
+mkdir -p "$tmpdir/link-parent" "$tmpdir/target"
+ln -s ../target "$tmpdir/link-parent/link"
+printf '%s\n' "$tmpdir/link-parent/link" >> "$d1/hostfiles"
+
 arch="$(uname -m)"
 
 # Check all supermin-helper formats work.
