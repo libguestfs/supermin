@@ -410,6 +410,13 @@ and munge files =
     | dir :: rest when stat_is_dir dir.ft_path && dir_seen dir.ft_path ->
       dir :: loop rest
 
+    | dir :: rest when is_lnk_to_dir dir.ft_path &&
+                       not (dir_seen (Filename.dirname dir.ft_path)) ->
+      let parent = Filename.dirname dir.ft_path in
+      let parent =
+        {ft_path = parent; ft_source_path = parent; ft_config = false} in
+      loop (parent :: dir :: rest)
+
     | dir :: rest when is_lnk_to_dir dir.ft_path ->
       insert_dir dir.ft_path;
 
