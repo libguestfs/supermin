@@ -238,19 +238,32 @@ let rpm_package_name pkg =
   let rpm = rpm_of_pkg pkg in
   rpm.name
 
-let rpmdb_locations = [
-  "/usr/lib/sysimage/rpm/rpmdb.sqlite";
-  "/var/lib/rpm/rpmdb.sqlite";
-  "/var/lib/rpm/Packages"
+let fallback_rpmdb_dirs = [
+  "/usr/lib/sysimage/rpm";
+  "/var/lib/rpm"
+]
+
+let rpmdb_filenames = [
+  "rpmdb.sqlite";
+  "Packages.db";
+  "Packages"
 ]
 
 let find_rpmdb () =
+  let cmd = sprintf "%s --eval '%%{_dbpath}'" Config.rpm in
+  let configured_dirs =
+    try List.filter (fun p -> p <> "" && p.[0] = '/') (run_command_get_lines cmd)
+    with _ -> [] in
+  let locations =
+    List.concat (List.map (fun dir ->
+      List.map (fun name -> dir // name) rpmdb_filenames
+    ) (configured_dirs @ fallback_rpmdb_dirs)) in
   let rec loop = function
     | [] -> error "rpm: cannot locate RPM database; if this is a normal RPM-based Linux distro then this is probably a supermin bug"
     | db :: rest ->
        if Sys.file_exists db then db else loop rest
   in
-  loop rpmdb_locations
+  loop locations
 
 let rpm_get_package_database_mtime () =
   (lstat (find_rpmdb ())).st_mtime
